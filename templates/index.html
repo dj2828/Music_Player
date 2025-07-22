@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="it">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	<title>Music Player</title>
+    <link rel="icon" type="image/png" href="/static/IO.png">
+    <link rel="stylesheet" href="http://192.168.1.8/static/style.css">
+    <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous"></script>
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Music Player">
+    <link rel="apple-touch-icon" href="/static/IO_apple.png">
+</head>
+<body>
+    <div class="container">
+        <div class="music-player">
+        <nav>
+            <div onclick="openModal()" class="circle">
+                <i class="fa-solid fa-download"></i>
+            </div>
+            <div onclick="window.location='/'" class="circle">
+                <i class="fa-solid fa-rotate-right"></i>
+            </div>
+        </nav>
+        <h1 id="titolo">TITOLO</h1>
+        <p id="cartella">CARTELLA</p>
+
+        <img src="" id="cover" class="cover404">
+
+        <audio id="audioPlayer">
+            <source id="audioSource" src="" type="audio/mpeg">
+        </audio>
+        <input type="range" value="0" id="progress">
+
+        <div class="controls">
+            <div onclick="prevSong()"><i class="fa-solid fa-backward"></i></div>
+            <div onclick="togglePlay()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
+            <div onclick="nextSong()"><i class="fa-solid fa-forward"></i></div>
+        </div>
+        </div>
+
+    <script>
+
+        let progress = document.getElementById('progress');
+        let audioPlayer = document.getElementById('audioPlayer');
+        let ctrlIcon = document.getElementById('ctrlIcon');
+        let titoloObj = document.getElementById('titolo');
+        let cartellaObj = document.getElementById('cartella');
+
+        
+
+        audioPlayer.onloadedmetadata = function() {
+            progress.max = audioPlayer.duration;
+            progress.value = audioPlayer.currentTime;
+        };
+
+        function play(a){
+            if(a){
+                ctrlIcon.classList.remove('fa-play');
+                ctrlIcon.classList.add('fa-pause');
+            } else {
+                ctrlIcon.classList.remove('fa-pause');
+                ctrlIcon.classList.add('fa-play');
+            }
+        }
+
+        function togglePlay() {
+            if(ctrlIcon.classList.contains('fa-play')) {
+                audioPlayer.play();
+                play(true);
+            } else {
+                audioPlayer.pause();
+                play(false);
+            }
+        }
+
+        if(audioPlayer.play()){
+            setInterval(function() {
+                progress.value = audioPlayer.currentTime;
+            }, 50);
+        }
+
+        progress.oninput = function() {
+            audioPlayer.play();
+            audioPlayer.currentTime = progress.value;
+            play(true);
+        };
+    </script>
+
+<!-- -------------------------------------------------------------- -->
+
+    {% for folder, songs in songs_by_folder.items() %}
+    <div class="cartella">
+        <div class="title">
+        <h2>{{ folder }}</h2>
+        <div onclick="playFolderRandom('{{ folder }}')" class="circle"><i class="fa-solid fa-shuffle"></i></div>
+        </div>
+        <div>
+        {% for song in songs %}
+            <button onclick="playSong('{{ folder }}/{{ song }}')" class="song">
+                <h3>{{ song.replace('.mp3', '') }}</h3>
+            </button>
+        {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    </div>
+    <script>
+        // Crea la playlist con tutte le canzoni (cartella e nome)
+        const playlist = [
+            {% for folder, songs in songs_by_folder.items() %}
+                {% for song in songs %}
+                    { folder: "{{ folder }}", song: "{{ song }}" },
+                {% endfor %}
+            {% endfor %}
+        ];
+        let currentIndex = -1;
+        let randomFolderPlaylist = null;
+        let historyStack = [];
+
+        function playSong(songPath, customPlaylist = null, customIndex = null, fromHistory = false) {
+            let titolo = songPath.split('/').pop().replace('.mp3', '');
+            let cartella = songPath.split('/')[0];
+            titoloObj.textContent = titolo;
+            cartellaObj.textContent = cartella;
+            document.title = titolo;
+            play(true);
+
+            const audioPlayer = document.getElementById('audioPlayer');
+            const audioSource = document.getElementById('audioSource');
+            const [folder, song] = songPath.split('/');
+            audioSource.src = "{{ url_for('music', folder='FOLDER', filename='SONG') }}"
+                .replace('FOLDER', encodeURIComponent(folder))
+                .replace('SONG', encodeURIComponent(song));
+            audioPlayer.load();
+            audioPlayer.play();
+
+            // immagine
+            const immagine = document.getElementById('cover');
+            let img = "{{ url_for('img', folder='FOLDER', filename='SONG') }}"
+                .replace('FOLDER', encodeURIComponent(folder))
+                .replace('SONG', encodeURIComponent(song));
+            fetch(img).then(response => {
+                if (response.status === 404) {
+                    immagine.src = "/static/d.png";
+                    img = '';
+                    immagine.classList.remove('cover');
+                    immagine.classList.add('cover404');
+                } else {
+                    immagine.classList.remove('cover404');
+                    immagine.classList.add('cover');
+                    immagine.src = img;
+                }
+                // img per player di ios (è ne fetch per la var img)
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                    title: titolo,
+                    artist: "",
+                    album: "",
+                    artwork: [
+                        { src: img, sizes: "512x512", type: "image/jpeg" }
+                    ]
+                    });
+                    navigator.mediaSession.setActionHandler("play", () => togglePlay());
+                    navigator.mediaSession.setActionHandler("pause", () => togglePlay());
+                    navigator.mediaSession.setActionHandler("nexttrack", () => nextSong());
+                    navigator.mediaSession.setActionHandler("previoustrack", () => prevSong());
+                }
+            });
+
+            // Trova l'indice della canzone nella playlist attuale
+            let idx;
+            if (customPlaylist) {
+                idx = customIndex;
+            } else {
+                idx = playlist.findIndex(item => item.folder === folder && item.song === song);
+            }
+
+            // Aggiorna lo storico solo se non viene da prevSong
+            if (!fromHistory && currentIndex !== -1) {
+                historyStack.push({
+                    playlist: randomFolderPlaylist ? [...randomFolderPlaylist] : null,
+                    index: currentIndex
+                });
+            }
+
+            // Aggiorna playlist e indice correnti
+            if (customPlaylist) {
+                randomFolderPlaylist = customPlaylist;
+                currentIndex = idx;
+            } else {
+                randomFolderPlaylist = null;
+                currentIndex = idx;
+            }
+        }
+
+        function playFolderRandom(folder) {
+            // Filtra le canzoni della cartella
+            const folderSongs = playlist.filter(item => item.folder === folder);
+            // Mischia le canzoni
+            const shuffled = folderSongs.sort(() => Math.random() - 0.5);
+            if (shuffled.length > 0) {
+                playSong(shuffled[0].folder + '/' + shuffled[0].song, shuffled, 0);
+            }
+        }
+
+        document.getElementById('audioPlayer').addEventListener('ended', function() {
+            nextSong();
+        });
+
+        function nextSong() {
+            if (randomFolderPlaylist) {
+                if (currentIndex + 1 < randomFolderPlaylist.length) {
+                    const next = randomFolderPlaylist[currentIndex + 1];
+                    playSong(next.folder + '/' + next.song, randomFolderPlaylist, currentIndex + 1);
+                }
+            } else if (currentIndex + 1 < playlist.length) {
+                const next = playlist[currentIndex + 1];
+                playSong(next.folder + '/' + next.song, null, currentIndex + 1);
+            }
+        }
+
+        function prevSong() {
+            if (historyStack.length > 0) {
+                const last = historyStack.pop();
+                if (last.playlist) {
+                    playSong(last.playlist[last.index].folder + '/' + last.playlist[last.index].song, last.playlist, last.index, true);
+                } else {
+                    playSong(playlist[last.index].folder + '/' + playlist[last.index].song, null, last.index, true);
+                }
+            }
+        }
+    </script>
+
+    <div id="downloadModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+        <div style="background:#ff5500; color:#000; padding:30px 20px; border-radius:12px; min-width:600px; max-width:90vw; min-height: 300px; margin:auto; position:relative; display: flex; align-items: center; justify-content: center;">
+            <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
+            <form action="/" method="post" style="text-align:center;">
+                <input type="text" name="yt_url" placeholder="Incolla link YouTube || Cerca su YouTube" style="width:500px; height: 200px; border-radius: 20px; padding: 20px; font-size: large;">
+                <button type="submit" class="song">Scarica da YouTube</button>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div style="color:black; margin-top:20px;">{{ messages[0] }}</div>
+                    {% endif %}
+                {% endwith %}
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function openModal() {
+        document.getElementById('downloadModal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('downloadModal').style.display = 'none';
+    }
+    // Chiudi modale con ESC o clic fuori
+    window.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") closeModal();
+    });
+    document.getElementById('downloadModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    </script>
+
+</body>
+</html>
