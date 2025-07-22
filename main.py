@@ -10,8 +10,8 @@ app.secret_key = "supersecret"  # Necessario per flash
 MUSIC_FOLDER = os.path.join('music')
 
 MUSIC_FOLDERS = {
-    "Tha Supreme": os.path.join(MUSIC_FOLDER, 'thasup'),
-    "Nintendo": os.path.join(MUSIC_FOLDER, 'Nintendo'),
+    "Tha Supreme": r'X:\cartelllla\portale magico\canzoni per home assistant\thasup',
+    "Nintendo": r'X:\cartelllla\vidoooooooooooooooo\canzoni\bg SERIE\Nintendo',
     "YouTube": MUSIC_FOLDER,  # Nuova cartella per i download
 }
 
