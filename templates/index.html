@@ -85,9 +85,11 @@
         }
 
         progress.oninput = function() {
-            audioPlayer.play();
+            if(ctrlIcon.classList.contains('fa-pause')){
+                audioPlayer.play();
+                play(true);
+            }
             audioPlayer.currentTime = progress.value;
-            play(true);
         };
     </script>
 
@@ -225,12 +227,17 @@
         }
 
         function prevSong() {
-            if (historyStack.length > 0) {
-                const last = historyStack.pop();
-                if (last.playlist) {
-                    playSong(last.playlist[last.index].folder + '/' + last.playlist[last.index].song, last.playlist, last.index, true);
-                } else {
-                    playSong(playlist[last.index].folder + '/' + playlist[last.index].song, null, last.index, true);
+            if (audioPlayer.currentTime <= (audioPlayer.duration*10)/100){
+                audioPlayer.currentTime = 0;
+            }
+            else{
+                if (historyStack.length > 0) {
+                    const last = historyStack.pop();
+                    if (last.playlist) {
+                        playSong(last.playlist[last.index].folder + '/' + last.playlist[last.index].song, last.playlist, last.index, true);
+                    } else {
+                        playSong(playlist[last.index].folder + '/' + playlist[last.index].song, null, last.index, true);
+                    }
                 }
             }
         }
