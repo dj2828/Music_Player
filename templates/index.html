@@ -171,6 +171,13 @@
                     navigator.mediaSession.setActionHandler("pause", () => togglePlay());
                     navigator.mediaSession.setActionHandler("nexttrack", () => nextSong());
                     navigator.mediaSession.setActionHandler("previoustrack", () => prevSong());
+                    navigator.mediaSession.setActionHandler('seekto', (details) => {
+                        if (details.fastSeek && 'fastSeek' in audioPlayer) {
+                        audioPlayer.fastSeek(details.seekTime);
+                        } else {
+                        audioPlayer.currentTime = details.seekTime;
+                        }
+                    });
                 }
             });
 
