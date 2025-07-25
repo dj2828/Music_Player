@@ -11,6 +11,7 @@ MUSIC_FOLDER = os.path.join('music')
 
 MUSIC_FOLDERS = {
     "Tha Supreme": r'X:\cartelllla\canz\fr\thasup',
+    "NO REGULAR MUSIC 2": r'X:\cartelllla\canz\fr\NO REGULAR MUSIC 2',
     "Nintendo": r'X:\cartelllla\vidoooooooooooooooo\canzoni\bg SERIE\Nintendo',
     "YouTube": MUSIC_FOLDER,  # Nuova cartella per i download
 }
@@ -53,16 +54,12 @@ def download():
             },
             {  # Inserisce la copertina nel file MP3
                 'key': 'EmbedThumbnail',
-            }
-        ],
-        'prefer_ffmpeg': True,
-        'quiet': True
+            }]
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         flash("Download completato!")
-        print(f"Immagine croppata salvata in: {output_path}")
     except Exception as e:
         flash(f"Errore: {e}")
     return redirect(url_for('index'))
