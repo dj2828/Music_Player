@@ -236,10 +236,7 @@
         }
 
         function prevSong() {
-            if (audioPlayer.currentTime <= (audioPlayer.duration*10)/100){
-                audioPlayer.currentTime = 0;
-            }
-            else{
+            if (audioPlayer.currentTime <= (audioPlayer.duration*2)/100){
                 if (historyStack.length > 0) {
                     const last = historyStack.pop();
                     if (last.playlist) {
@@ -248,6 +245,9 @@
                         playSong(playlist[last.index].folder + '/' + playlist[last.index].song, null, last.index, true);
                     }
                 }
+            }
+            else{
+                audioPlayer.currentTime = 0;
             }
         }
     </script>
