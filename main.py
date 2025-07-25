@@ -10,7 +10,7 @@ app.secret_key = "supersecret"  # Necessario per flash
 MUSIC_FOLDER = os.path.join('music')
 
 MUSIC_FOLDERS = {
-    "Tha Supreme": r'X:\cartelllla\portale magico\canzoni per home assistant\thasup',
+    "Tha Supreme": r'X:\cartelllla\canz\fr\thasup',
     "Nintendo": r'X:\cartelllla\vidoooooooooooooooo\canzoni\bg SERIE\Nintendo',
     "YouTube": MUSIC_FOLDER,  # Nuova cartella per i download
 }
@@ -56,13 +56,13 @@ def download():
             }
         ],
         'prefer_ffmpeg': True,
-        'quiet': True,
-        'outtmpl': os.path.join(MUSIC_FOLDER, '%(title)s.%(ext)s'),
+        'quiet': True
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         flash("Download completato!")
+        print(f"Immagine croppata salvata in: {output_path}")
     except Exception as e:
         flash(f"Errore: {e}")
     return redirect(url_for('index'))
@@ -78,26 +78,34 @@ def music(folder, filename):
 @app.route('/<folder>/<filename>.png')
 def img(folder, filename):
     folder_path = MUSIC_FOLDERS.get(folder)
-    if not folder_path:
-        return "Cartella non trovata", 404
-
     mp3_path = os.path.join(folder_path, filename)
-    img_path = os.path.join("cover", f"{filename}.png")
+    audio = MP3(mp3_path, ID3=ID3)
+    album = audio.get("TALB")
+
+    if album:
+        album_name = album.text[0].strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
+        img_path = os.path.join("cover", "album", f"{album_name}.png")
+        nome_img = f'{album_name}.png'
+        dir_img = os.path.join("cover", "album")
+    else:
+        img_path = os.path.join("cover", f"{filename}.png")
+        nome_img = f'{filename}.png'
+        dir_img = "cover"
 
     if not os.path.exists(img_path):
-        try:
-            audio = MP3(mp3_path, ID3=ID3)
-            for tag in audio.tags.values():
-                if isinstance(tag, APIC):
+        for tag in audio.tags.values():
+            if isinstance(tag, APIC):
+                try:
                     with open(img_path, "wb") as out_img:
                         out_img.write(tag.data)
                         print(f"Immagine salvata come {img_path}")
-        except:
-            print('EEEEEE')
+                except:
+                    pass
+                break
     else:
         print("Immagine già presente")
-    
-    return send_from_directory('cover', filename+'.png')
+
+    return send_from_directory(dir_img, nome_img)
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=80)
