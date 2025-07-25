@@ -58,11 +58,12 @@ nav .circle{
 nav .circle:hover{
   transform: scale(1.2);
 }
-.cover{
+.cover {
   margin-top: 10px;
-  width: 255px;
-  height: 255px;
   border-radius: 20px;
+  height: 255px;
+  width: auto;
+  max-width: calc(100% - 20px);
 }
 .cover404{
   width: 0px;
@@ -237,31 +238,25 @@ nav .circle:hover{
     padding-left: 0px;
     width: auto;
   }
-  .music-player {
+  .music-player{
     position: static;
     top: auto;
     left: auto;
     transform: none;
     margin-top: 20px;
-    width: calc(100% - 200px)
-  }
-  .cartella{
     width: calc(100% - 200px);
-    padding: 20px 35px;
-  }
-}
-
-@media (max-width: 490px) {
-  .music-player{
     padding: 10px 15px;
     min-width: 270px;
     margin: 20px;
   }
   .cartella{
     padding: 10px 15px;
-    max-width: 250px;
     margin-top: 0px;
     margin-bottom: 15px;
     min-width: 270px;
+    width: calc(100% - 200px);
+  }
+  .cover{
+    max-width: 300px;
   }
 }

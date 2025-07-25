@@ -210,6 +210,8 @@
         function playFolderRandom(folder) {
             // Filtra le canzoni della cartella
             const folderSongs = playlist.filter(item => item.folder === folder);
+            console.log(playlist.filter(item => item.folder === folder))
+            console.log(folderSongs)
             // Mischia le canzoni
             const shuffled = folderSongs.sort(() => Math.random() - 0.5);
             if (shuffled.length > 0) {
