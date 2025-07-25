@@ -76,7 +76,7 @@ nav .circle:hover{
   background: #d6d6d6;
   border-radius: 10px;
   cursor: pointer;
-  margin: 15px 0;
+  margin: 15px -5px;
   border: 6px solid rgb(0, 0, 255);
 }
 #progress::-webkit-slider-thumb {
