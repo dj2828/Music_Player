@@ -93,7 +93,13 @@
         };
 
         window.addEventListener('keydown', function(e) {
-            if (e.key === " "){e.preventDefault(); togglePlay();}
+            if (
+                (e.key === " " || e.code === "Space" || e.key === "Spacebar") &&
+                !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
+            ) {
+                e.preventDefault();
+                togglePlay();
+            }
         });
     </script>
 
@@ -107,7 +113,7 @@
         </div>
         <div>
         {% for song in songs %}
-            <button onclick="playSong('{{ folder }}/{{ song }}')" class="song">
+            <button onclick='playSong("{{ folder }}/{{ song }}")' class="song">
                 <h3>{{ song.replace('.mp3', '') }}</h3>
             </button>
         {% endfor %}
