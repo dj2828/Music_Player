@@ -51,7 +51,16 @@
         let titoloObj = document.getElementById('titolo');
         let cartellaObj = document.getElementById('cartella');
 
-        
+        // Funzione per salvare l'URL nel cookie
+        function setLastPlayedMp3Url(url) {
+            document.cookie = "lastMp3Url=" + encodeURIComponent(url) + "; path=/; max-age=31536000";
+        }
+
+        // Funzione per leggere l'URL dal cookie
+        function getLastPlayedMp3Url() {
+            const match = document.cookie.match(/(?:^|; )lastMp3Url=([^;]*)/);
+            return match ? decodeURIComponent(match[1]) : null;
+        }
 
         audioPlayer.onloadedmetadata = function() {
             progress.max = audioPlayer.duration;
@@ -101,6 +110,9 @@
                 togglePlay();
             }
         });
+
+        // Cerca l'ultimo file .mp3 nella cache e salva solo l'URL in una variabile
+    ù
     </script>
 
 <!-- -------------------------------------------------------------- -->
@@ -134,22 +146,29 @@
         let randomFolderPlaylist = null;
         let historyStack = [];
 
-        function playSong(songPath, customPlaylist = null, customIndex = null, fromHistory = false) {
+        function playSong(songPath, customPlaylist = null, customIndex = null, fromHistory = false, playImmediately = true) {
             let titolo = songPath.split('/').pop().replace('.mp3', '');
             let cartella = songPath.split('/')[0];
             titoloObj.textContent = titolo;
             cartellaObj.textContent = cartella;
             document.title = titolo;
-            play(true);
 
             const audioPlayer = document.getElementById('audioPlayer');
             const audioSource = document.getElementById('audioSource');
             const [folder, song] = songPath.split('/');
-            audioSource.src = "{{ url_for('music', folder='FOLDER', filename='SONG') }}"
+            const url = "{{ url_for('music', folder='FOLDER', filename='SONG') }}"
                 .replace('FOLDER', encodeURIComponent(folder))
                 .replace('SONG', encodeURIComponent(song));
+            audioSource.src = url;
             audioPlayer.load();
-            audioPlayer.play();
+            console.log('Playing song:', url);
+
+            // Salva l'URL nel cookie
+            setLastPlayedMp3Url(url);
+
+            if (playImmediately) {
+                togglePlay(true);
+            }
 
             // immagine
             const immagine = document.getElementById('cover');
@@ -215,6 +234,8 @@
                 randomFolderPlaylist = null;
                 currentIndex = idx;
             }
+
+            nextSongPreload();
         }
 
         function playFolderRandom(folder) {
@@ -259,6 +280,33 @@
             else{
                 audioPlayer.currentTime = 0;
             }
+        }
+
+        // si scaria la prossima canzone
+        function nextSongPreload() {
+            let next;
+            if (randomFolderPlaylist && currentIndex + 1 < randomFolderPlaylist.length) {
+                next = randomFolderPlaylist[currentIndex + 1];
+            } else if (!randomFolderPlaylist && currentIndex + 1 < playlist.length) {
+                next = playlist[currentIndex + 1];
+            }
+            if (next) {
+                const preloadLink = document.createElement('link');
+                preloadLink.rel = 'preload';
+                preloadLink.as = 'fetch';
+                preloadLink.href = `/` + encodeURIComponent(next.folder) + `/` + encodeURIComponent(next.song);
+                document.head.appendChild(preloadLink);
+            }
+        }
+
+        // All'avvio, recupera l'ultimo mp3 dal cookie e formatta l'URL in modo leggibile
+        const lastMp3Url = getLastPlayedMp3Url();
+        if (lastMp3Url) {
+            const formattedUrl = decodeURIComponent(lastMp3Url).slice(1);
+            console.log('Ultimo mp3 dal cookie (formattato):', formattedUrl);
+            playSong(formattedUrl, null, null, null, false);
+        } else {
+            console.log('Nessun mp3 trovato nel cookie.');
         }
     </script>
 

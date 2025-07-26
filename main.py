@@ -112,5 +112,11 @@ def img(folder, filename):
 
     return send_from_directory(dir_img, nome_img)
 
+@app.after_request
+def add_header(response):
+    if request.path.endswith('.mp3'):
+        response.headers['Cache-Control'] = 'public, max-age=86400'
+    return response
+
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=80)
