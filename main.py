@@ -9,12 +9,20 @@ app.secret_key = "supersecret"  # Necessario per flash
 
 MUSIC_FOLDER = os.path.join('music')
 
-MUSIC_FOLDERS = {
-    "Tha Supreme": r'X:\cartelllla\canz\fr\thasup',
-    "NO REGULAR MUSIC 2": r'X:\cartelllla\canz\fr\NO REGULAR MUSIC 2',
-    "Nintendo": r'X:\cartelllla\vidoooooooooooooooo\canzoni\bg SERIE\Nintendo',
-    "YouTube": MUSIC_FOLDER,  # Nuova cartella per i download
-}
+def load_music_folders(path_txt):
+    music_folders = {}
+    with open(path_txt, 'r', encoding='utf-8') as file:
+        for line in file:
+            if '=' in line:
+                key, value = line.strip().split('=', 1)
+                value = value.strip()
+                # Se vuoi risolvere simboli speciali tipo MUSIC_FOLDER come variabile Python
+                if value == 'MUSIC_FOLDER':
+                    value = MUSIC_FOLDER  # Assicurati che questa variabile sia definita altrove
+                music_folders[key.strip()] = value
+    return music_folders
+
+MUSIC_FOLDERS = load_music_folders('config.txt')
 
 @app.route('/', methods=['GET'])
 def index():
