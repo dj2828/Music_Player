@@ -91,6 +91,10 @@
             }
             audioPlayer.currentTime = progress.value;
         };
+
+        window.addEventListener('keydown', function(e) {
+            if (e.key === "Space") togglePlay();
+        });
     </script>
 
 <!-- -------------------------------------------------------------- -->
