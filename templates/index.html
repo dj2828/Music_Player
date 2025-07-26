@@ -93,7 +93,7 @@
         };
 
         window.addEventListener('keydown', function(e) {
-            if (e.key === "Space") togglePlay();
+            if (e.key === " "){e.preventDefault(); togglePlay();}
         });
     </script>
 
