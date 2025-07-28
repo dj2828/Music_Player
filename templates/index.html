@@ -77,8 +77,8 @@
             }
         }
 
-        function togglePlay() {
-            if(ctrlIcon.classList.contains('fa-play')) {
+        function togglePlay(a) {
+            if(ctrlIcon.classList.contains('fa-play') || a) {
                 audioPlayer.play();
                 play(true);
             } else {
@@ -132,13 +132,14 @@
     </div>
     <script>
         // Crea la playlist con tutte le canzoni (cartella e nome)
-        const playlist = [
-            {% for folder, songs in songs_by_folder.items() %}
-                {% for song in songs %}
-                    { folder: "{{ folder }}", song: "{{ song }}" },
-                {% endfor %}
+        const playlist = [];
+        {% for folder, songs in songs_by_folder.items() %}
+            {% for song in songs %}
+                playlist.push({ folder: {{ folder|tojson }}, song: {{ song|tojson }} });
             {% endfor %}
-        ];
+        {% endfor %}
+    </script>
+    <script>
         let currentIndex = -1;
         let randomFolderPlaylist = null;
         let historyStack = [];
@@ -238,8 +239,6 @@
         function playFolderRandom(folder) {
             // Filtra le canzoni della cartella
             const folderSongs = playlist.filter(item => item.folder === folder);
-            console.log(playlist.filter(item => item.folder === folder))
-            console.log(folderSongs)
             // Mischia le canzoni
             const shuffled = folderSongs.sort(() => Math.random() - 0.5);
             if (shuffled.length > 0) {
@@ -257,9 +256,33 @@
                     const next = randomFolderPlaylist[currentIndex + 1];
                     playSong(next.folder + '/' + next.song, randomFolderPlaylist, currentIndex + 1);
                 }
-            } else if (currentIndex + 1 < playlist.length) {
-                const next = playlist[currentIndex + 1];
-                playSong(next.folder + '/' + next.song, null, currentIndex + 1);
+                // Se randomFolderPlaylist è attiva e siamo all'ultima canzone, si ferma (non fa nulla)
+            } else if (currentIndex >= 0) {
+                // Siamo nella playlist globale: controlla se siamo all'ultima canzone della cartella
+                const currentFolder = playlist[currentIndex].folder;
+                // Trova tutte le canzoni di questa cartella
+                const songsInFolder = playlist.filter(item => item.folder === currentFolder);
+                // Trova la posizione della canzone corrente nella cartella
+                const currentSongInFolder = songsInFolder.findIndex(item =>
+                    item.folder === playlist[currentIndex].folder &&
+                    item.song === playlist[currentIndex].song
+                );
+                if (currentSongInFolder + 1 < songsInFolder.length) {
+                    // Vai alla prossima canzone della stessa cartella
+                    const nextInFolder = songsInFolder[currentSongInFolder + 1];
+                    // Trova l'indice globale della prossima canzone della cartella
+                    const globalIndex = playlist.findIndex(item =>
+                        item.folder === nextInFolder.folder && item.song === nextInFolder.song
+                    );
+                    playSong(nextInFolder.folder + '/' + nextInFolder.song, null, globalIndex);
+                } else {
+                    // Siamo all'ultima canzone della cartella: riparti dalla prima della cartella
+                    const firstInFolder = songsInFolder[0];
+                    const globalIndex = playlist.findIndex(item =>
+                        item.folder === firstInFolder.folder && item.song === firstInFolder.song
+                    );
+                    playSong(firstInFolder.folder + '/' + firstInFolder.song, null, globalIndex);
+                }
             }
         }
 
