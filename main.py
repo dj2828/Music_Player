@@ -1,14 +1,14 @@
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, flash
 import os
-import yt_dlp
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
-import per_google_home
+import lib
 
 app = Flask(__name__)
 app.secret_key = "supersecret"  # Necessario per flash
 
 MUSIC_FOLDER = os.path.join('music')
+googleHome = False
 
 def ip(path_txt):
     with open(path_txt, 'r', encoding='utf-8') as file:
@@ -53,30 +53,10 @@ def download():
     if not (url.startswith("http://") or url.startswith("https://")):
         url = f"ytsearch1:{url}"
 
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': os.path.join(MUSIC_FOLDER, '%(title)s.%(ext)s'),
-        'writethumbnail': True,
-        'postprocessors': [
-            {  # Converti audio in mp3
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            },
-            {  # Converte la thumbnail in jpg
-                'key': 'FFmpegThumbnailsConvertor',
-                'format': 'png',
-            },
-            {  # Inserisce la copertina nel file MP3
-                'key': 'EmbedThumbnail',
-            }]
-    }
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
+    if lib.down(url, MUSIC_FOLDER):
         flash("Download completato!")
-    except Exception as e:
-        flash(f"Errore: {e}")
+    else:
+        flash(f"Errore")
     return redirect(url_for('index'))
 
 @app.route('/<folder>/<filename>')
@@ -122,9 +102,16 @@ def img(folder, filename):
 @app.route('/', methods=['POST'])
 def playSongGoogleHome():
     print("Richiesta di riproduzione su Google Home ricevuta")
+    global googleHome
+    if not googleHome:
+        print("Google Home non attivo, inizializzo...")
+        if lib.init_google_home():
+            googleHome = True
+        else:
+            return "Google Home non disponibile", 404
     url = request.form.get('url')
     url = 'http://'+IP+url
-    per_google_home.play(url)
+    lib.playG(url)
     return "OK"
 
 @app.after_request
