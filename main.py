@@ -3,12 +3,18 @@ import os
 import yt_dlp
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
+import per_google_home
 
 app = Flask(__name__)
 app.secret_key = "supersecret"  # Necessario per flash
 
 MUSIC_FOLDER = os.path.join('music')
 
+def ip(path_txt):
+    with open(path_txt, 'r', encoding='utf-8') as file:
+        for line in file:
+            if line.startswith('#'):
+                return line[1:]
 def load_music_folders(path_txt):
     music_folders = {}
     with open(path_txt, 'r', encoding='utf-8') as file:
@@ -23,6 +29,7 @@ def load_music_folders(path_txt):
     return music_folders
 
 MUSIC_FOLDERS = load_music_folders('config.txt')
+IP = ip('config.txt')
 
 @app.route('/', methods=['GET'])
 def index():
@@ -35,7 +42,7 @@ def index():
             songs_by_folder[folder_name] = []
     return render_template('index.html', songs_by_folder=songs_by_folder)
 
-@app.route('/', methods=['POST'])
+@app.route('/down', methods=['POST'])
 def download():
     url = request.form.get('yt_url')
     if not url:
@@ -111,6 +118,14 @@ def img(folder, filename):
         print("Immagine già presente")
 
     return send_from_directory(dir_img, nome_img)
+
+@app.route('/', methods=['POST'])
+def playSongGoogleHome():
+    print("Richiesta di riproduzione su Google Home ricevuta")
+    url = request.form.get('url')
+    url = 'http://'+IP+url
+    per_google_home.play(url)
+    return "OK"
 
 @app.after_request
 def add_header(response):
