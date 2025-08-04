@@ -67,8 +67,10 @@ def music(folder, filename):
     else:
         return "Cartella non trovata", 404
 
-@app.route('/<folder>/<filename>.png')
-def img(folder, filename):
+@app.route('/img', methods=['GET'])
+def img():
+    folder = request.args.get('folder')
+    filename = request.args.get('filename')
     folder_path = MUSIC_FOLDERS.get(folder)
     mp3_path = os.path.join(folder_path, filename)
     audio = MP3(mp3_path, ID3=ID3)
@@ -99,7 +101,7 @@ def img(folder, filename):
 
     return send_from_directory(dir_img, nome_img)
 
-@app.route('/', methods=['POST'])
+@app.route('/google', methods=['POST'])
 def playSongGoogleHome():
     print("Richiesta di riproduzione su Google Home ricevuta")
     global googleHome

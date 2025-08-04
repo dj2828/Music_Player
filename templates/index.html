@@ -159,7 +159,7 @@
                 .replace('FOLDER', encodeURIComponent(folder))
                 .replace('SONG', encodeURIComponent(song));
             if (googleHome) {
-                fetch("/", {
+                fetch("/google", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/x-www-form-urlencoded"
@@ -181,20 +181,25 @@
 
             // immagine
             const immagine = document.getElementById('cover');
-            let img = "{{ url_for('img', folder='FOLDER', filename='SONG') }}"
-                .replace('FOLDER', encodeURIComponent(folder))
-                .replace('SONG', encodeURIComponent(song));
-            fetch(img).then(response => {
-                if (response.status === 404) {
-                    immagine.src = "/static/d.png";
-                    img = '';
-                    immagine.classList.remove('cover');
-                    immagine.classList.add('cover404');
-                } else {
-                    immagine.classList.remove('cover404');
-                    immagine.classList.add('cover');
-                    immagine.src = img;
-                }
+            let img = `/img?folder=${encodeURIComponent(folder)}&filename=${encodeURIComponent(song)}`;
+            fetch(img)
+                .then(response => {
+                    if (response.status === 404) {
+                        immagine.src = "/static/d.png";
+                        immagine.classList.remove('cover');
+                        immagine.classList.add('cover404');
+                        return null;
+                    } else {
+                        immagine.classList.remove('cover404');
+                        immagine.classList.add('cover');
+                        return response.blob();
+                    }
+                })
+                .then(blob => {
+                    if (blob) {
+                        immagine.src = URL.createObjectURL(blob);
+                    }
+                
                 // img per player di ios (è ne fetch per la var img)
                 if ('mediaSession' in navigator) {
                     navigator.mediaSession.metadata = new MediaMetadata({
