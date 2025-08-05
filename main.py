@@ -42,6 +42,11 @@ def index():
             songs_by_folder[folder_name] = []
     return render_template('index.html', songs_by_folder=songs_by_folder)
 
+@app.route('/errore', methods=['GET'])
+def errore():
+    motivo = request.args.get("motivo", "Errore sconosciuto")
+    return render_template('404.html', motivo=motivo)
+
 @app.route('/down', methods=['POST'])
 def download():
     url = request.form.get('yt_url')
@@ -111,6 +116,7 @@ def playSongGoogleHome():
             googleHome = True
         else:
             return "Google Home non disponibile", 404
+            return redirect(url_for('errore'))
     url = request.form.get('url')
     url = 'http://'+IP+url
     lib.playG(url)
