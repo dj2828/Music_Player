@@ -1,4 +1,4 @@
-import pychromecast, os, yt_dlp
+import pychromecast, os, yt_dlp, difflib
 
 def playG(url):
     print("Riproduzione su Google Home:", url)
@@ -27,6 +27,12 @@ def init_google_home():
     except:
         print("Nessun dispositivo Google Home trovato. Assicurati che sia acceso e connesso alla rete.")
         return False
+
+def geturlgoogle(data, songs_by_folder):
+    print("Canzone richiesta:", data)
+    canz = difflib.get_close_matches(data, songs_by_folder, n=1)
+    print("Canzone trovata:", canz[0])
+    return canz[0].replace('[', '').replace(']', '')
 
 def down(url, MUSIC_FOLDER):
     ydl_opts = {

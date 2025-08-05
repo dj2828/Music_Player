@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, flash
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, flash, jsonify
 import os
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
@@ -27,12 +27,7 @@ def load_music_folders(path_txt):
                     value = MUSIC_FOLDER  # Assicurati che questa variabile sia definita altrove
                 music_folders[key.strip()] = value
     return music_folders
-
-MUSIC_FOLDERS = load_music_folders('config.txt')
-IP = ip('config.txt')
-
-@app.route('/', methods=['GET'])
-def index():
+def get_music():
     songs_by_folder = {}
     for folder_name, folder_path in MUSIC_FOLDERS.items():
         if os.path.exists(folder_path):
@@ -40,7 +35,14 @@ def index():
             songs_by_folder[folder_name] = songs
         else:
             songs_by_folder[folder_name] = []
-    return render_template('index.html', songs_by_folder=songs_by_folder)
+    return songs_by_folder
+
+MUSIC_FOLDERS = load_music_folders('config.txt')
+IP = ip('config.txt')
+
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html', songs_by_folder=get_music())
 
 @app.route('/errore', methods=['GET'])
 def errore():
@@ -107,7 +109,7 @@ def img():
     return send_from_directory(dir_img, nome_img)
 
 @app.route('/google', methods=['POST'])
-def playSongGoogleHome():
+def google_home_da_sito():
     print("Richiesta di riproduzione su Google Home ricevuta")
     global googleHome
     if not googleHome:
@@ -115,12 +117,34 @@ def playSongGoogleHome():
         if lib.init_google_home():
             googleHome = True
         else:
-            return "Google Home non disponibile", 404
+            # return "Google Home non disponibile", 404
             return redirect(url_for('errore'))
     url = request.form.get('url')
     url = 'http://'+IP+url
     lib.playG(url)
     return "OK"
+
+# per il webhook di Dialogflow per Google Home actions (le hanno tolte)
+# va con il bot di telegram
+@app.route('/google_home', methods=['POST'])
+def google_home_da_google():
+    data = request.get_json().get('queryResult').get('parameters').get('canz')
+    print(data)
+    print("Richiesta di riproduzione su Google Home ricevuta")
+    global googleHome
+    if not googleHome:
+        print("Google Home non attivo, inizializzo...")
+        if lib.init_google_home():
+            googleHome = True
+        else:
+            return jsonify({"status": "error"}), 2
+
+    solo_tha = get_music().get('Tha Supreme', [])
+    canz = lib.geturlgoogle(data, solo_tha)
+    url = f"http://{IP}/Tha Supreme/{canz}"
+    print("URL da riprodurre:", url)
+    lib.playG(url)
+    return jsonify({"status": "success"}), 200
 
 @app.after_request
 def add_header(response):
