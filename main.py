@@ -108,6 +108,7 @@ def img():
 
     return send_from_directory(dir_img, nome_img)
 
+# TODO: aggiungi un coso per il pausa e riprendi con un altro request.form.get('cosa') con dentro play/pause/url(con direttamente l'url)
 @app.route('/google', methods=['POST'])
 def google_home_da_sito():
     print("Richiesta di riproduzione su Google Home ricevuta")
