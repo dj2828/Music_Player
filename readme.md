@@ -9,6 +9,10 @@ In config ci sono 2 tipi di config
 `{Nome cartella che vuoi che di legga}={Path cartella}`
 Es: `Tha Supreme=X:\canz\thasup`
 
+SCRIVERE QUESTO NEL FILE!!!
+
+`YouTube=MUSIC_FOLDER`
+
 `#{Indirizzo IP locale}` Es: `#192.168.1.8`
 
 ## Directory
