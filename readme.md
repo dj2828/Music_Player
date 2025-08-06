@@ -2,6 +2,7 @@
 # Music Player
 
 ## Config.txt
+crea `config.txt` nella root
 In config ci sono 2 tipi di config
 
 `{Nome cartella che vuoi che di legga}={Path cartella}`
