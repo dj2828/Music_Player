@@ -141,7 +141,7 @@ def google_home_da_google():
             return jsonify({"status": "error"}), 2
 
     solo_tha = get_music().get('Tha Supreme', [])
-    canz = lib.geturlgoogle(data, solo_tha)
+    canz = lib.getSimileCanz(data, solo_tha)
     url = f"http://{IP}/Tha Supreme/{canz}"
     print("URL da riprodurre:", url)
     lib.playG(url)
