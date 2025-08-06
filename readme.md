@@ -11,6 +11,7 @@ Es: `Tha Supreme=X:\canz\thasup`
 
 ## Directory
 Dove metti il server serve creare queste cartelle
+
 ![](https://github.com/dj2828/Music_Player/blob/be76a3c85a3f87b6e72067feaf1f4de53ee691e4/perIlReadme.png?raw=true)
 
 # Per startare
