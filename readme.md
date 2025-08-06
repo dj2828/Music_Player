@@ -25,3 +25,4 @@ su un cmd
 ```bash
 "C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -windowstyle hidden -ExecutionPolicy Bypass -command "python {PATH SERVER.py}"
 ```
+## [Link sulla porta 80](http://localhost)
