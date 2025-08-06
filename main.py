@@ -108,21 +108,28 @@ def img():
 
     return send_from_directory(dir_img, nome_img)
 
-# TODO: aggiungi un coso per il pausa e riprendi con un altro request.form.get('cosa') con dentro play/pause/url(con direttamente l'url)
 @app.route('/google', methods=['POST'])
 def google_home_da_sito():
-    print("Richiesta di riproduzione su Google Home ricevuta")
-    global googleHome
-    if not googleHome:
-        print("Google Home non attivo, inizializzo...")
-        if lib.init_google_home():
-            googleHome = True
-        else:
-            # return "Google Home non disponibile", 404
-            return redirect(url_for('errore'))
     url = request.form.get('url')
-    url = 'http://'+IP+url
-    lib.playG(url)
+    print("Richiesta di riproduzione su Google Home ricevuta con url:", url)
+    if url == 'play':
+        lib.playG('play')
+    elif url == 'pause':
+        lib.playG('pause')
+    elif url == 'init':
+        global googleHome
+        if not googleHome:
+            print("Google Home non attivo, inizializzo...")
+            if lib.init_google_home():
+                googleHome = True
+            else:
+                return "Google Home non disponibile", 404
+    elif url == 'stop':
+        lib.playG('stop')
+        googleHome = False
+    else:
+        url = 'http://'+IP+url
+        lib.playG(url)
     return "OK"
 
 # per il webhook di Dialogflow per Google Home actions (non va più, le hanno tolte)

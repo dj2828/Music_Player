@@ -43,7 +43,32 @@
         </div>
         </div>
 
+<!-- -------------------------------------------------------------- -->
+
+    {% for folder, songs in songs_by_folder.items() %}
+    <div class="cartella">
+        <div class="title">
+        <h2>{{ folder }}</h2>
+        <div onclick="playFolderRandom('{{ folder }}')" class="circle"><i class="fa-solid fa-shuffle"></i></div>
+        </div>
+        <div>
+        {% for song in songs %}
+            <button onclick='playSong("{{ folder }}/{{ song }}")' class="song">
+                <h3>{{ song.replace('.mp3', '') }}</h3>
+            </button>
+        {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+    </div>
     <script>
+        // Crea la playlist con tutte le canzoni (cartella e nome)
+        const playlist = [];
+        {% for folder, songs in songs_by_folder.items() %}
+            {% for song in songs %}
+                playlist.push({ folder: {{ folder|tojson }}, song: {{ song|tojson }} });
+            {% endfor %}
+        {% endfor %}
 
         let progress = document.getElementById('progress');
         let audioPlayer = document.getElementById('audioPlayer');
@@ -80,9 +105,19 @@
 
         function togglePlay(a) {
             if(ctrlIcon.classList.contains('fa-play') || a) {
+                if (googleHome) {
+                    googleHomeF('play');
+                    play(true);
+                    return;
+                }
                 audioPlayer.play();
                 play(true);
             } else {
+                if (googleHome) {
+                    googleHomeF('pause');
+                    play(false);
+                    return;
+                }
                 audioPlayer.pause();
                 play(false);
             }
@@ -111,36 +146,7 @@
                 togglePlay();
             }
         });
-    </script>
 
-<!-- -------------------------------------------------------------- -->
-
-    {% for folder, songs in songs_by_folder.items() %}
-    <div class="cartella">
-        <div class="title">
-        <h2>{{ folder }}</h2>
-        <div onclick="playFolderRandom('{{ folder }}')" class="circle"><i class="fa-solid fa-shuffle"></i></div>
-        </div>
-        <div>
-        {% for song in songs %}
-            <button onclick='playSong("{{ folder }}/{{ song }}")' class="song">
-                <h3>{{ song.replace('.mp3', '') }}</h3>
-            </button>
-        {% endfor %}
-        </div>
-    </div>
-    {% endfor %}
-    </div>
-    <script>
-        // Crea la playlist con tutte le canzoni (cartella e nome)
-        const playlist = [];
-        {% for folder, songs in songs_by_folder.items() %}
-            {% for song in songs %}
-                playlist.push({ folder: {{ folder|tojson }}, song: {{ song|tojson }} });
-            {% endfor %}
-        {% endfor %}
-    </script>
-    <script>
         let currentIndex = -1;
         let randomFolderPlaylist = null;
         let historyStack = [];
@@ -158,30 +164,8 @@
             const url = "{{ url_for('music', folder='FOLDER', filename='SONG') }}"
                 .replace('FOLDER', encodeURIComponent(folder))
                 .replace('SONG', encodeURIComponent(song));
-            if (googleHome) {
-                fetch("/google", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: "url=" + encodeURIComponent(url)
-                }).then(response => {
-                    if (response.status === 404) {
-                        window.location.href = "/errore?motivo=Google%20Home%20non%20trovato";
-                    }
-                });
-                return;
-            }
-            audioSource.src = url;
-            audioPlayer.load();
-            console.log('Playing song:', url);
-
             // Salva l'URL nel cookie
             setLastPlayedMp3Url(url);
-
-            if (playImmediately) {
-                togglePlay(true);
-            }
 
             // immagine
             const immagine = document.getElementById('cover');
@@ -227,6 +211,16 @@
                     });
                 }
             });
+
+            if (googleHome) {
+                play(true);
+                googleHomeF(url);
+            }else{
+                audioSource.src = url;
+                audioPlayer.load();
+                console.log('Playing song:', url);
+                if (playImmediately) togglePlay(true);
+            }
 
             // Trova l'indice della canzone nella playlist attuale
             let idx;
@@ -349,6 +343,21 @@
             console.log('Nessun mp3 trovato nel cookie.');
         }
 
+        function googleHomeF(url){
+            fetch("/google", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "url=" + encodeURIComponent(url)
+            }).then(response => {
+                if (response.status === 404) {
+                    window.location.href = "/errore?motivo=Google%20Home%20non%20trovato";
+                }
+            });
+            return;
+        }
+
     </script>
 
     <div id="menu" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
@@ -356,7 +365,7 @@
             <div onclick="openModal()" class="circle">
                 <i class="fa-solid fa-download"></i>
             </div>
-            <div onclick="if(googleHome){googleHome=false} else{googleHome=true; audioPlayer.pause(); play(false);}; closeMenu();" class="circle">
+            <div onclick="if(googleHome){googleHome=false; googleHomeF('stop'); play(false)} else{googleHomeF('init'); googleHome=true; audioPlayer.pause(); play(false);}; closeMenu();" class="circle">
                 <i class="fa-solid fa-wifi"></i>
             </div>
         </div>

@@ -1,12 +1,21 @@
 import pychromecast, os, yt_dlp, difflib
 
 def playG(url):
-    print("Riproduzione su Google Home:", url)
     mc = chromecast.media_controller
-    mc.play_media(url, "audio/mp3")
-    mc.block_until_active()
-    mc.play()
-    print('Ok')
+    if url == "play":
+        print("Play su Google Home")
+        mc.play()
+    elif url == "pause":
+        print("Pausa su Google Home")
+        mc.pause()
+    elif url == "stop":
+        print("Google Home stop")
+        mc.stop()
+    else:
+        print("Riproduzione su Google Home:", url)
+        mc.play_media(url, "audio/mp3")
+        mc.block_until_active()
+        mc.play()
     return
 
 def init_google_home():
