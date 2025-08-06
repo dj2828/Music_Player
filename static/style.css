@@ -45,7 +45,7 @@ nav{
   border-radius: 50%;
   color: #000000;
   /* background-color: #ffffff; */
-  border: 1.5px solid #000000;
+  border: 2px solid #000000;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
 
   display: flex;
@@ -101,7 +101,7 @@ nav{
   border-radius: 50%;
   color: #000000;
   /* background-color: #ffffff; */
-  border: 1.5px solid #000000;
+  border: 2px solid #000000;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
   cursor: pointer;
 
@@ -113,6 +113,7 @@ nav{
   transition: transform 0.3s;
 }
 .controls div:nth-child(2){
+  border: 1px solid #000000;
   transform: scale(1.5);
 }
 .controls div:hover {
