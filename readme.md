@@ -2,7 +2,7 @@
 # Music Player
 
 ## Config.txt
-crea `config.txt` nella root
+Crea `config.txt` nella root
 
 In config ci sono 2 tipi di config
 
