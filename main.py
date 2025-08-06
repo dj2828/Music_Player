@@ -122,9 +122,9 @@ def google_home_da_sito():
             print("Google Home non attivo, inizializzo...")
             if lib.init_google_home():
                 googleHome = True
-                return "Google Home attivo", 1
             else:
                 return "Google Home non disponibile", 404
+        return "Google Home attivo", 1
     elif url == 'stop':
         lib.playG('stop')
         googleHome = False
