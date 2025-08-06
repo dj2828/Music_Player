@@ -125,8 +125,8 @@ def google_home_da_sito():
     lib.playG(url)
     return "OK"
 
-# per il webhook di Dialogflow per Google Home actions (le hanno tolte)
-# va con il bot di telegram
+# per il webhook di Dialogflow per Google Home actions (non va più, le hanno tolte)
+# va con il bot di telegram (+/-)
 @app.route('/google_home', methods=['POST'])
 def google_home_da_google():
     data = request.get_json().get('queryResult').get('parameters').get('canz')
