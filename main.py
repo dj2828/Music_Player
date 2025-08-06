@@ -122,6 +122,7 @@ def google_home_da_sito():
             print("Google Home non attivo, inizializzo...")
             if lib.init_google_home():
                 googleHome = True
+                return "Google Home attivo", 1
             else:
                 return "Google Home non disponibile", 404
     elif url == 'stop':
@@ -134,6 +135,7 @@ def google_home_da_sito():
 
 # per il webhook di Dialogflow per Google Home actions (non va più, le hanno tolte)
 # va con il bot di telegram (+/-)
+# non puoi comandarlo dal sito perchè non ciho sbatta di farlo (basta coppiare google_home_da_sito())
 @app.route('/google_home', methods=['POST'])
 def google_home_da_google():
     data = request.get_json().get('queryResult').get('parameters').get('canz')

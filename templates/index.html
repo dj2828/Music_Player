@@ -351,6 +351,10 @@
                 },
                 body: "url=" + encodeURIComponent(url)
             }).then(response => {
+                if (response.status === 1) {
+                    closeMenu();
+                    alert("Google Home attivato");
+                }
                 if (response.status === 404) {
                     window.location.href = "/errore?motivo=Google%20Home%20non%20trovato";
                 }
@@ -365,7 +369,7 @@
             <div onclick="openModal()" class="circle">
                 <i class="fa-solid fa-download"></i>
             </div>
-            <div onclick="if(googleHome){googleHome=false; googleHomeF('stop'); play(false)} else{googleHomeF('init'); googleHome=true; audioPlayer.pause(); play(false);}; closeMenu();" class="circle">
+            <div onclick="if(googleHome){googleHome=false; googleHomeF('stop'); play(false)} else{googleHomeF('init'); googleHome=true; audioPlayer.pause(); play(false);};" class="circle">
                 <i class="fa-solid fa-wifi"></i>
             </div>
         </div>
