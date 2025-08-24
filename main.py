@@ -5,7 +5,6 @@ from mutagen.id3 import ID3, APIC
 import lib
 
 app = Flask(__name__)
-app.secret_key = "supersecret"  # Necessario per flash
 
 MUSIC_FOLDER = os.path.join('music')
 googleHome = False
