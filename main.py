@@ -45,13 +45,11 @@ def index():
 
 @app.route('/errore', methods=['GET'])
 def errore():
-    motivo = request.args.get("motivo", "Errore sconosciuto")
-    return render_template('404.html', motivo=motivo)
+    return render_template('404.html', motivo=request.args.get("motivo", "Errore sconosciuto"))
 
 @app.route('/down', methods=['POST'])
 def download():
-    url = request.form.get('yt_url')
-    if not url:
+    if not (url := request.form.get('yt_url')):
         flash("Nessun link o titolo inserito.")
         return redirect(url_for('index'))
 
@@ -67,8 +65,7 @@ def download():
 
 @app.route('/<folder>/<filename>')
 def music(folder, filename):
-    folder_path = MUSIC_FOLDERS.get(folder)
-    if folder_path:
+    if folder_path := MUSIC_FOLDERS.get(folder):
         return send_from_directory(folder_path, filename)
     else:
         return "Cartella non trovata", 404
@@ -128,8 +125,7 @@ def google_home_da_sito():
         lib.playG('stop')
         googleHome = False
     else:
-        url = 'http://'+IP+url
-        lib.playG(url)
+        lib.playG('http://'+IP+url)
     return "OK"
 
 # per il webhook di Dialogflow per Google Home actions (non va più, le hanno tolte)
