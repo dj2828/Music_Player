@@ -174,8 +174,6 @@ def google_home_da_google():
 def add_header(response):
     if request.path.endswith('.mp3'):
         response.headers['Cache-Control'] = 'public, max-age=86400'
-    elif request.path.endswith('.png'):
-        response.headers['Cache-Control'] = 'public, max-age=86400'
     return response
 
 if __name__ == '__main__':
