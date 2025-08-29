@@ -45,14 +45,13 @@ def get_music():
             songs_by_folder[folder_name] = []
     return songs_by_folder
 
-
-os.makedirs(YT_FOLDER, exist_ok=True)
-os.makedirs(os.path.join(COVER_FOLDER, "album"), exist_ok=True)
-
 DOCKER = os.getenv("DOCKER")
 YT_FOLDER = os.getenv("YT_FOLDER", os.path.join("music"))
 MUSIC_FOLDER = os.getenv("MUSIC_FOLDER", '')
 COVER_FOLDER = os.getenv("COVER_FOLDER", os.path.join("cover"))
+
+os.makedirs(YT_FOLDER, exist_ok=True)
+os.makedirs(os.path.join(COVER_FOLDER, "album"), exist_ok=True)
 
 MUSIC_FOLDERS = load_music_folders('config.txt')
 IP = ip('config.txt')
