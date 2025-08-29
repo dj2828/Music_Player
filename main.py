@@ -36,6 +36,9 @@ def get_music():
             songs_by_folder[folder_name] = []
     return songs_by_folder
 
+os.makedirs("music", exist_ok=True)
+os.makedirs("cover/album", exist_ok=True)
+
 MUSIC_FOLDERS = load_music_folders('config.txt')
 IP = ip('config.txt')
 
