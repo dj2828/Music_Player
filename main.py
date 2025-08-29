@@ -4,10 +4,19 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
 import lib
 
-app = Flask(__name__)
 
-MUSIC_FOLDER = os.path.join('music')
-googleHome = False
+app = Flask(__name__)
+app.secret_key = "S4Ss0"
+
+try:
+    DOCKER = os.getenv("DOCKER")
+    YT_FOLDER = os.getenv("YT_FOLDER")
+    MUSIC_FOLDER = os.getenv("MUSIC_FOLDER")
+    COVER_FOLDER = os.getenv("COVER_FOLDER")
+except:
+    DOCKER = False
+    YT_FOLDER = "music"
+    COVER_FOLDER = "cover"
 
 def ip(path_txt):
     with open(path_txt, 'r', encoding='utf-8') as file:
@@ -16,15 +25,22 @@ def ip(path_txt):
                 return line[1:]
 def load_music_folders(path_txt):
     music_folders = {}
-    with open(path_txt, 'r', encoding='utf-8') as file:
-        for line in file:
-            if '=' in line:
-                key, value = line.strip().split('=', 1)
-                value = value.strip()
-                # Se vuoi risolvere simboli speciali tipo MUSIC_FOLDER come variabile Python
-                if value == 'MUSIC_FOLDER':
-                    value = MUSIC_FOLDER  # Assicurati che questa variabile sia definita altrove
-                music_folders[key.strip()] = value
+    if not DOCKER:
+        with open(path_txt, 'r', encoding='utf-8') as file:
+            for line in file:
+                if '=' in line:
+                    key, value = line.strip().split('=', 1)
+                    value = value.strip()
+                    # Se vuoi risolvere simboli speciali tipo YT_FOLDER come variabile Python
+                    if value == 'YT_FOLDER':
+                        value = YT_FOLDER  # Assicurati che questa variabile sia definita altrove
+                    music_folders[key.strip()] = value
+    else:
+        for root, dirs, files in os.walk(MUSIC_FOLDER):
+            for d in dirs:
+                full_path = os.path.join(root, d)
+                music_folders[d] = full_path
+        music_folders["YouTube"] = YT_FOLDER
     return music_folders
 def get_music():
     songs_by_folder = {}
@@ -36,11 +52,13 @@ def get_music():
             songs_by_folder[folder_name] = []
     return songs_by_folder
 
-os.makedirs("music", exist_ok=True)
-os.makedirs("cover/album", exist_ok=True)
+
+os.makedirs(YT_FOLDER, exist_ok=True)
+os.makedirs(os.path.join(COVER_FOLDER, "album"), exist_ok=True)
 
 MUSIC_FOLDERS = load_music_folders('config.txt')
 IP = ip('config.txt')
+googleHome = False
 
 @app.route('/', methods=['GET'])
 def index():
@@ -60,7 +78,7 @@ def download():
     if not (url.startswith("http://") or url.startswith("https://")):
         url = f"ytsearch1:{url}"
 
-    if lib.down(url, MUSIC_FOLDER):
+    if lib.down(url, YT_FOLDER):
         flash("Download completato!")
     else:
         flash(f"Errore")
@@ -84,11 +102,11 @@ def img():
 
     if album:
         album_name = album.text[0].strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
-        img_path = os.path.join("cover", "album", f"{album_name}.png")
+        img_path = os.path.join(COVER_FOLDER, "album", f"{album_name}.png")
         nome_img = f'{album_name}.png'
-        dir_img = os.path.join("cover", "album")
+        dir_img = os.path.join(COVER_FOLDER, "album")
     else:
-        img_path = os.path.join("cover", f"{filename}.png")
+        img_path = os.path.join(COVER_FOLDER, f"{filename}.png")
         nome_img = f'{filename}.png'
         dir_img = "cover"
 

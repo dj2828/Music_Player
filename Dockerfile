@@ -1,8 +1,11 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3-slim
+FROM python:3-alpine
+
+# Alpine usa 'apk' come package manager
+RUN apk update && \
+    apk add --no-cache ffmpeg
 
 # Warning: A port below 1024 has been exposed. This requires the image to run as a root user which is not a best practice.
-# For more information, please refer to https://aka.ms/vscode-docker-python-user-rights`
+# For more information, please refer to https://aka.ms/vscode-docker-python-user-rights
 EXPOSE 80
 
 # Keeps Python from generating .pyc files in the container
@@ -14,6 +17,7 @@ ENV PYTHONUNBUFFERED=1
 # Install pip requirements
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
+RUN pip install gunicorn
 
 WORKDIR /app
 COPY . /app

@@ -26,8 +26,13 @@
 LICENSE
 README.md
 
-cover/
-music/
-server.py
-perIlReadme.png
-auto_start_music_server.bat
+# Esclude tutto
+*
+
+# Ma include
+!templates/
+!static/
+!main.py
+!lib.py
+!requirements.txt
+!config.txt
