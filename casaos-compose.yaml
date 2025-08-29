@@ -6,6 +6,10 @@ services:
       dockerfile: ./Dockerfile
     ports:
       - 5000:80
+    networks:
+      bridge:
+        name: bridge
+        external: true
     volumes:
       - /DATA/AppData/music_player:/app/data
       - /DATA/Media/Music:/app/music
