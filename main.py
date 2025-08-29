@@ -10,12 +10,13 @@ app.secret_key = "S4Ss0"
 
 
 def ip(path_txt):
-    if not DOCKER:
+    if DOCKER:
         return os.getenv("IP", "0.0.0.0")
-    with open(path_txt, 'r', encoding='utf-8') as file:
-        for line in file:
-            if line.startswith('#'):
-                return line[1:]
+    else:
+        with open(path_txt, 'r', encoding='utf-8') as file:
+            for line in file:
+                if line.startswith('#'):
+                    return line[1:]
 def load_music_folders(path_txt):
     music_folders = {}
     if not DOCKER:
