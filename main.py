@@ -108,7 +108,7 @@ def img():
     else:
         img_path = os.path.join(COVER_FOLDER, f"{filename}.png")
         nome_img = f'{filename}.png'
-        dir_img = "cover"
+        dir_img = os.path.join(COVER_FOLDER)
 
     if not os.path.exists(img_path):
         for tag in audio.tags.values():

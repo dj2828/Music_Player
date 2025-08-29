@@ -1,13 +1,13 @@
 services:
-  musicplayer:
-    image: musicplayer
+  music_player:
+    image: music_player
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
       - 80:80
     volumes:
-      - music_server:/app/data
+      - data:/app/data
       - ./import_docker:/app/data/music
     environment:
       - DOCKER=True
@@ -15,4 +15,4 @@ services:
       - MUSIC_FOLDER=/app/data/music
       - COVER_FOLDER=/app/data/cover
 volumes:
-  music_server:
+  data:
