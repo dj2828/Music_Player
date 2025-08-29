@@ -1,6 +1,6 @@
 services:
   music_player:
-    image: music_player
+    image: dj2828/music_player:latest
     build:
       context: .
       dockerfile: ./Dockerfile
