@@ -8,7 +8,7 @@ services:
       - 5000:80
     volumes:
       - /DATA/AppData/music_player:/app/data
-      - ./import_docker:/app/music
+      - /DATA/Media/Music:/app/music
     environment:
       - DOCKER=True
       - YT_FOLDER=/app/data/yt
