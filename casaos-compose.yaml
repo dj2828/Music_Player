@@ -7,8 +7,7 @@ services:
     ports:
       - 5000:80
     networks:
-      bridge:
-        name: bridge
+      bridge
     volumes:
       - /DATA/AppData/music_player:/app/data
       - /DATA/Media/Music:/app/music
