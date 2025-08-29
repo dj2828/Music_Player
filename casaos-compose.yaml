@@ -7,7 +7,7 @@ services:
     ports:
       - 5000:80
     volumes:
-      - data:/app/data
+      - /DATA/AppData/music_player:/app/data
       - ./import_docker:/app/music
     environment:
       - DOCKER=True
