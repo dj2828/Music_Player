@@ -8,15 +8,16 @@ import lib
 app = Flask(__name__)
 app.secret_key = "S4Ss0"
 
-try:
-    DOCKER = os.getenv("DOCKER")
+if DOCKER := os.getenv("DOCKER"):
+    print("Variabili d'ambiente trovate, uso valori personalizzati.")
     YT_FOLDER = os.getenv("YT_FOLDER")
     MUSIC_FOLDER = os.getenv("MUSIC_FOLDER")
     COVER_FOLDER = os.getenv("COVER_FOLDER")
-except:
+else:
+    print("Variabili d'ambiente non trovate, uso valori di default.")
     DOCKER = False
-    YT_FOLDER = "music"
-    COVER_FOLDER = "cover"
+    YT_FOLDER = os.path.join("music")
+    COVER_FOLDER = os.path.join("cover")
 
 def ip(path_txt):
     with open(path_txt, 'r', encoding='utf-8') as file:
@@ -52,7 +53,7 @@ def get_music():
             songs_by_folder[folder_name] = []
     return songs_by_folder
 
-
+print(YT_FOLDER)
 os.makedirs(YT_FOLDER, exist_ok=True)
 os.makedirs(os.path.join(COVER_FOLDER, "album"), exist_ok=True)
 
