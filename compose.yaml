@@ -12,7 +12,7 @@ services:
     environment:
       - DOCKER=True
       - YT_FOLDER=/app/data/yt
-      - MUSIC_FOLDER=/app/data/music
+      - MUSIC_FOLDER=/app/music
       - COVER_FOLDER=/app/data/cover
 volumes:
   data:
