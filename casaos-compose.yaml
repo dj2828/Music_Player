@@ -9,7 +9,6 @@ services:
     networks:
       bridge:
         name: bridge
-        external: true
     volumes:
       - /DATA/AppData/music_player:/app/data
       - /DATA/Media/Music:/app/music
