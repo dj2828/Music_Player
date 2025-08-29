@@ -13,4 +13,6 @@ jobs:
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag dj2828/music_player:latest
     - name: Push the Docker image
-      run: docker push dj2828/music_player:latest
+      run: |
+        docker login -u dj2828 -p ${{ secrets.DOCKER_HUB_TOKEN }}
+        docker push dj2828/music_player:latest
