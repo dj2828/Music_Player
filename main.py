@@ -1,5 +1,6 @@
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, flash, jsonify
 import os
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
 import lib
