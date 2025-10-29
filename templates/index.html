@@ -418,6 +418,84 @@
     document.getElementById('menu').addEventListener('click', function(e) {
         if (e.target === this) closeMenu();
     });
+
+
+    // offline popup + controllo disponibilità server
+    // popup HTML (verrà mostrato quando il server non risponde)
+    const offlinePopupHtml = `
+    <div id="offlinePopup" style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100vw; height:100vh; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
+        <div style="background:#222; color:#fff; padding:20px; border-radius:8px; min-width:300px; text-align:center;">
+            <h3 id="offlineTitle">Server non raggiungibile</h3>
+            <p id="offlineMsg">Sto tentando di riconnettere...</p>
+            <button id="offlineRetry" class="song" style="margin-top:12px;">Riprova ora</button>
+        </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', offlinePopupHtml);
+
+    // Funzione di controllo ping con backoff esponenziale
+    (function() {
+        const offlinePopup = document.getElementById('offlinePopup');
+        const offlineMsg = document.getElementById('offlineMsg');
+        const offlineRetry = document.getElementById('offlineRetry');
+        let isOffline = false;
+        let retryDelay = 2000; // ms
+        const maxDelay = 60000; // ms
+        let retryTimer = null;
+
+        async function doPing() {
+            try {
+                const resp = await fetch('/ping?ts=' + Date.now(), { cache: 'no-store' });
+                if (resp && resp.ok) {
+                    if (isOffline) {
+                        // Torna online: nascondi popup e ricarica per sincronizzare lo stato
+                        isOffline = false;
+                        offlinePopup.style.display = 'none';
+                        retryDelay = 2000;
+                        console.log('Server online di nuovo. Ricarico per sincronizzare.');
+                        // ricarica la pagina per ristabilire lo stato (caricare risorse dal server)
+                        window.location.reload();
+                    }
+                    return true;
+                }
+            } catch (err) {
+                // errore di rete
+            }
+            // Se arriviamo qui, ping fallito
+            if (!isOffline) {
+                isOffline = true;
+                offlinePopup.style.display = 'flex';
+            }
+            offlineMsg.textContent = 'Tentativo di riconnessione in corso... Prossimo tentativo fra ' + (retryDelay/1000) + 's';
+            // programma il prossimo tentativo con backoff esponenziale
+            clearTimeout(retryTimer);
+            retryTimer = setTimeout(() => {
+                // aumenta delay per il prossimo tentativo
+                retryDelay = Math.min(maxDelay, retryDelay * 2);
+                doPing();
+            }, retryDelay);
+            return false;
+        }
+
+        // Retry manuale
+        document.getElementById('offlineRetry').addEventListener('click', () => {
+            retryDelay = 2000;
+            clearTimeout(retryTimer);
+            doPing();
+        });
+
+        // Controllo iniziale e poi controllo periodico (se online)
+        doPing();
+        setInterval(() => {
+            if (!isOffline) doPing();
+        }, 10000);
+    })();
+
+    // service worker per la cache in offline (usa la route /sw fornita dal server)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw')
+        .then(() => console.log('Service worker registrato'))
+        .catch(err => console.error('Errore registrazione service worker:', err));
+    }
     </script>
 
 </body>

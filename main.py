@@ -171,6 +171,18 @@ def google_home_da_google():
     lib.playG(url)
     return jsonify({"status": "success"}), 200
 
+@app.route('/sw')
+def sw():
+    return send_from_directory('static', 'sw.js')
+
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    """Endpoint leggero per verificare se il server è raggiungibile dal client.
+    Restituisce JSON semplice e può essere richiamato frequentemente dal client.
+    """
+    return jsonify({"status": "ok"}), 200
+
 @app.after_request
 def add_header(response):
     if request.path.endswith('.mp3'):

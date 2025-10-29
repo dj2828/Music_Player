@@ -264,3 +264,27 @@ nav{
     max-width: 300px;
   }
 }
+
+/* Stili per il popup offline */
+#offlinePopup{
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+#offlinePopup .song{
+  padding: 8px 14px;
+  border-radius: 8px;
+  background-color: #ff5500;
+  color: #000;
+  border: none;
+  cursor: pointer;
+}
+
+#offlinePopup h3{
+  margin-bottom: 6px;
+}
+
+#offlinePopup p{
+  margin-top: 6px;
+}
