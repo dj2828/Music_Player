@@ -10,7 +10,6 @@ services:
       - data:/app/data
       - ./import_docker:/app/music
     environment:
-      - IP=
       - DOCKER=True
       - YT_FOLDER=/app/data/yt
       - MUSIC_FOLDER=/app/music
