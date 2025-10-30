@@ -10,6 +10,7 @@ services:
       - /DATA/AppData/music_player:/app/data
       - /DATA/Media/Music:/app/music
     environment:
+      - IP=:5000
       - DOCKER=True
       - YT_FOLDER=/app/data/yt
       - MUSIC_FOLDER=/app/music
