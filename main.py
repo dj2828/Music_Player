@@ -175,7 +175,6 @@ def google_home_da_google():
 def sw():
     return send_from_directory('static', 'sw.js')
 
-
 @app.route('/ping', methods=['GET'])
 def ping():
     """Endpoint leggero per verificare se il server è raggiungibile dal client.
