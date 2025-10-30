@@ -1,5 +1,5 @@
 const CACHE_NAME = 'offline-cache-v1';
-const URLS_TO_CACHE = ['./', './index.html', './index.css', './index.js', 'https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap'];
+const URLS_TO_CACHE = ['./', './static/style.css', 'https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
