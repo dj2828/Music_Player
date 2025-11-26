@@ -47,6 +47,7 @@ nav{
   /* background-color: #ffffff; */
   border: 2px solid #000000;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
+  cursor: pointer;
 
   display: flex;
   align-items: center;
