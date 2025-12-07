@@ -262,7 +262,7 @@ nav{
     width: calc(100% - 200px);
   }
   .cover{
-    max-width: 300px;
+    max-width: 255px;
   }
 }
 
