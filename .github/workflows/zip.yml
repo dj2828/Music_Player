@@ -1,0 +1,46 @@
+name: Zip
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Create zip
+      run: |
+        zip -qq -r Music_player.zip static templates lib.py main.py README.md requirements.txt server.py
+
+    - name: Create release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_upt }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          SASSO
+        draft: true
+        prerelease: false
+
+    - name: Upload release asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_upt }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./Music_player.zip
+        asset_name: Music_player.zip
+        asset_content_type: application/zip
+
+    - name: Publish release
+      uses: StuYarrow/publish-release@v1.1.2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN_upt }}
+      with:
+        id: ${{ steps.create_release.outputs.id }}
