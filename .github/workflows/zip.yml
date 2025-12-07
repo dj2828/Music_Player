@@ -62,3 +62,44 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.upt }}
       with:
         id: ${{ steps.create_release.outputs.id }}
+
+    - name: Create release on target repo
+      id: create_remote_release
+      env:
+        TARGET_OWNER: dj2828            # sostituisci con l'owner target o usa secret
+        TARGET_REPO: aggiorna-dj              # sostituisci con il repo target o usa secret
+        TARGET_TOKEN: ${{ secrets.TARGET_REPO_PAT }}
+      run: |
+        TAG=v${{ github.run_number }}
+        echo "Creating release $TAG on $TARGET_OWNER/$TARGET_REPO"
+        RESP=$(curl -s -X POST \
+          -H "Authorization: token $TARGET_TOKEN" \
+          -H "Accept: application/vnd.github+json" \
+          "https://api.github.com/repos/$TARGET_OWNER/$TARGET_REPO/releases" \
+          -d "{\"tag_name\":\"$TAG\",\"name\":\"Release $TAG\",\"body\":\"SASSO\",\"draft\":true,\"prerelease\":false}")
+        echo "$RESP" > release_response.json
+        UPLOAD_URL=$(python - <<'PY'
+import sys, json
+r=json.load(sys.stdin)
+print(r.get('upload_url','').split('{')[0])
+PY
+<<<"$RESP")
+        if [ -z "$UPLOAD_URL" ] || [ "$UPLOAD_URL" = "null" ]; then
+          echo "Failed to create release. Response:"
+          cat release_response.json
+          exit 1
+        fi
+        echo "upload_url=$UPLOAD_URL" >> $GITHUB_OUTPUT
+
+    - name: Upload asset to target release
+      env:
+        TARGET_TOKEN: ${{ secrets.TARGET_REPO_PAT }}
+      run: |
+        UPLOAD_URL="${{ steps.create_remote_release.outputs.upload_url }}"
+        echo "Uploading Music_player.zip to $UPLOAD_URL"
+        curl -s --fail -X POST \
+          -H "Authorization: token $TARGET_TOKEN" \
+          -H "Content-Type: application/zip" \
+          --data-binary @Music_player.zip "${UPLOAD_URL}?name=Music_player.zip" \
+          >/tmp/upload_response.json
+        cat /tmp/upload_response.json
