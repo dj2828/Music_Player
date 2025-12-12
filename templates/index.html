@@ -22,8 +22,11 @@
             <div onclick="openMenu()" class="circle">
                 <i class="fa-solid fa-bars"></i>
             </div>
-            <div onclick="window.location.reload()" class="circle">
-                <i class="fa-solid fa-rotate-right"></i>
+            <div id="divol">
+                <input type="range" value="100" id="volumeslider">
+                <div onclick="vol()" class="circle" id="volume">
+                    <i class="fa-solid fa-volume-low"></i>
+                </div>
             </div>
         </nav>
         <h1 id="titolo">TITOLO</h1>
@@ -136,6 +139,21 @@
             }
             audioPlayer.currentTime = progress.value;
         };
+
+        document.getElementById('volumeslider').oninput = function() {
+            audioPlayer.volume = document.getElementById('volumeslider').value / 100;
+        };
+
+        function vol() {
+            const volumeSlider = document.getElementById('volumeslider');
+            if (audioPlayer.volume != 20/100) {
+                volumeSlider.value = 20;
+                audioPlayer.volume = 20 / 100;
+            } else {
+                volumeSlider.value = 100;
+                audioPlayer.volume = 1;
+            }
+        }
 
         window.addEventListener('keydown', function(e) {
             if (
@@ -371,6 +389,9 @@
             </div>
             <div onclick="if(googleHome){googleHome=false; googleHomeF('stop'); play(false); closeMenu()} else{googleHomeF('init'); googleHome=true; audioPlayer.pause(); play(false);};" class="circle">
                 <i class="fa-solid fa-wifi"></i>
+            </div>
+            <div onclick="window.location.reload()" class="circle">
+                <i class="fa-solid fa-rotate-right"></i>
             </div>
         </div>
     </div>
