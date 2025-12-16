@@ -14,5 +14,3 @@ services:
       - YT_FOLDER=/app/data/yt
       - MUSIC_FOLDER=/app/music
       - COVER_FOLDER=/app/data/cover
-volumes:
-  data:
