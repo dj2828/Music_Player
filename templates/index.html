@@ -48,28 +48,40 @@
 
 <!-- -------------------------------------------------------------- -->
 
-    {% for folder, songs in songs_by_folder.items() %}
+    {% for folder, albums in songs_by_folder.items() %}
     <div class="cartella">
         <div class="title">
-        <h2>{{ folder }}</h2>
-        <div onclick="playFolderRandom('{{ folder }}')" class="circle"><i class="fa-solid fa-shuffle"></i></div>
+            <h2>{{ folder }}</h2>
+            <div onclick="playFolderRandom('{{ folder }}')" class="circle"><i class="fa-solid fa-shuffle"></i></div>
         </div>
-        <div>
-        {% for song in songs %}
-            <button onclick='playSong("{{ folder }}/{{ song }}")' class="song">
-                <h3>{{ song.replace('.mp3', '') }}</h3>
-            </button>
+        
+        {% for album_name, songs in albums.items() %}
+            <div class="album-container">
+                <h3 class="album-title {{ 'singoli-title' if album_name == 'Brani Singoli' else '' }}">
+                    {% if album_name != 'Brani Singoli' %}<i class="fa-solid fa-compact-disc"></i> {% endif %}
+                    {{ album_name }}
+                </h3>
+                
+                <div>
+                {% for song in songs %}
+                    <button onclick='playSong("{{ folder }}/{{ song }}")' class="song">
+                        <h3>{{ song.replace('.mp3', '') }}</h3>
+                    </button>
+                {% endfor %}
+                </div>
+            </div>
         {% endfor %}
-        </div>
     </div>
     {% endfor %}
     </div>
     <script>
         // Crea la playlist con tutte le canzoni (cartella e nome)
         const playlist = [];
-        {% for folder, songs in songs_by_folder.items() %}
-            {% for song in songs %}
-                playlist.push({ folder: {{ folder|tojson }}, song: {{ song|tojson }} });
+        {% for folder, albums in songs_by_folder.items() %}
+            {% for album_name, songs in albums.items() %}
+                {% for song in songs %}
+                    playlist.push({ folder: {{ folder|tojson }}, song: {{ song|tojson }} });
+                {% endfor %}
             {% endfor %}
         {% endfor %}
 

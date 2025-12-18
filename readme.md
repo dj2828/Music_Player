@@ -4,7 +4,7 @@
 ## Config.txt
 Crea `config.txt` nella root
 
-In config ci sono 2 tipi di config
+In config ci sono 3 tipi di config
 
 `{Nome cartella che vuoi che di legga}={Path cartella}`
 Es: `Tha Supreme=X:\canz\thasup`
@@ -12,6 +12,8 @@ Es: `Tha Supreme=X:\canz\thasup`
 NON CANCELLATE `YouTube=MUSIC_FOLDER`
 
 `#{Indirizzo IP locale}` Es: `#192.168.1.8`
+
+`ALBUM_ORDER={Ordine album}` Es: `ALBUM_ORDER=23 645, Blu Celeste, Sirio`
 
 ## Directory
 Dove metti il server serve creare queste cartelle

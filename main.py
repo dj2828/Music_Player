@@ -9,7 +9,6 @@ import lib
 app = Flask(__name__)
 app.secret_key = "S4Ss0"
 
-
 def ip(path_txt):
     if DOCKER:
         return os.getenv("IP", "0.0.0.0")
@@ -19,18 +18,27 @@ def ip(path_txt):
                 if line.startswith('#'):
                     return line[1:]
 def load_music_folders(path_txt):
+    global ALBUM_ORDER
     music_folders = {}
     if not DOCKER:
-        with open(path_txt, 'r', encoding='utf-8') as file:
-            for line in file:
-                if '=' in line:
-                    key, value = line.strip().split('=', 1)
-                    value = value.strip()
-                    # Se vuoi risolvere simboli speciali tipo YT_FOLDER come variabile Python
-                    if value == 'YT_FOLDER':
-                        value = YT_FOLDER  # Assicurati che questa variabile sia definita altrove
-                    music_folders[key.strip()] = value
+        if os.path.exists(path_txt):
+            with open(path_txt, 'r', encoding='utf-8') as file:
+                for line in file:
+                    if '=' in line:
+                        key, value = line.strip().split('=', 1)
+                        key = key.strip()
+                        value = value.strip()
+                        
+                        # Gestione specifica per l'ordine degli album
+                        if key == 'ALBUM_ORDER':
+                            ALBUM_ORDER = [a.strip() for a in value.split(',')]
+                            continue
+                            
+                        if value == 'YT_FOLDER':
+                            value = YT_FOLDER
+                        music_folders[key] = value
     else:
+        # Logica Docker esistente
         for root, dirs, files in os.walk(MUSIC_FOLDER):
             for d in dirs:
                 full_path = os.path.join(root, d)
@@ -41,11 +49,68 @@ def get_music():
     songs_by_folder = {}
     for folder_name, folder_path in MUSIC_FOLDERS.items():
         if os.path.exists(folder_path):
+            temp_albums = {}
             songs = [f for f in os.listdir(folder_path) if f.lower().endswith('.mp3')]
-            songs_by_folder[folder_name] = songs
+            
+            for filename in songs:
+                nome_album = album(folder_name, filename) # Usa la tua funzione ID3
+                if not nome_album:
+                    nome_album = "_SCONOSCIUTO_"
+                
+                if nome_album not in temp_albums:
+                    temp_albums[nome_album] = []
+                temp_albums[nome_album].append(filename)
+
+            # --- LOGICA DI ORDINAMENTO ---
+            # Prendiamo tutti i nomi degli album trovati
+            album_trovati = list(temp_albums.keys())
+            
+            # Funzione di ordinamento: 
+            # 1. Se l'album è in ALBUM_ORDER, usa la sua posizione nella lista.
+            # 2. Se non c'è, mettilo dopo (indice alto).
+            # 3. "_SCONOSCIUTO_" va sempre per ultimo.
+            def sort_logic(name):
+                if name == "_SCONOSCIUTO_":
+                    return 9999
+                try:
+                    return ALBUM_ORDER.index(name)
+                except ValueError:
+                    return 8888 + album_trovati.index(name)
+
+            album_ordinati = sorted(album_trovati, key=sort_logic)
+
+            final_structure = {}
+            brani_singoli = []
+
+            for nome_alb in album_ordinati:
+                tracce = temp_albums[nome_alb]
+                # Se è un album reale (>1 traccia) e non è lo sconosciuto
+                if nome_alb != "_SCONOSCIUTO_" and len(tracce) > 1:
+                    final_structure[nome_alb] = tracce
+                else:
+                    brani_singoli.extend(tracce)
+
+            if brani_singoli:
+                final_structure["Brani Singoli"] = brani_singoli
+            
+            songs_by_folder[folder_name] = final_structure
         else:
-            songs_by_folder[folder_name] = []
+            songs_by_folder[folder_name] = {}
+            
     return songs_by_folder
+def album(folder, filename):
+    folder_path = MUSIC_FOLDERS.get(folder)
+    mp3_path = os.path.join(folder_path, filename)
+    audio = MP3(mp3_path, ID3=ID3)
+    album = audio.get("TALB")
+
+    if album:
+        album_name = album.text[0].strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
+        
+    else:
+        album_name = None
+
+    return album_name
 
 DOCKER = os.getenv("DOCKER")
 YT_FOLDER = os.getenv("YT_FOLDER", os.path.join("music"))
@@ -56,9 +121,11 @@ os.makedirs(YT_FOLDER, exist_ok=True)
 os.makedirs(os.path.join(COVER_FOLDER, "album"), exist_ok=True)
 if not os.path.exists('config.txt'): os.system('echo YouTube=YT_FOLDER > config.txt')
 
+ALBUM_ORDER = []
 MUSIC_FOLDERS = load_music_folders('config.txt')
 IP = ip('config.txt')
 googleHome = False
+
 
 @app.route('/', methods=['GET'])
 def index():
