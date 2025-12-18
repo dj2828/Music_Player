@@ -54,7 +54,7 @@ COVER_FOLDER = os.getenv("COVER_FOLDER", os.path.join("cover"))
 
 os.makedirs(YT_FOLDER, exist_ok=True)
 os.makedirs(os.path.join(COVER_FOLDER, "album"), exist_ok=True)
-if not os.path.exists('config.txt'): os.system('echo YouTube=MUSIC_FOLDER > config.txt')
+if not os.path.exists('config.txt'): os.system('echo YouTube=YT_FOLDER > config.txt')
 
 MUSIC_FOLDERS = load_music_folders('config.txt')
 IP = ip('config.txt')
