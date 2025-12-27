@@ -44,7 +44,8 @@ def load_music_folders(path_txt):
                 full_path = os.path.join(root, d)
                 music_folders[d] = full_path
         music_folders["YouTube"] = YT_FOLDER
-        ALBUM_ORDER = [a.strip() for a in os.getenv("ALBUM_ORDER", "").split("=")[1].split(',')]
+        valueA = os.getenv("ALBUM_ORDER", "").split('=')[1]
+        ALBUM_ORDER = [a.strip() for a in valueA.split(',')]
     return music_folders
 def get_music():
     songs_by_folder = {}
