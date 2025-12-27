@@ -14,3 +14,4 @@ services:
       - YT_FOLDER=/app/data/yt
       - MUSIC_FOLDER=/app/music
       - COVER_FOLDER=/app/data/cover
+      - ALBUM_ORDER=23 6451, c@ra++ere spec!@le, sFaCioLaTe miXTaPe, CASA GOSPEL
