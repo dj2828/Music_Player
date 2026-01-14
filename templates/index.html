@@ -247,6 +247,7 @@
                 googleHomeF(url);
             }else{
                 audioSource.src = url;
+                audioPlayer.load();
                 console.log('Playing song:', url);
                 if (playImmediately) togglePlay(true);
             }
