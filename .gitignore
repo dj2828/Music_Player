@@ -3,4 +3,4 @@
 config.txt
 /__pycache__
 /import_docker
-/output
+/dist
