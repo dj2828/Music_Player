@@ -10,26 +10,52 @@ from flask import render_template
 def mini():
     return render_template('mini.html')
 
+class ApiBridge:
+    def __init__(self):
+        self.data_storage = {}
 
+    def prevSong(self):
+        main_window.evaluate_js("prevSong()")
+    def togglePlay(self):
+        main_window.evaluate_js("togglePlay()")
+    def nextSong(self):
+        main_window.evaluate_js("nextSong()")
+    
+    def setPlay(self, value):
+        self.data_storage["play"] = value
+        mini_window.evaluate_js(f"play('{value}')")
+    def setSong(self, url, titolo, cartella):
+        self.data_storage["url"] = url
+        self.data_storage["titolo"] = titolo
+        self.data_storage["cartella"] = cartella
+        mini_window.evaluate_js(f"save('{api.data_storage.get("play")}',  '{api.data_storage.get("url")}', '{api.data_storage.get("titolo")}', '{api.data_storage.get("cartella")}')")
 
 main_window = None
 mini_window = None
+api = ApiBridge()
 def crea_window():
     global main_window, mini_window
-    main_window = webview.create_window("Music_player", "http://127.0.0.1:5000", width=500, height=700)
+    main_window = webview.create_window("Music_player", "http://127.0.0.1:5000", width=500, height=700, js_api=api)
     main_window.events.minimized += on_window_minimized
+    main_window.events.closing += on_window_closed
 
-    mini_window = webview.create_window("Mini_player", "http://127.0.0.1:5000/mini", width=365, height=170, frameless=True)
+    mini_window = webview.create_window("Mini_player", "http://127.0.0.1:5000/mini", width=365, height=170, frameless=True, js_api=api, hidden=True, x=1550, y=940)
     webview.start()
 
 def run_flask():
     # Avvia Flask in modalità silenziosa (senza il debugger che creerebbe conflitti)
-    app.run(host='127.0.0.1', port=5000, debug=False, use_reloader=False)
+    app.run(host='127.0.0.1', port=5000, debug=False)
 
 def on_window_minimized():
     # Invece di chiudere, nascondiamo la finestra
     main_window.hide()
+    mini_window.evaluate_js(f"save('{api.data_storage.get("play", True)}',  '{api.data_storage.get("url")}', '{api.data_storage.get("titolo")}', '{api.data_storage.get("cartella")}')")
+    mini_window.show()
     # Ritorna False per impedire la distruzione effettiva della finestra
+    return False
+
+def on_window_closed():
+    main_window.hide()
     return False
 
 # --- GESTIONE SYSTEM TRAY (ICONA) ---
@@ -39,6 +65,7 @@ def on_quit(icon, item):
     os._exit(0)
 def open(icon, item):
     if main_window:
+        mini_window.hide()
         main_window.show()
         main_window.restore()
 

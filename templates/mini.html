@@ -21,12 +21,55 @@
             </div>
 
             <div class="controls">
-                <div onclick="prevSong()"><i class="fa-solid fa-backward"></i></div>
-                <div onclick="togglePlay()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
-                <div onclick="nextSong()"><i class="fa-solid fa-forward"></i></div>
+                <div onclick="javascript:pywebview.api.prevSong()"><i class="fa-solid fa-backward"></i></div>
+                <div onclick="javascript:pywebview.api.togglePlay()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
+                <div onclick="javascript:pywebview.api.nextSong()"><i class="fa-solid fa-forward"></i></div>
             </div>
         </div>
         </div>
+
+    <script>
+        function save(play_, titolo, cartella){
+            play(play_);
+            carica(titolo, cartella);
+        }
+
+        let ctrlIcon = document.getElementById('ctrlIcon');
+        function play(a){
+            if(a==="True"){
+                ctrlIcon.classList.remove('fa-play');
+                ctrlIcon.classList.add('fa-pause');
+            } else {
+                ctrlIcon.classList.remove('fa-pause');
+                ctrlIcon.classList.add('fa-play');
+            }
+        }
+
+        function carica(songPath, titolo, cartella){
+            document.getElementById('titolo').textContent = titolo;
+            document.getElementById('cartella').textContent = cartella;
+
+            const [folder, song] = songPath.split('/');
+
+            // immagine
+            const immagine = document.getElementById('cover');
+            let img = `/img?folder=${encodeURIComponent(folder)}&filename=${encodeURIComponent(song)}`;
+            fetch(img)
+                .then(response => {
+                    if (response.status === 404) {
+                        immagine.src = "/static/IO.png";
+                        return null;
+                    } else {
+                        return response.blob();
+                    }
+                })
+                .then(blob => {
+                    if (blob) {
+                        immagine.src = URL.createObjectURL(blob);
+                    }
+            });
+        }
+    </script>
 
 </body>
 </html>

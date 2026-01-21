@@ -112,10 +112,14 @@
             if(a){
                 ctrlIcon.classList.remove('fa-play');
                 ctrlIcon.classList.add('fa-pause');
+                
             } else {
                 ctrlIcon.classList.remove('fa-pause');
                 ctrlIcon.classList.add('fa-play');
             }
+            try {
+                pywebview.api.setPlay(a);
+            } catch (error) {}
         }
 
         function togglePlay(a) {
@@ -187,6 +191,11 @@
             titoloObj.textContent = titolo;
             cartellaObj.textContent = cartella;
             document.title = titolo;
+
+            // manda robe a miniplayer
+            try {
+                pywebview.api.setSong(songPath, titolo, cartella);
+            } catch (error) {}
 
             const audioPlayer = document.getElementById('audioPlayer');
             const audioSource = document.getElementById('audioSource');
