@@ -3,3 +3,4 @@ yt_dlp
 mutagen
 waitress
 pychromecast
+pywebview

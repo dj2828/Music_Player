@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="it">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	<title>Mini Music Player</title>
+    <link rel="icon" type="image/png" href="/static/IO.png">
+    <link rel="stylesheet" href="/static/style_mini.css">
+    <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="music-player">
+        <img src="/static/IO.png" id="cover" class="cover">
+        
+        <div id="skibidi">
+            <div id="testo">
+            <h1 id="titolo">TITOLO</h1>
+            <p id="cartella">CARTELLA</p>
+            </div>
+
+            <div class="controls">
+                <div onclick="prevSong()"><i class="fa-solid fa-backward"></i></div>
+                <div onclick="togglePlay()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
+                <div onclick="nextSong()"><i class="fa-solid fa-forward"></i></div>
+            </div>
+        </div>
+        </div>
+
+</body>
+</html>

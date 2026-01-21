@@ -1,0 +1,79 @@
+*{
+  margin: 0;
+  padding: 0;
+  font-family: Arial, Helvetica, sans-serif
+}
+html, body{
+  background-color: #000000;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+h1{
+    font-size: 15px;
+}
+p{
+    font-size: 10px;
+}
+.music-player {
+  margin: 10px;
+  background-color: #ff5500;
+  width: 300px;
+  height: 50px;
+  padding: 30px 15px;
+  border-radius: 10px;
+
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.cover {
+  border-radius: 20px;
+  height: 100px;
+  width: auto;
+}
+.cover404{
+  width: 0px;
+  height: 0px;
+}
+.controls{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.controls div{
+  width: 30px;
+  height: 30px;
+  margin: 15px;
+  border-radius: 50%;
+  color: #000000;
+  /* background-color: #ffffff; */
+  border: 2px solid #000000;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
+  cursor: pointer;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  transform: scale(1);
+  transition: transform 0.3s;
+}
+.controls div:nth-child(2){
+  border: 1px solid #000000;
+  transform: scale(1.5);
+}
+.controls div:hover {
+  transform: scale(1.2);
+}
+.controls div:nth-child(2):hover{
+  transform: scale(1.7);
+}
+
+#skibidi {
+    padding-top: 10px;
+    margin-left: 10px;
+}
+#testo {
+    margin-left: 15px;
+}

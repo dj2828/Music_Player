@@ -5,7 +5,6 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
 import lib
 
-
 app = Flask(__name__)
 app.secret_key = "S4Ss0"
 
