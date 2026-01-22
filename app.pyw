@@ -22,13 +22,12 @@ class ApiBridge:
         main_window.evaluate_js("nextSong()")
     
     def setPlay(self, value):
-        self.data_storage["play"] = value
         mini_window.evaluate_js(f"play('{value}')")
     def setSong(self, url, titolo, cartella):
         self.data_storage["url"] = url
         self.data_storage["titolo"] = titolo
         self.data_storage["cartella"] = cartella
-        mini_window.evaluate_js(f"save('{api.data_storage.get("play")}',  '{api.data_storage.get("url")}', '{api.data_storage.get("titolo")}', '{api.data_storage.get("cartella")}')")
+        mini_window.evaluate_js(f"carica('{api.data_storage.get("url")}', '{api.data_storage.get("titolo")}', '{api.data_storage.get("cartella")}')")
 
 main_window = None
 mini_window = None
@@ -39,7 +38,10 @@ def crea_window():
     main_window.events.minimized += on_window_minimized
     main_window.events.closing += on_window_closed
 
-    mini_window = webview.create_window("Mini_player", "http://127.0.0.1:5000/mini", width=365, height=170, frameless=True, js_api=api, hidden=True, x=1550, y=940)
+    screens = webview.screens
+    x = screens[0].width - 365
+    y = screens[0].height - 170
+    mini_window = webview.create_window("Mini_player", "http://127.0.0.1:5000/mini", width=365, height=170, frameless=True, js_api=api, hidden=True, x=x, y=y)
     webview.start()
 
 def run_flask():
@@ -49,7 +51,7 @@ def run_flask():
 def on_window_minimized():
     # Invece di chiudere, nascondiamo la finestra
     main_window.hide()
-    mini_window.evaluate_js(f"save('{api.data_storage.get("play", True)}',  '{api.data_storage.get("url")}', '{api.data_storage.get("titolo")}', '{api.data_storage.get("cartella")}')")
+    mini_window.evaluate_js(f"carica('{api.data_storage.get("url")}', '{api.data_storage.get("titolo")}', '{api.data_storage.get("cartella")}')")
     mini_window.show()
     # Ritorna False per impedire la distruzione effettiva della finestra
     return False
