@@ -30,7 +30,7 @@ p{
 .cover {
   border-radius: 10px;
   height: 100px;
-  width: 100px;
+  max-width: 100px;
 }
 .cover404{
   width: 0px;
