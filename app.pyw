@@ -41,7 +41,7 @@ def crea_window():
     screens = webview.screens
     x = screens[0].width - 365
     y = screens[0].height - 170
-    mini_window = webview.create_window("Mini_player", "http://127.0.0.1:5000/mini", width=365, height=170, frameless=True, js_api=api, hidden=True, x=x, y=y)
+    mini_window = webview.create_window("Mini_player", "http://127.0.0.1:5000/mini", width=355, height=170, frameless=True, js_api=api, hidden=True, x=x, y=y)
     webview.start()
 
 def run_flask():

@@ -9,15 +9,15 @@ html, body{
   overscroll-behavior: contain;
 }
 h1{
-    font-size: 15px;
+  font-size: 15px;
 }
 p{
-    font-size: 10px;
+  font-size: 10px;
 }
 .music-player {
   margin: 10px;
   background-color: #ff5500;
-  width: 300px;
+  width: 290px;
   height: 50px;
   padding: 30px 15px;
   border-radius: 10px;
@@ -28,9 +28,9 @@ p{
   justify-content: center;
 }
 .cover {
-  border-radius: 20px;
+  border-radius: 10px;
   height: 100px;
-  width: auto;
+  width: 100px;
 }
 .cover404{
   width: 0px;
@@ -71,9 +71,9 @@ p{
 }
 
 #skibidi {
-    padding-top: 10px;
-    margin-left: 10px;
+  padding-top: 10px;
+  margin-left: 10px;
 }
 #testo {
-    margin-left: 15px;
+  margin-left: 15px;
 }
