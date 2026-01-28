@@ -68,3 +68,37 @@ def down(url, MUSIC_FOLDER):
     except Exception as e:
         print("Errore durante il download:", e)
         return False
+
+def search_videos(query, max_results=5):
+    """
+    Cerca video su YouTube e ritorna una lista con i risultati.
+    
+    Args:
+        query: stringa di ricerca
+        max_results: numero di risultati da ritornare (default 5)
+    
+    Returns:
+        Lista di dizionari con info video (title, url, duration, channel)
+    """
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'extract_flat': 'in_playlist',
+    }
+    
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            results = ydl.extract_info(f'ytsearch{max_results}:{query}', download=False)
+        
+        videos = []
+        for entry in results['entries']:
+            videos.append({
+                'title': entry.get('title'),
+                'url': f"https://www.youtube.com/watch?v={entry.get('id')}",
+                'channel': entry.get('uploader'),
+            })
+        
+        return videos
+    except Exception as e:
+        print(f"Errore durante la ricerca: {e}")
+        return []

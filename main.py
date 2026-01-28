@@ -2,8 +2,10 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from mutagen.mp3 import MP3
+from mutagen.flac import FLAC
 from mutagen.id3 import ID3, APIC
 import lib
+import json
 
 app = Flask(__name__)
 app.secret_key = "S4Ss0"
@@ -50,7 +52,7 @@ def get_music():
     for folder_name, folder_path in MUSIC_FOLDERS.items():
         if os.path.exists(folder_path):
             temp_albums = {}
-            songs = [f for f in os.listdir(folder_path) if f.lower().endswith('.mp3')]
+            songs = [f for f in os.listdir(folder_path) if f.lower().endswith(('.mp3', '.flac'))]
             
             for filename in songs:
                 nome_album = album(folder_name, filename) # Usa la tua funzione ID3
@@ -101,11 +103,17 @@ def get_music():
 def album(folder, filename):
     folder_path = MUSIC_FOLDERS.get(folder)
     mp3_path = os.path.join(folder_path, filename)
-    audio = MP3(mp3_path, ID3=ID3)
-    album = audio.get("TALB")
+    if mp3_path.endswith('.flac'):
+        audio = FLAC(mp3_path)
+        album = audio.get("ALBUM")
+        album_name = album[0] if album else None
+    else:
+        audio = MP3(mp3_path, ID3=ID3)
+        album = audio.get("TALB")
+        album_name = album.text[0] if album else None
 
-    if album:
-        album_name = album.text[0].strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
+    if album_name:
+        album_name = album_name.strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
         
     else:
         album_name = None
@@ -137,19 +145,11 @@ def errore():
 
 @app.route('/down', methods=['POST'])
 def download():
-    if not (url := request.form.get('yt_url')):
-        flash("Nessun link o titolo inserito.")
+    if lib.down(request.form.get('yt_url'), YT_FOLDER):
         return redirect(url_for('index'))
-
-    # Se non è un link, cerca su YouTube
-    if not (url.startswith("http://") or url.startswith("https://")):
-        url = f"ytsearch1:{url}"
-
-    if lib.down(url, YT_FOLDER):
-        flash("Download completato!")
     else:
-        flash(f"Errore")
-    return redirect(url_for('index'))
+        return jsonify({"status": "error"}), 500
+    
 
 @app.route('/<folder>/<filename>')
 def music(folder, filename):
@@ -164,11 +164,17 @@ def img():
     filename = request.args.get('filename')
     folder_path = MUSIC_FOLDERS.get(folder)
     mp3_path = os.path.join(folder_path, filename)
-    audio = MP3(mp3_path, ID3=ID3)
-    album = audio.get("TALB")
+    if mp3_path.endswith('.flac'):
+        audio = FLAC(mp3_path)
+        album = audio.get("ALBUM")
+        album_name = album[0] if album else None
+    else:
+        audio = MP3(mp3_path, ID3=ID3)
+        album = audio.get("TALB")
+        album_name = album.text[0] if album else None
 
-    if album:
-        album_name = album.text[0].strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
+    if album_name:
+        album_name = album_name.strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
         img_path = os.path.join(COVER_FOLDER, "album", f"{album_name}.png")
         nome_img = f'{album_name}.png'
         dir_img = os.path.join(COVER_FOLDER, "album")
@@ -250,9 +256,56 @@ def ping():
     """
     return jsonify({"status": "ok"}), 200
 
+@app.route('/cerca', methods=['GET'])
+def cerca():
+    query = request.args.get('q', '')
+    if not query:
+        return jsonify({"error": "Query mancante"}), 400
+    results = lib.search_videos(query, max_results=5)
+    return jsonify(results), 200
+
+@app.route('/delete/<folder>/<filename>')
+def delete_song(folder, filename):
+    folder_path = MUSIC_FOLDERS.get(folder)
+    if folder_path:
+        file_path = os.path.join(folder_path, filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+            return "OK", 200
+        else:
+            return "ERROR", 500
+    else:
+        return "ERROR", 500
+    return redirect(url_for('index'))
+
+PLAYS_FILE = 'plays.json'
+def load_plays():
+    if os.path.exists(PLAYS_FILE):
+        with open(PLAYS_FILE, 'r') as f:
+            return json.load(f)
+    else:
+        with open("plays.json", "w", encoding="utf-8") as f:
+            f.write("{}")
+    return {}
+@app.route('/increment_plays', methods=['POST'])
+def increment_plays():
+    song = request.form.get('song')
+    plays = load_plays()
+    plays[song] = plays.get(song, 0) + 1
+    with open(PLAYS_FILE, 'w') as f:
+        json.dump(plays, f, indent=2)
+    return "OK", 200
+
+@app.route('/info', methods=['GET'])
+def get_info():
+    song = request.args.get('song')
+    plays = load_plays()
+    play_count = plays.get(song, 0)
+    return jsonify({'plays': play_count})
+
 @app.after_request
 def add_header(response):
-    if request.path.endswith('.mp3'):
+    if request.path.endswith(('.mp3', '.flac')):
         response.headers['Cache-Control'] = 'public, max-age=86400'
     return response
 

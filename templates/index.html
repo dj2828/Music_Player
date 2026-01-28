@@ -30,7 +30,7 @@
             </div>
         </nav>
         <h1 id="titolo">TITOLO</h1>
-        <p id="cartella">CARTELLA</p>
+        <p id="cartella" style="font-weight: normal;">CARTELLA</p>
 
         <img src="" id="cover" class="cover404">
 
@@ -65,7 +65,7 @@
                 <div>
                 {% for song in songs %}
                     <button onclick='playSong("{{ folder }}/{{ song }}")' class="song">
-                        <h3>{{ song.replace('.mp3', '') }}</h3>
+                        <h3>{{ song.replace('.mp3', '').replace('.flac', '') }}</h3>
                     </button>
                 {% endfor %}
                 </div>
@@ -186,7 +186,7 @@
         let historyStack = [];
 
         function playSong(songPath, customPlaylist = null, customIndex = null, fromHistory = false, playImmediately = true) {
-            let titolo = songPath.split('/').pop().replace('.mp3', '');
+            let titolo = songPath.split('/').pop().replace(/\.(mp3|flac)$/i, '');
             let cartella = songPath.split('/')[0];
             titoloObj.textContent = titolo;
             cartellaObj.textContent = cartella;
@@ -401,6 +401,20 @@
             return;
         }
 
+        // conteggio riproduzioni
+        document.getElementById('audioPlayer').addEventListener('ended', function() {
+            // Invia il conteggio al server
+            const songPath = playlist[currentIndex-1].folder + '/' + playlist[currentIndex-1].song;
+            fetch('/increment_plays', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'song=' + encodeURIComponent(songPath)
+            });
+            
+            nextSong();
+        });
     </script>
 
     <div id="menu" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
@@ -420,19 +434,75 @@
     <div id="downloadModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; align-items:center; justify-content:center;">
         <div style="background:#ff5500; color:#000; padding:30px 20px; border-radius:12px; min-width:600px; max-width:90vw; min-height: 300px; margin:auto; position:relative; display: flex; align-items: center; justify-content: center;">
             <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
-            <form action="/down" method="post" style="text-align:center;">
-                <input type="text" name="yt_url" placeholder="Incolla link YouTube || Cerca su YouTube" style="width:500px; height: 200px; border-radius: 20px; padding: 20px; font-size: large;">
-                <button type="submit" class="song">Scarica da YouTube</button>
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                    <div style="color:black; margin-top:20px;">{{ messages[0] }}</div>
-                    {% endif %}
-                {% endwith %}
-            </form>
+            <div style="text-align:center;">
+                <input type="text" id="yt_url" placeholder="Incolla link YouTube || Cerca su YouTube" style="width:300px; border-radius: 20px; padding: 20px; font-size: medium; font-weight: normal;">
+                <button onclick="downloadYT()" class="song">Scarica da YouTube</button>
+                <div id="downloadMsg" style="color:black; margin-top:20px;"></div>
+            </div>
         </div>
     </div>
 
     <script>
+    async function downloadYT(url=null) {
+        if (url === null) url = document.getElementById('yt_url').value;
+        const msgDiv = document.getElementById('downloadMsg');
+        
+        if (!url.trim()) {
+            msgDiv.textContent = 'Inserisci un URL o una ricerca';
+            msgDiv.style.color = 'red';
+            return;
+        }
+        if(url.startsWith('http://') || url.startsWith('https://')){
+            msgDiv.textContent = 'Download in background avviato per il link fornito.';
+            msgDiv.style.color = 'black';
+
+            const response = await fetch('/down', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: 'yt_url=' + encodeURIComponent(url)
+            });
+            const data = await response.status();
+            if (data.status === 500) {
+                msgDiv.textContent = 'Errore durante l\'avvio del download.';
+                msgDiv.style.color = 'red';
+            }
+        }
+        else{
+            // è una ricerca
+            msgDiv.textContent = 'Ricerca in corso...';
+            msgDiv.style.color = 'black';
+            const response = await fetch('/cerca?q=' + encodeURIComponent(url));
+            const results = await response.json();
+            
+            if (results.error) {
+                msgDiv.textContent = results.error;
+                msgDiv.style.color = 'red';
+                return;
+            }
+            
+            if (results.length === 0) {
+                msgDiv.textContent = 'Nessun risultato trovato.';
+                msgDiv.style.color = 'red';
+                return;
+            }
+            
+            // Mostra i risultati della ricerca
+            let resultsHtml = '<h3>Risultati della ricerca:</h3><div id="resultsList"><ul>';
+            results.forEach(video => {
+                resultsHtml += `<li>
+                    <strong>${video.title}</strong><br>
+                    <p>${video.channel}</p>
+                    <button onclick="downloadYT('${video.url}')" class="song" style="margin-top:5px;">Scarica questo</button>
+                </li><br>`;
+            });
+            resultsHtml += '</ul></div>';
+            msgDiv.innerHTML = resultsHtml;
+        }
+    }
+
+
     function openModal() {
         document.getElementById('downloadModal').style.display = 'flex';
     }
@@ -538,6 +608,116 @@
         .then(() => console.log('Service worker registrato'))
         .catch(err => console.error('Errore registrazione service worker:', err));
     }
+    </script>
+
+    <div id="customContextMenu">
+        <div onclick="handleDelete(); document.getElementById('customContextMenu').style.display='none';" style="padding:10px 20px; cursor:pointer;">Elimina</div>
+        <div onclick="handleInfo(); document.getElementById('customContextMenu').style.display='none';" style="padding:10px 20px; cursor:pointer;">Info</div>
+    </div>
+    <script>
+        let clickedElement = null;
+        // Context menu personalizzato
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            
+            const contextMenu = document.getElementById('customContextMenu');
+            clickedElement = e.target;
+            
+            // Risali fino a trovare un button con classe 'song'
+            const songButton = clickedElement.closest('button.song');
+            if (songButton) {
+                clickedElement = songButton;
+            }
+            
+            if (!clickedElement.classList.contains('song')) {
+                // Se non è una canzone, non mostrare il menu
+                return;
+            }
+
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = e.clientX + 'px';
+            contextMenu.style.top = e.clientY + 'px';
+            
+            // console.log('Cliccato su:', clickedElement);
+        });
+
+        function handleDelete() {
+        if (clickedElement) {
+            const songName = clickedElement.textContent.trim();
+            if (confirm('Sei sicuro di voler eliminare: ' + songName)) {
+                fetch('/delete/'+clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1])
+                .then(response => {
+                    if (response.ok) {
+                        alert('Canzone eliminata con successo: ' + songName);
+                        // Ricarica la pagina per aggiornare la lista delle canzoni
+                        window.location.reload();
+                    } else {
+                        alert('Errore durante l\'eliminazione della canzone: ' + songName);
+                    }
+                });
+            }
+        }}
+
+        function handleInfo() {
+            if (clickedElement) {
+                const songName = clickedElement.textContent.trim();
+                fetch('/info?song='+clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1])
+                .then(response => response.json())
+                .then(data => {
+                    alert('Info sulla canzone: ' + songName + '\nRiproduzioni: '+data.plays);
+                });
+            }
+        }
+
+        // Chiudi il menu quando clicchi altrove
+        document.addEventListener('click', function(e) {
+            const contextMenu = document.getElementById('customContextMenu');
+            if (e.target.id !== 'customContextMenu' && !contextMenu.contains(e.target)) {
+                contextMenu.style.display = 'none';
+            }
+        });
+
+        // Chiudi il menu quando scorri
+        document.addEventListener('scroll', function() {
+            document.getElementById('customContextMenu').style.display = 'none';
+        });
+
+
+        // per mobile
+            let touchStartTime = 0;
+            let touchStartX = 0;
+            let touchStartY = 0;
+
+            document.addEventListener('touchstart', function(e) {
+                touchStartTime = Date.now();
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+
+            document.addEventListener('touchend', function(e) {
+                const touchDuration = Date.now() - touchStartTime;
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+                
+                // Se il tocco è durato più di 500ms e non si è mosso molto = long press
+                if (touchDuration > 500 && 
+                    Math.abs(touchEndX - touchStartX) < 10 && 
+                    Math.abs(touchEndY - touchStartY) < 10) {
+                    
+                    const contextMenu = document.getElementById('customContextMenu');
+                    let clickedElement = e.target;
+                    
+                    // Risali fino a trovare un button con classe 'song'
+                    const songButton = clickedElement.closest('button.song');
+                    if (songButton) {
+                        clickedElement = songButton;
+                    }
+                    
+                    contextMenu.style.display = 'block';
+                    contextMenu.style.left = touchStartX + 'px';
+                    contextMenu.style.top = touchStartY + 'px';
+                }
+            });
     </script>
 
 </body>
