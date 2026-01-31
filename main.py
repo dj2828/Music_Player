@@ -310,7 +310,7 @@ def get_info():
 @app.after_request
 def add_header(response):
     if request.path.endswith(('.mp3', '.flac')):
-        response.headers['Cache-Control'] = 'public, max-age=86400'
+        response.headers['Cache-Control'] = 'public, max-age=3600'
     return response
 
 if __name__ == '__main__':

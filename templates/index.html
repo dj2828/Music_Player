@@ -402,19 +402,38 @@
         }
 
         // conteggio riproduzioni
-        document.getElementById('audioPlayer').addEventListener('ended', function() {
-            // Invia il conteggio al server
-            const songPath = playlist[currentIndex-1].folder + '/' + playlist[currentIndex-1].song;
-            fetch('/increment_plays', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'song=' + encodeURIComponent(songPath)
+            let playCounted = false;
+            audioPlayer.addEventListener('play', function() {
+                playCounted = false; 
             });
-            
-            nextSong();
-        });
+
+            audioPlayer.addEventListener('timeupdate', function() {
+                // Verifica se sono passati 30 secondi E se non abbiamo ancora contato la riproduzione
+                if (!playCounted && audioPlayer.currentTime >= 30) {
+                    countPlay();
+                    playCounted = true; // Impedisce nuovi invii finché non cambia brano
+                }
+            });
+
+            // Funzione dedicata all'invio dei dati
+            function countPlay() {
+                const songPath = playlist[currentIndex-1].folder + '/' + playlist[currentIndex-1].song;
+                
+                fetch('/increment_plays', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'song=' + encodeURIComponent(songPath)
+                })
+                .then(response => console.log('Riproduzione conteggiata'))
+                .catch(error => console.error('Errore nel conteggio:', error));
+            }
+
+            // Mantieni 'ended' solo per passare alla prossima canzone
+            audioPlayer.addEventListener('ended', function() {
+                nextSong();
+            });
     </script>
 
     <div id="menu" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
