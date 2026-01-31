@@ -1,4 +1,4 @@
-import pychromecast, os, yt_dlp, difflib
+import pychromecast, os, yt_dlp, difflib, tempfile, subprocess, hashlib
 
 def playG(url):
     mc = chromecast.media_controller
@@ -102,3 +102,45 @@ def search_videos(query, max_results=5):
     except Exception as e:
         print(f"Errore durante la ricerca: {e}")
         return []
+
+def get_cached_mp3(file_path, cache_dir="cache_mp3"):
+    """
+    Gestisce la conversione MP3 con un sistema di cache dedicata.
+    """
+    # 1. Se è già MP3, non serve cache
+    if file_path.lower().endswith('.mp3'):
+        return file_path
+
+    # 2. Crea la cartella di cache se non esiste
+    if not os.path.exists(cache_dir):
+        os.makedirs(cache_dir)
+
+    # 3. Genera un ID univoco basato sul path assoluto del file
+    # Usiamo l'hash per evitare problemi con caratteri speciali o path troppo lunghi
+    file_id = hashlib.md5(os.path.abspath(file_path).encode()).hexdigest()
+    cached_path = os.path.join(cache_dir, f"{file_id}.mp3")
+
+    # 4. CONTROLLO: Se il file in cache esiste già, lo restituiamo subito
+    if os.path.exists(cached_path):
+        print(f"✅ Cache hit: Uso il file già convertito -> {cached_path}")
+        return cached_path
+
+    # 5. Se non esiste, convertiamo
+    print(f"⚙️ Cache miss: Conversione in corso per {os.path.basename(file_path)}...")
+    
+    command = [
+        'ffmpeg', '-i', file_path,
+        '-vn', '-ar', '44100',
+        '-ac', '2', '-b:a', '192k',
+        cached_path, '-y'
+    ]
+
+    try:
+        # Usiamo capture_output=True per non sporcare la console con i log di ffmpeg
+        subprocess.run(command, check=True, capture_output=True)
+        return cached_path
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Errore conversione: {e}")
+        if os.path.exists(cached_path):
+            os.unlink(cached_path)
+        return None
