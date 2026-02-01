@@ -16,8 +16,9 @@ def ip(path_txt):
     else:
         with open(path_txt, 'r', encoding='utf-8') as file:
             for line in file:
-                if line.startswith('#'):
-                    return line[1:]
+                if line.startswith('#IP'):
+                    _, ip_value = line.strip().split('=', 1)
+                    return ip_value
 def get_album_finti(path_txt):
     album_finti = set()
     if DOCKER:
@@ -25,7 +26,7 @@ def get_album_finti(path_txt):
     if os.path.exists(path_txt):
         with open(path_txt, 'r', encoding='utf-8') as file:
             for line in file:
-                if line.startswith('ALBUM_FINTI'):
+                if line.startswith('#ALBUM_FINTI'):
                     _, albums = line.strip().split('=', 1)
                     for album in albums.split(','):
                         album_finti.add(album.strip())
@@ -37,7 +38,7 @@ def load_music_folders(path_txt):
         if os.path.exists(path_txt):
             with open(path_txt, 'r', encoding='utf-8') as file:
                 for line in file:
-                    if '=' in line:
+                    if '=' in line and not line.startswith('#'):
                         key, value = line.strip().split('=', 1)
                         key = key.strip()
                         value = value.strip()
@@ -200,15 +201,28 @@ def img():
         dir_img = os.path.join(COVER_FOLDER)
 
     if not os.path.exists(img_path):
-        for tag in audio.tags.values():
-            if isinstance(tag, APIC):
-                try:
-                    with open(img_path, "wb") as out_img:
-                        out_img.write(tag.data)
-                        print(f"Immagine salvata come {img_path}")
-                except:
-                    pass
-                break
+        if mp3_path.endswith('.flac'):
+            if audio.pictures:
+                for picture in audio.pictures:
+                    # Type 3 is usually the Front Cover
+                    if picture.type == 3: 
+                        try:
+                            with open(img_path, "wb") as out_img:
+                                out_img.write(picture.data)
+                            print(f"Immagine salvata come {img_path}")
+                            break 
+                        except IOError as e:
+                            print(f"Errore: {e}")
+        else:
+            for tag in audio.tags.values():
+                if isinstance(tag, APIC):
+                    try:
+                        with open(img_path, "wb") as out_img:
+                            out_img.write(tag.data)
+                            print(f"Immagine salvata come {img_path}")
+                    except:
+                        pass
+                    break
     else:
         print("Immagine già presente")
 
