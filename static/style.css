@@ -333,6 +333,9 @@ nav{
 }
 
 @media (max-width: 1050px) {
+  body {
+    padding-top: 465px; /* Regola questa altezza in base a quanto è alto il tuo player */
+  }
   .container {
     flex-direction: column;
     align-items: center;
@@ -340,15 +343,16 @@ nav{
     width: auto;
   }
   .music-player{
-    position: static;
-    top: auto;
-    left: auto;
-    transform: none;
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
     margin-top: 20px;
     width: calc(100% - 200px);
     padding: 10px 15px;
     min-width: 270px;
-    margin: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Un bordo sottile aiuta la definizione */
+    box-shadow: 0 0 20px 5px rgba(0, 0, 0, 1); /* Spiegazione: 0 (X), 0 (Y), 20px (sfumatura), 5px (espansione), colore */
   }
   .cartella{
     padding: 10px 15px;
@@ -359,6 +363,18 @@ nav{
     width: calc(100% - 200px);
   }
   .cover{
-    max-width: 255px;
+    height: 150px;
+  }
+  h1{
+    font-size: 24px;
+  }
+  nav{
+    margin-bottom: -0px;
+  }
+  #progress{
+    margin: 10px -5px;
+  }
+  .controls div{
+    margin: 15px;
   }
 }
