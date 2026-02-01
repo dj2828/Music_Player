@@ -333,8 +333,9 @@ nav{
 }
 
 @media (max-width: 1050px) {
-  body {
-    padding-top: 465px; /* Regola questa altezza in base a quanto è alto il tuo player */
+  html, body{
+    overflow-x: clip; /* Molto meglio di hidden per lo sticky: blocca solo l'orizzontale senza creare un nuovo contesto di scroll */
+    overscroll-behavior: none;
   }
   .container {
     flex-direction: column;
@@ -343,11 +344,11 @@ nav{
     width: auto;
   }
   .music-player{
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    margin-top: 20px;
+    left: 0;
+    transform: none;
+    margin: 20px;
     width: calc(100% - 200px);
     padding: 10px 15px;
     min-width: 270px;

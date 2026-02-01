@@ -11,11 +11,11 @@ Es: `Tha Supreme=X:\canz\thasup`
 
 NON CANCELLATE `YouTube=MUSIC_FOLDER`
 
-`#{Indirizzo IP locale}` Es: `#192.168.1.8`
+`#IP={Indirizzo IP locale}` Es: `#IP=192.168.1.8`
+
+`#ALBUM_FINTI={Album finti(quelli con le copertine diverse da canzone a canzone)}` Es: `ALBUM_FINTI=Beat, Acustiche, Sparse, Freestyle`
 
 `ALBUM_ORDER={Ordine album}` Es: `ALBUM_ORDER=23 645, Blu Celeste, Sirio`
-
-`ALBUM_FINTI={Album finti(quelli con le copertine diverse da canzone a canzone)}` Es: `ALBUM_FINTI=Beat, Acustiche, Sparse, Freestyle`
 
 ## Directory
 Dove metti il server serve creare queste cartelle
