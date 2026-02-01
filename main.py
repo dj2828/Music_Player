@@ -18,6 +18,18 @@ def ip(path_txt):
             for line in file:
                 if line.startswith('#'):
                     return line[1:]
+def get_album_finti(path_txt):
+    album_finti = set()
+    if DOCKER:
+        return os.getenv("ALBUM_FINTI", "").split(',')
+    if os.path.exists(path_txt):
+        with open(path_txt, 'r', encoding='utf-8') as file:
+            for line in file:
+                if line.startswith('ALBUM_FINTI'):
+                    _, albums = line.strip().split('=', 1)
+                    for album in albums.split(','):
+                        album_finti.add(album.strip())
+    return album_finti
 def load_music_folders(path_txt):
     global ALBUM_ORDER
     music_folders = {}
@@ -133,7 +145,7 @@ ALBUM_ORDER = []
 MUSIC_FOLDERS = load_music_folders('config.txt')
 IP = ip('config.txt')
 googleHome = False
-
+ALBUM_FINTI = get_album_finti('config.txt')
 
 @app.route('/', methods=['GET'])
 def index():
@@ -177,7 +189,7 @@ def img():
         album = audio.get("TALB")
         album_name = album.text[0] if album else None
 
-    if album_name:
+    if album_name and album_name not in ALBUM_FINTI:
         album_name = album_name.strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
         img_path = os.path.join(COVER_FOLDER, "album", f"{album_name}.png")
         nome_img = f'{album_name}.png'

@@ -15,6 +15,8 @@ NON CANCELLATE `YouTube=MUSIC_FOLDER`
 
 `ALBUM_ORDER={Ordine album}` Es: `ALBUM_ORDER=23 645, Blu Celeste, Sirio`
 
+`ALBUM_FINTI={Album finti(quelli con le copertine diverse da canzone a canzone)}` Es: `ALBUM_FINTI=Beat, Acustiche, Sparse, Freestyle`
+
 ## Directory
 Dove metti il server serve creare queste cartelle
 
