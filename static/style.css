@@ -348,7 +348,7 @@ nav{
   }
   .music-player{
     position: sticky;
-    top: 20px;
+    top: 5px;
     left: 0;
     transform: none;
     margin: 20px;
@@ -357,6 +357,27 @@ nav{
     min-width: 270px;
     border: 1px solid rgba(255, 255, 255, 0.1); /* Un bordo sottile aiuta la definizione */
     box-shadow: 0 0 20px 5px rgba(0, 0, 0, 1); /* Spiegazione: 0 (X), 0 (Y), 20px (sfumatura), 5px (espansione), colore */
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+  }
+  /* Quando l'utente scorre giù, rimpiccioliamo il contenitore */
+  .music-player.compact {
+    padding: 5px 10px;
+  }
+  .music-player.compact .controls div {
+    width: 30px;
+    height: 30px;
+  }
+  .music-player nav{
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    max-height: 80px;
+  }
+  /* Classe che verrà aggiunta via JavaScript */
+  .music-player.compact nav {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+    max-height: 0px;
   }
   .cartella{
     padding: 10px 15px;
@@ -368,6 +389,10 @@ nav{
   }
   .cover{
     height: 150px;
+    transition: all 0.3s ease;
+  }
+  .music-player.compact .cover{
+    height: 100px;
   }
   h1{
     font-size: 24px;

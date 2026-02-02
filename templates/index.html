@@ -756,6 +756,26 @@
                     contextMenu.style.top = touchStartY + 'px';
                 }
             });
+
+            // per far scomparire la nav su telefono quando si scrolla
+                const musicPlayer = document.querySelector('.music-player');
+
+                let lastScrollY = window.scrollY;
+                const DELTA = 20;
+
+                window.addEventListener('scroll', () => {
+                const currentScroll = window.scrollY;
+                const diff = currentScroll - lastScrollY;
+
+                if (Math.abs(diff) < DELTA) return;
+
+                const isScrollingDown = diff > 0;
+
+                musicPlayer.classList.toggle('compact', isScrollingDown);
+
+                lastScrollY = currentScroll;
+                }, { passive: true });
+
     </script>
 
 </body>
