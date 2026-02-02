@@ -157,8 +157,10 @@
             audioPlayer.currentTime = progress.value;
         };
 
-        document.getElementById('volumeslider').oninput = function() {
-            audioPlayer.volume = document.getElementById('volumeslider').value / 100;
+        const slider = document.getElementById('volumeslider');
+        slider.oninput = function () {
+            const v = slider.value / 100; // 0 → 1
+            audioPlayer.volume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
         };
 
         function vol() {
