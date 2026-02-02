@@ -142,11 +142,14 @@
             }
         }
 
-        if(audioPlayer.play()){
-            setInterval(function() {
+        audioPlayer.addEventListener('play', () => {
+            const updateProgress = setInterval(() => {
+                if (audioPlayer.paused) {
+                    clearInterval(updateProgress);
+                }
                 progress.value = audioPlayer.currentTime;
-            }, 50);
-        }
+            }, 500); // 500ms bastano e consumano meno batteria
+        });
 
         progress.oninput = function() {
             if(ctrlIcon.classList.contains('fa-pause')){
@@ -206,6 +209,16 @@
             // Salva l'URL nel cookie
             setLastPlayedMp3Url(url);
 
+            if (googleHome) {
+                play(true);
+                googleHomeF(url);
+            }else{
+                audioSource.src = url;
+                audioPlayer.load();
+                console.log('Playing song:', url);
+                if (playImmediately) togglePlay(true);
+            }
+
             // immagine
             const immagine = document.getElementById('cover');
             let img = `/img?folder=${encodeURIComponent(folder)}&filename=${encodeURIComponent(song)}`;
@@ -226,40 +239,31 @@
                     if (blob) {
                         immagine.src = URL.createObjectURL(blob);
                     }
-                
-                // img per player di ios (è ne fetch per la var img)
-                if ('mediaSession' in navigator) {
-                    navigator.mediaSession.metadata = new MediaMetadata({
-                    title: titolo,
-                    artist: "",
-                    album: "",
-                    artwork: [
-                        { src: img, sizes: "512x512", type: "image/jpeg" }
-                    ]
-                    });
-                    navigator.mediaSession.setActionHandler("play", () => togglePlay());
-                    navigator.mediaSession.setActionHandler("pause", () => togglePlay());
-                    navigator.mediaSession.setActionHandler("nexttrack", () => nextSong());
-                    navigator.mediaSession.setActionHandler("previoustrack", () => prevSong());
-                    navigator.mediaSession.setActionHandler('seekto', (details) => {
-                        if (details.fastSeek && 'fastSeek' in audioPlayer) {
-                        audioPlayer.fastSeek(details.seekTime);
-                        } else {
-                        audioPlayer.currentTime = details.seekTime;
-                        }
-                    });
-                }
+                    if ('mediaSession' in navigator) {
+                        // player media session API ios e android
+                        navigator.mediaSession.setActionHandler("play", () => togglePlay());
+                        navigator.mediaSession.setActionHandler("pause", () => togglePlay());
+                        navigator.mediaSession.setActionHandler("nexttrack", () => nextSong());
+                        navigator.mediaSession.setActionHandler("previoustrack", () => prevSong());
+                        navigator.mediaSession.setActionHandler('seekto', (details) => {
+                            if (details.fastSeek && 'fastSeek' in audioPlayer) {
+                            audioPlayer.fastSeek(details.seekTime);
+                            } else {
+                            audioPlayer.currentTime = details.seekTime;
+                            }
+                            // Aggiorna anche la barra visiva e lo stato
+                            progress.value = details.seekTime;
+                        });
+                        navigator.mediaSession.metadata = new MediaMetadata({
+                        title: titolo,
+                        artist: cartella,
+                        album: "",
+                        artwork: [
+                            { src: URL.createObjectURL(blob), sizes: "512x512", type: "image/jpeg" }
+                        ]
+                        });
+                    }
             });
-
-            if (googleHome) {
-                play(true);
-                googleHomeF(url);
-            }else{
-                audioSource.src = url;
-                audioPlayer.load();
-                console.log('Playing song:', url);
-                if (playImmediately) togglePlay(true);
-            }
 
             // Trova l'indice della canzone nella playlist attuale
             let idx;
