@@ -34,9 +34,7 @@
 
         <img src="" id="cover" class="cover404">
 
-        <audio id="audioPlayer">
-            <source id="audioSource" src="" type="audio/mpeg">
-        </audio>
+        <audio id="audioPlayer"></audio>
         <input type="range" value="0" id="progress">
 
         <div class="controls">
@@ -201,7 +199,6 @@
             } catch (error) {}
 
             const audioPlayer = document.getElementById('audioPlayer');
-            const audioSource = document.getElementById('audioSource');
             const [folder, song] = songPath.split('/');
             const url = "{{ url_for('music', folder='FOLDER', filename='SONG') }}"
                 .replace('FOLDER', encodeURIComponent(folder))
@@ -213,10 +210,22 @@
                 play(true);
                 googleHomeF(url);
             }else{
-                audioSource.src = url;
+                audioPlayer.src = url;
                 audioPlayer.load();
                 console.log('Playing song:', url);
-                if (playImmediately) togglePlay(true);
+                if (playImmediately) {
+                    // Usiamo una Promise per evitare errori se l'utente clicca velocissimo
+                    var playPromise = audioPlayer.play();
+                    
+                    if (playPromise !== undefined) {
+                        playPromise.then(_ => {
+                            play(true); // Aggiorna icona solo a successo avvenuto
+                        })
+                        .catch(error => {
+                            console.log("Play interrotto o fallito (normale se si cambia canzone veloce):", error);
+                        });
+                    }
+                }
             }
 
             // immagine

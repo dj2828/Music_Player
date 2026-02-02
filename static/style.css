@@ -184,6 +184,9 @@ nav{
   background-color: black;
   border: 1px solid blue;
 }
+.song > * {
+  pointer-events: none;
+}
 
 #divol{
   display: flex;
