@@ -231,49 +231,59 @@
             }
 
             // immagine
+            let objectUrl = null;
             const immagine = document.getElementById('cover');
             let img = `/img?folder=${encodeURIComponent(folder)}&filename=${encodeURIComponent(song)}`;
             fetch(img)
-                .then(response => {
-                    if (response.status === 404) {
-                        immagine.src = "/static/d.png";
-                        immagine.classList.remove('cover');
-                        immagine.classList.add('cover404');
-                        return response.blob();
-                    } else {
-                        immagine.classList.remove('cover404');
-                        immagine.classList.add('cover');
-                        return response.blob();
-                    }
-                })
-                .then(blob => {
-                    if (blob) {
-                        immagine.src = URL.createObjectURL(blob);
-                    }
-                    if ('mediaSession' in navigator) {
-                        // player media session API ios e android
-                        navigator.mediaSession.setActionHandler("play", () => togglePlay());
-                        navigator.mediaSession.setActionHandler("pause", () => togglePlay());
-                        navigator.mediaSession.setActionHandler("nexttrack", () => nextSong());
-                        navigator.mediaSession.setActionHandler("previoustrack", () => prevSong());
-                        navigator.mediaSession.setActionHandler('seekto', (details) => {
-                            if (details.fastSeek && 'fastSeek' in audioPlayer) {
-                            audioPlayer.fastSeek(details.seekTime);
-                            } else {
-                            audioPlayer.currentTime = details.seekTime;
-                            }
-                            // Aggiorna anche la barra visiva e lo stato
-                            progress.value = details.seekTime;
-                        });
-                        navigator.mediaSession.metadata = new MediaMetadata({
-                        title: titolo,
-                        artist: cartella,
-                        album: "",
-                        artwork: [
-                            { src: URL.createObjectURL(blob), sizes: "512x512", type: "image/jpeg" }
-                        ]
-                        });
-                    }
+            .then(response => {
+                if (!response.ok) {
+                immagine.classList.remove('cover');
+                immagine.classList.add('cover404');
+                immagine.src = "/static/d.png";
+                return null;
+                }
+
+                immagine.classList.remove('cover404');
+                immagine.classList.add('cover');
+                return response.blob();
+            })
+            .then(blob => {
+                if (objectUrl) {
+                    URL.revokeObjectURL(objectUrl);
+                    objectUrl = null;
+                }
+
+                let artworkSrc;
+                if (blob) {
+                    objectUrl = URL.createObjectURL(blob);
+                    immagine.src = objectUrl;
+                    artworkSrc = objectUrl;
+                } else {
+                    artworkSrc = "/static/d.png";
+                }
+
+                if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler("play", togglePlay);
+                navigator.mediaSession.setActionHandler("pause", togglePlay);
+                navigator.mediaSession.setActionHandler("nexttrack", nextSong);
+                navigator.mediaSession.setActionHandler("previoustrack", prevSong);
+
+                navigator.mediaSession.setActionHandler("seekto", details => {
+                    audioPlayer.currentTime = details.seekTime;
+                    progress.value = details.seekTime;
+                });
+
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: titolo,
+                    artist: cartella,
+                    album: "",
+                    artwork: [{
+                        src: artworkSrc,
+                        sizes: "512x512",
+                        type: "image/jpeg"
+                    }]
+                });
+                }
             });
 
             // Trova l'indice della canzone nella playlist attuale
