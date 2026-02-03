@@ -165,12 +165,18 @@
 
         function vol() {
             const volumeSlider = document.getElementById('volumeslider');
-            if (audioPlayer.volume != 20/100) {
+            // Ricava il valore corrente dello slider in [0,1]
+            let v = volumeSlider.value / 100;
+            // Calcola il volume corrente in scala logaritmica
+            let currentVolume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
+            if (Math.abs(currentVolume - Math.pow(10, (0.2 - 1) * 2)) > 0.01) {
+                // Imposta volume a 20% logaritmico
                 volumeSlider.value = 20;
-                audioPlayer.volume = 20 / 100;
+                audioPlayer.volume = Math.pow(10, (0.2 - 1) * 2);
             } else {
+                // Imposta volume a 100%
                 volumeSlider.value = 100;
-                audioPlayer.volume = 1;
+                audioPlayer.volume = Math.pow(10, (1 - 1) * 2); // = 1
             }
         }
 
