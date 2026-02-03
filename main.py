@@ -337,6 +337,7 @@ def get_info():
 def get_stats():
     def hours_played(plays):
         remove_song = []
+        total_hours = 0.0
         for song, count in plays.items():
             try:
                 folder, filename = song.split('/', 1)
@@ -349,12 +350,13 @@ def get_stats():
                     audio = MP3(mp3_path, ID3=ID3)
                     duration = audio.info.length
                 total_seconds = duration * count
-                total_hours = total_seconds / 3600
+                total_hours += total_seconds / 3600
             except Exception as e:
                 remove_song.append(song)
                 continue
         remove_song = list(set(remove_song))
         for song in remove_song:
+            print("Rimuovo canzone non trovata dalle statistiche:", song)
             plays.pop(song, None)
         with open(PLAYS_FILE, 'w') as f:
             json.dump(plays, f, indent=2)
