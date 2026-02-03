@@ -239,7 +239,7 @@
                         immagine.src = "/static/d.png";
                         immagine.classList.remove('cover');
                         immagine.classList.add('cover404');
-                        return null;
+                        return response.blob();
                     } else {
                         immagine.classList.remove('cover404');
                         immagine.classList.add('cover');
