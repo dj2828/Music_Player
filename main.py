@@ -333,6 +333,39 @@ def get_info():
     play_count = plays.get(song, 0)
     return jsonify({'plays': play_count})
 
+@app.route('/stats', methods=['GET'])
+def get_stats():
+    def hours_played(plays):
+        remove_song = []
+        for song, count in plays.items():
+            try:
+                folder, filename = song.split('/', 1)
+                folder_path = MUSIC_FOLDERS.get(folder)
+                mp3_path = os.path.join(folder_path, filename)
+                if mp3_path.endswith('.flac'):
+                    audio = FLAC(mp3_path)
+                    duration = audio.info.length
+                else:
+                    audio = MP3(mp3_path, ID3=ID3)
+                    duration = audio.info.length
+                total_seconds = duration * count
+                total_hours = total_seconds / 3600
+            except Exception as e:
+                remove_song.append(song)
+                continue
+        remove_song = list(set(remove_song))
+        for song in remove_song:
+            plays.pop(song, None)
+        with open(PLAYS_FILE, 'w') as f:
+            json.dump(plays, f, indent=2)
+        return round(total_hours, 2)
+    plays = load_plays()
+    total_songs = len(plays)
+    total_plays = sum(plays.values())
+    total_hours = hours_played(plays)
+    classifica = sorted(plays.items(), key=lambda x: x[1], reverse=True)[:10]
+
+    return render_template('stats.html', total_songs=total_songs, total_plays=total_plays, total_hours=total_hours, classifica=classifica)
 @app.after_request
 def add_header(response):
     if request.path.endswith(('.mp3', '.flac')):
