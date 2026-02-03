@@ -270,8 +270,8 @@
                 }
 
                 if ('mediaSession' in navigator) {
-                navigator.mediaSession.setActionHandler("play", togglePlay);
-                navigator.mediaSession.setActionHandler("pause", togglePlay);
+                navigator.mediaSession.setActionHandler("play", () => togglePlay());
+                navigator.mediaSession.setActionHandler("pause", () => togglePlay());
                 navigator.mediaSession.setActionHandler("nexttrack", nextSong);
                 navigator.mediaSession.setActionHandler("previoustrack", prevSong);
 

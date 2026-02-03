@@ -67,7 +67,8 @@ nav{
   max-width: 100%
 }
 .cover img {
-  width: 100%;        /* l'immagine riempie il contenitore in larghezza */
+  width: auto;        
+  max-width: 100%;    /* l'immagine riempie il contenitore in larghezza */
   height: 100%;       /* l'immagine riempie il contenitore in altezza */
   object-fit: cover;  /* mantiene proporzioni e taglia l'eccesso */
   border-radius: 20px;
@@ -397,7 +398,8 @@ nav{
     transition: all 0.3s ease;
   }
   .cover img{
-    width: 80%;
+    width: auto;
+    max-width: 80%;
     height: 150px;
     transition: all 0.3s ease;
   }
