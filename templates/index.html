@@ -432,7 +432,7 @@
 
             // Funzione dedicata all'invio dei dati
             function countPlay() {
-                const songPath = playlist[currentIndex-1].folder + '/' + playlist[currentIndex-1].song;
+                const songPath = playlist[currentIndex].folder + '/' + playlist[currentIndex].song;
                 
                 fetch('/increment_plays', {
                     method: 'POST',
