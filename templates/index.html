@@ -32,7 +32,7 @@
         <h1 id="titolo">TITOLO</h1>
         <p id="cartella" style="font-weight: normal;">CARTELLA</p>
 
-        <img src="" id="cover" class="cover404">
+        <div id="image-container" class="cover404"><img src="" id="cover"></div>
 
         <audio id="audioPlayer"></audio>
         <input type="range" value="0" id="progress">
@@ -239,18 +239,19 @@
             // immagine
             let objectUrl = null;
             const immagine = document.getElementById('cover');
+            const image_container = document.getElementById('image-container');
             let img = `/img?folder=${encodeURIComponent(folder)}&filename=${encodeURIComponent(song)}`;
             fetch(img)
             .then(response => {
                 if (!response.ok) {
-                immagine.classList.remove('cover');
-                immagine.classList.add('cover404');
+                image_container.classList.remove('cover');
+                image_container.classList.add('cover404');
                 immagine.src = "/static/d.png";
                 return null;
                 }
 
-                immagine.classList.remove('cover404');
-                immagine.classList.add('cover');
+                image_container.classList.remove('cover404');
+                image_container.classList.add('cover');
                 return response.blob();
             })
             .then(blob => {

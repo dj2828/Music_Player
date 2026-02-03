@@ -62,10 +62,15 @@ nav{
 }
 .cover {
   margin-top: 10px;
-  border-radius: 20px;
   height: 255px;
   width: auto;
-  max-width: calc(100% - 20px);
+  max-width: 100%
+}
+.cover img {
+  width: 100%;        /* l'immagine riempie il contenitore in larghezza */
+  height: 100%;       /* l'immagine riempie il contenitore in altezza */
+  object-fit: cover;  /* mantiene proporzioni e taglia l'eccesso */
+  border-radius: 20px;
 }
 .cover404{
   width: 0px;
@@ -391,7 +396,15 @@ nav{
     height: 150px;
     transition: all 0.3s ease;
   }
+  .cover img{
+    width: 80%;
+    height: 150px;
+    transition: all 0.3s ease;
+  }
   .music-player.compact .cover{
+    height: 100px;
+  }
+  .music-player.compact .cover img{
     height: 100px;
   }
   h1{
