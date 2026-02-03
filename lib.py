@@ -1,41 +1,66 @@
 import pychromecast, os, yt_dlp, difflib, tempfile, subprocess, hashlib
 
-def playG(url):
-    mc = chromecast.media_controller
-    if url == "play":
-        print("Play su Google Home")
-        mc.play()
-    elif url == "pause":
-        print("Pausa su Google Home")
-        mc.pause()
-    elif url == "stop":
-        print("Google Home stop")
-        mc.stop()
-    else:
-        print("Riproduzione su Google Home:", url)
-        mc.play_media(url, "audio/mp3")
-        mc.block_until_active()
-        mc.play()
-    return
+# Inizializziamo la variabile globale per evitare errori di "NameError"
+chromecast = None
+DEVICE_NAME = "Studio_mini" # Nome del dispositivo da cercare
 
 def init_google_home():
+    global chromecast
     try:
-        # Cerca tutti i dispositivi Chromecast nella rete
-        devices, browser = pychromecast.get_chromecasts()
-        # Mostra tutti i nomi trovati per aiutarti a identificare il tuo Google Home
+        print("Scansione dispositivi Chromecast in corso...")
+        # FIX: Aggiunto blocking=True come nel main.py, altrimenti non trova nulla
+        devices, browser = pychromecast.get_chromecasts(blocking=True)
+        
+        # Debug: mostra i dispositivi trovati
         for cc in devices:
-            print(cc.name)
-        # Scegli il dispositivo con nome esatto o parziale
-        device_name = "Studio_mini"  # oppure il nome esatto che hai visto stampato sopra
-        # Cerca il dispositivo corrispondente
-        global chromecast
-        chromecast = next(cc for cc in devices if device_name.lower() in cc.name.lower())
-        # Connessione al dispositivo
-        chromecast.wait()
-        return True
-    except:
-        print("Nessun dispositivo Google Home trovato. Assicurati che sia acceso e connesso alla rete.")
+            print(f"- Trovato: {cc.name}")
+
+        # Cerca il dispositivo (case insensitive)
+        chromecast = next(
+            (cc for cc in devices if DEVICE_NAME.lower() in cc.name.lower()), 
+            None
+        )
+
+        if chromecast:
+            chromecast.wait()
+            print(f"✅ Connesso con successo a: {chromecast.name}")
+            return True
+        else:
+            print(f"❌ Dispositivo '{DEVICE_NAME}' non trovato nella lista.")
+            return False
+
+    except Exception as e:
+        print(f"❌ Errore durante l'inizializzazione: {e}")
         return False
+
+def playG(url):
+    global chromecast
+    
+    # Controllo di sicurezza: se non siamo connessi, proviamo a riconnetterci
+    if chromecast is None:
+        print("⚠️ Chromecast non connesso. Tento la connessione...")
+        if not init_google_home():
+            return
+
+    try:
+        mc = chromecast.media_controller
+        
+        if url == "play":
+            print("▶️ Play su Google Home")
+            mc.play()
+        elif url == "pause":
+            print("⏸️ Pausa su Google Home")
+            mc.pause()
+        elif url == "stop":
+            print("⏹️ Google Home stop")
+            mc.stop()
+        else:
+            print(f"🎵 Avvio riproduzione: {url}")
+            mc.play_media(url, "audio/mp3")
+            mc.block_until_active()
+            mc.play()
+    except Exception as e:
+        print(f"Errore nel comando playG: {e}")
 
 def getSimileCanz(data, songs_by_folder):
     print("Canzone richiesta:", data)
