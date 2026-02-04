@@ -244,10 +244,10 @@
             fetch(img)
             .then(response => {
                 if (!response.ok) {
-                image_container.classList.remove('cover');
-                image_container.classList.add('cover404');
-                immagine.src = "/static/d.png";
-                return null;
+                    immagine.src = "/static/d.png";
+                    image_container.classList.remove('cover');
+                    image_container.classList.add('cover404');
+                    return null;
                 }
 
                 image_container.classList.remove('cover404');
