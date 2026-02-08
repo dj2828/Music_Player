@@ -163,7 +163,6 @@ def download():
     else:
         return jsonify({"status": "error"}), 500
     
-
 @app.route('/<folder>/<filename>')
 def music(folder, filename):
     if folder_path := MUSIC_FOLDERS.get(folder):
@@ -324,6 +323,7 @@ def increment_plays():
     plays[song] = plays.get(song, 0) + 1
     with open(PLAYS_FILE, 'w') as f:
         json.dump(plays, f, indent=2)
+    print(f"Incrementato play count per {song}: {plays[song]} plays totali")
     return "OK", 200
 
 @app.route('/info', methods=['GET'])

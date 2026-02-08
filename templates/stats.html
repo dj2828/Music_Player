@@ -9,12 +9,12 @@
 <body bgcolor="ff5500">
     <div id="container">
         <h1>Stats</h1>
-        <br><hr color="black">
+        <br><hr>
         <h2>Brani totali: {{ total_songs }}</h2>
         <h2>Totale riproduzioni: {{ total_plays }}</h2>
         <h2 id="ore"></h2>
         <div id="classifica"></div>
-        <hr color="black">
+        <hr>
         <button onclick="window.location='/'"><h3>Torna alla Home</h3></button>
     </div>
     
@@ -24,6 +24,17 @@
             padding: 0;
             font-family: Arial, Helvetica, sans-serif;
             color: white;
+        }
+        hr{
+            border-top-style: solid;
+            border-bottom-style: solid;
+            border-left-style: solid;
+            border-right-style: solid;
+            border-left-color: rgb(0, 0, 0);
+            border-right-color: rgb(0, 0, 0);
+            border-bottom-color: rgb(0, 0, 0);
+            border-top-color: rgb(0, 0, 0);
+            background-color: rgb(0, 0, 0);
         }
         #container{
             text-align: center;
@@ -83,25 +94,40 @@
 
         let classifica = {{ classifica|tojson }};
         const classificaDiv = document.getElementById('classifica');
-        let classificaHTML = '<h2>Top 10 Brani Più Ascoltati</h2>';
+        let classificaHTML = '<hr><h2>Top 10 Brani Più Ascoltati</h2>';
         let numero = 1;
-        classifica.forEach(item => {
-            let img = `/img?folder=${encodeURIComponent(item[0].split('/')[0])}&filename=${encodeURIComponent(item[0].split('/')[1])}`;
-            let img_class = '';
-            fetch(img)
+
+        // Creiamo un array di "Promesse" (richieste in corso)
+        const promesse = classifica.map(item => {
+            let folder = encodeURIComponent(item[0].split('/')[0]);
+            let filename = encodeURIComponent(item[0].split('/')[1]);
+            let imgUrl = `/img?folder=${folder}&filename=${filename}`;
+
+            return fetch(imgUrl)
                 .then(response => {
-                    if (response.status === 404) {
-                        return { src: "/static/d.png", cls: "cover404" };
-                    }
-                    return response.blob().then(blob => ({
-                        src: URL.createObjectURL(blob),
-                        cls: "cover"
-                    }));
+                    if (response.status === 404) return { src: "/static/d.png", cls: "cover404" };
+                    return response.blob().then(blob => ({ src: URL.createObjectURL(blob), cls: "cover" }));
                 })
-                .then(({ src, cls }) => {
-                    classificaHTML += `<div style="display:flex; align-items: center;">${numero++}<div class='item-classifica'><img src="${src}" class="${cls}">${item[0].split('/').pop().replace(/\.(mp3|flac)$/, '')} - ${item[1]} plays</div></div>`;
-                    classificaDiv.innerHTML = classificaHTML;
+                .catch(() => ({ src: "/static/d.png", cls: "cover404" })) // Fallback in caso di errore
+                .then(imgData => ({ ...imgData, item })); // Passiamo anche i dati dell'item originale
+        });
+
+        // Promise.all aspetta che tutte siano pronte, mantenendo l'ordine dell'array originale
+        Promise.all(promesse).then(risultati => {
+            let numero = 1;
+            
+            risultati.forEach(({ src, cls, item }) => {
+                classificaHTML += `<div style="display:flex; align-items: center;">
+                    ${numero++}
+                    <div class='item-classifica'>
+                        <img src="${src}" class="${cls}">
+                        ${item[0].split('/').pop().replace(/\.(mp3|flac)$/, '')} - ${item[1]} plays
+                    </div>
+                </div>`;
             });
+
+            // Aggiorniamo il DOM una sola volta alla fine (meglio per le performance)
+            classificaDiv.innerHTML = classificaHTML;
         });
     </script>
 </body>
