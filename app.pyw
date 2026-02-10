@@ -34,7 +34,7 @@ mini_window = None
 api = ApiBridge()
 def crea_window():
     global main_window, mini_window
-    main_window = webview.create_window("Music_player", "http://127.0.0.1:5000", width=500, height=700, js_api=api)
+    main_window = webview.create_window("Music_player", "http://127.0.0.1:5000", width=1100, height=700, js_api=api)
     main_window.events.minimized += on_window_minimized
     main_window.events.closing += on_window_closed
 
