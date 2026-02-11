@@ -317,8 +317,6 @@
                 randomFolderPlaylist = null;
                 currentIndex = idx;
             }
-
-            nextSongPreload();
         }
 
         function playFolderRandom(folder) {
@@ -387,23 +385,6 @@
             }
         }
 
-        // si scaria la prossima canzone
-        function nextSongPreload() {
-            let next;
-            if (randomFolderPlaylist && currentIndex + 1 < randomFolderPlaylist.length) {
-                next = randomFolderPlaylist[currentIndex + 1];
-            } else if (!randomFolderPlaylist && currentIndex + 1 < playlist.length) {
-                next = playlist[currentIndex + 1];
-            }
-            if (next) {
-                const preloadLink = document.createElement('link');
-                preloadLink.rel = 'preload';
-                preloadLink.as = 'fetch';
-                preloadLink.href = `/` + encodeURIComponent(next.folder) + `/` + encodeURIComponent(next.song);
-                document.head.appendChild(preloadLink);
-            }
-        }
-
         // All'avvio, recupera l'ultimo mp3 dal cookie e formatta l'URL in modo leggibile
         const lastMp3Url = getLastPlayedMp3Url();
         if (lastMp3Url) {
@@ -449,7 +430,12 @@
 
             // Funzione dedicata all'invio dei dati
             function countPlay() {
-                const songPath = playlist[currentIndex].folder + '/' + playlist[currentIndex].song;
+                if (randomFolderPlaylist) {
+                    var currentSong = randomFolderPlaylist[currentIndex];
+                } else {
+                    var currentSong = playlist[currentIndex];
+                }
+                const songPath = currentSong.folder + '/' + currentSong.song;
                 
                 fetch('/increment_plays', {
                     method: 'POST',
