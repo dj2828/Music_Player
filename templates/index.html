@@ -329,10 +329,6 @@
             }
         }
 
-        document.getElementById('audioPlayer').addEventListener('ended', function() {
-            nextSong();
-        });
-
         function nextSong() {
             if (randomFolderPlaylist) {
                 if (currentIndex + 1 < randomFolderPlaylist.length) {
