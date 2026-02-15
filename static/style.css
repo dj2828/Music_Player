@@ -121,7 +121,6 @@ nav{
   transition: all 0.3s;
 }
 .controls div:nth-child(2){
-  border: 1px solid #000000;
   transform: scale(1.5);
 }
 .controls div:hover {
