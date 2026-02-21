@@ -452,8 +452,11 @@
 
     <div id="menu" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
         <div style="background:#ff5500; color:#000; padding:30px 20px; border-radius:12px; min-width:600px; max-width:90vw; min-height: 300px; margin:auto; position:relative; display: flex; align-items: center; justify-content: center;">
-            <div onclick="openModal()" class="circle">
+            <div onclick="opendownModal()" class="circle">
                 <i class="fa-solid fa-download"></i>
+            </div>
+            <div onclick="openlyricsModal()" class="circle">
+                <i class="fa-solid fa-file"></i>
             </div>
             <div onclick="if(googleHome){googleHome=false; googleHomeF('stop'); play(false); closeMenu()} else{googleHomeF('init'); googleHome=true; audioPlayer.pause(); play(false);};" class="circle">
                 <i class="fa-solid fa-wifi"></i>
@@ -474,6 +477,15 @@
                 <input type="text" id="yt_url" placeholder="Incolla link YouTube || Cerca su YouTube" style="width:300px; border-radius: 20px; padding: 20px; font-size: medium; font-weight: normal;">
                 <button onclick="downloadYT()" class="song">Scarica da YouTube</button>
                 <div id="downloadMsg" style="color:black; margin-top:20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="lyricsModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; align-items:center; justify-content:center;">
+        <div style="background:#ff5500; color:#000; padding:30px 20px; border-radius:12px; min-width:600px; max-width:90vw; min-height: 300px; margin:auto; position:relative; display: flex; align-items: center; justify-content: center;">
+            <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
+            <div style="text-align:center;">
+                <p id="lyricsText"></p>
             </div>
         </div>
     </div>
@@ -540,17 +552,40 @@
     }
 
 
-    function openModal() {
+    function opendownModal() {
         document.getElementById('downloadModal').style.display = 'flex';
     }
+    function openlyricsModal() {
+        document.getElementById('lyricsModal').style.display = 'flex';
+        let lyricsText = document.getElementById('lyricsText');
+
+        const url = "{{ url_for('lyrics', folder='FOLDER', filename='SONG') }}"
+            .replace('FOLDER', encodeURIComponent(playlist[currentIndex]["folder"]))
+            .replace('SONG', encodeURIComponent(playlist[currentIndex]["song"]));
+        
+        fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                lyricsText.textContent = "Errore 404: Testo non trovato";
+            }
+            return response.text(); // 1. Chiedi il testo (ritorna una Promise)
+        })
+        .then(testoPuro => {
+            lyricsText.textContent = testoPuro; 
+        })
+        }
     function closeModal() {
         document.getElementById('downloadModal').style.display = 'none';
+        document.getElementById('lyricsModal').style.display = 'none';
     }
     // Chiudi modale con ESC o clic fuori
     window.addEventListener('keydown', function(e) {
         if (e.key === "Escape") closeModal();
     });
     document.getElementById('downloadModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+    document.getElementById('lyricsModal').addEventListener('click', function(e) {
         if (e.target === this) closeModal();
     });
 

@@ -1,4 +1,7 @@
-import pychromecast, os, yt_dlp, difflib, tempfile, subprocess, hashlib
+import pychromecast, os, yt_dlp, difflib, tempfile, subprocess, hashlib, re
+from mutagen.flac import FLAC
+from mutagen.mp3 import MP3
+from mutagen.id3 import ID3, USLT
 
 # Inizializziamo la variabile globale per evitare errori di "NameError"
 chromecast = None
@@ -169,3 +172,30 @@ def get_cached_mp3(file_path, cache_dir="cache_mp3"):
         if os.path.exists(cached_path):
             os.unlink(cached_path)
         return None
+
+def get_testo(file_path):
+    def pulisci_testo(testo_raw):
+        # 1. Rimuoviamo i metadati iniziali tipo [ti:...] [ar:...] [by:...]
+        # Cerchiamo parentesi che contengono lettere e due punti
+        testo_senza_meta = re.sub(r'\[[a-z]+:.*?\]', '', testo_raw, flags=re.IGNORECASE)
+        
+        # 2. Dividiamo il testo usando i timestamp [00:00.00] come separatori
+        # La regex \[\d{2}:\d{2}\.\d{2}\] cerca il formato standard del tempo
+        linee = re.split(r'\[\d{2}:\d{2}\.\d{2}\]', testo_senza_meta)
+        
+        # 3. Puliamo ogni riga (togliamo spazi bianchi extra) 
+        # e uniamo tutto con un carattere di andata a capo \n
+        testo_finale = "\n".join([linea.strip() for linea in linee if linea.strip()])
+        
+        return testo_finale
+    if(file_path.endswith('.flac')):
+        audio = FLAC(file_path)
+        if "LYRICS" in audio:
+            return pulisci_testo(audio["LYRICS"][0])
+    elif(file_path.endswith('.mp3')):
+        audio = MP3(file_path, ID3=ID3)
+        for tag in audio.values():
+            if isinstance(tag, USLT):
+                return pulisci_testo(tag.text)
+
+    
