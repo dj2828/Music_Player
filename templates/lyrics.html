@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testo Canzone</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-weight: bold;
+            background-color: #ff5500;
+            color: #e0e0e0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        #lyrics-container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        .lyric-line {
+            margin-bottom: 12px;
+            font-size: 18px;
+            line-height: 1.5;
+            transition: all 0.3s;
+        }
+        .timestamp {
+            color: #1db954;
+            font-family: monospace;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 16px;
+        }
+        .text {
+            color: #e0e0e0;
+        }
+
+        .si{
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- <audio controls id="audioPlayer">
+        <source src="http://localhost/Tha%20Supreme/gua10%20-%20feat.%20Lazza.flac" type="audio/flac">
+    </audio> -->
+
+    <div id="lyrics-container">
+        <div id="testo-output">Caricamento del testo in corso...</div>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const url = params.get("url");
+
+        let lyricsArray = null;
+        let audioPlayer = window.parent.document.getElementById("audioPlayer");
+        const updateProgress = setInterval(() => {
+            if(audioPlayer.currentTime){
+                ingrandisciTesto(getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime));
+            }
+        }, 500);
+
+        function ingrandisciTesto(a){
+            let testoDiv = document.getElementById("testo-output");
+            testoDiv.children[a].classList.add("si");
+            if(a!==0) testoDiv.children[a-1].classList.remove("si");   
+        }
+
+
+        function getCurrentLrcIndex(lrcArray, currentTime) {
+            function parseTime(tag) {
+                if (typeof tag !== "string") return null;
+
+                const match = tag.match(/\[(\d{2}):(\d{2}\.\d{2})\]/);
+                if (!match) return null;
+
+                const minutes = parseInt(match[1], 10);
+                const seconds = parseFloat(match[2]);
+
+                return minutes * 60 + seconds;
+            }
+
+            let index = -1;
+
+            for (let i = 0; i < lrcArray.length; i++) {
+                const time = parseTime(lrcArray[i].originalTime);
+                if (time === null) continue;
+
+                if (currentTime >= time) {
+                    index = i;
+                } else {
+                    break;
+                }
+            }
+
+            return index;
+        }
+        // Funzione per fare il fetch del testo
+        async function fetchLyrics() {
+            try {
+                // ATTENZIONE: Sostituisci 'testo.lrc' con l'URL o il percorso reale del tuo file
+                // Es: fetch('https://tuosito.com/testo.txt')
+                const response = await fetch(url); 
+                
+                if (!response.ok) {
+                    throw new Error(`Errore HTTP: ${response.status}`);
+                }
+                
+                const lrcText = await response.text();
+                displayLyrics(lrcText);
+                
+            } catch (error) {
+                document.getElementById('testo-output').innerHTML = 
+                    `<p style="color: #ff4d4d;">Errore nel caricamento del file: ${error.message}</p>
+                     <p style="font-size: 14px; color: #888;">Assicurati che il file esista e che tu stia usando un server locale (es. Live Server) per evitare errori CORS.</p>`;
+                console.error("Dettaglio errore:", error);
+            }
+        }
+
+        // Funzione per analizzare il formato LRC
+        function parseLRC(text) {
+            const lines = text.split('\n');
+            const parsedLyrics = [];
+            
+            // RegEx per cercare la struttura [mm:ss.xx]Testo
+            const regex = /\[(\d{2}):(\d{2}\.\d{2})\](.*)/;
+
+            lines.forEach(line => {
+                const match = line.match(regex);
+                if (match) {
+                    const textContent = match[3].trim();
+                    // Aggiungiamo il testo solo se c'è (ignoriamo righe vuote)
+                    if (textContent !== "") {
+                        parsedLyrics.push({ 
+                            originalTime: `[${match[1]}:${match[2]}]`, 
+                            text: textContent 
+                        });
+                    }
+                }
+            });
+            return parsedLyrics;
+        }
+
+        // Funzione per stampare in pagina l'HTML
+        function displayLyrics(rawText) {
+            const outputDiv = document.getElementById('testo-output');
+            outputDiv.innerHTML = ''; // Svuota il "caricamento in corso"
+            
+            lyricsArray = parseLRC(rawText);
+
+            lyricsArray.forEach(line => {
+                const p = document.createElement('p');
+                p.className = 'lyric-line';
+                
+                // Creiamo lo span per il tempo
+                // const timeSpan = document.createElement('span');
+                // timeSpan.className = 'timestamp';
+                // timeSpan.textContent = line.originalTime;
+                
+                // Creiamo lo span per il testo
+                const textSpan = document.createElement('span');
+                textSpan.className = 'text';
+                textSpan.textContent = line.text;
+
+                // p.appendChild(timeSpan);
+                p.appendChild(textSpan);
+                
+                outputDiv.appendChild(p);
+            });
+        }
+
+        // Avviamo il processo
+        fetchLyrics();
+    </script>
+</body>
+</html>

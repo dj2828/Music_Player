@@ -483,12 +483,7 @@
     <div id="lyricsModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; align-items:center; justify-content:center;">
         <div style="background:#ff5500; color:#000; padding:30px 20px; border-radius:12px; max-width:90vw; min-height: 300px; margin:auto; position:relative; display: flex; align-items: center; justify-content: center;">
             <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
-            <div style="text-align:center;">
-                <p id="lyricsText" style="  max-height: 550px;       /* Scegli l'altezza che preferisci */
-                                            overflow-y: auto;    /* Attiva la barra di scorrimento solo se serve */
-                                            padding: 10px;       /* Opzionale: per non far toccare il testo ai bordi */
-                                            white-space: pre-wrap;"></p>
-            </div>
+            <iframe src="" frameborder="0" width="1000px" height="700px" id="iframe-lirics" style="padding: 10px;"></iframe>
         </div>
     </div>
 
@@ -559,26 +554,17 @@
     }
     function openlyricsModal() {
         document.getElementById('lyricsModal').style.display = 'flex';
-        let lyricsText = document.getElementById('lyricsText');
+        let lyrics = document.getElementById('iframe-lirics');
 
         const folder = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].folder : playlist[currentIndex].folder;
         const song = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].song : playlist[currentIndex].song;
 
-        const url = "{{ url_for('lyrics', folder='FOLDER', filename='SONG') }}"
+        const url = "{{ url_for('get_lyrics', folder='FOLDER', filename='SONG') }}"
             .replace('FOLDER', encodeURIComponent(folder))
             .replace('SONG', encodeURIComponent(song));
         
-        fetch(url)
-        .then(response => {
-            if (!response.ok) {
-                lyricsText.textContent = "Errore 404: Testo non trovato";
-            }
-            return response.text(); // 1. Chiedi il testo (ritorna una Promise)
-        })
-        .then(testoPuro => {
-            lyricsText.textContent = testoPuro; 
-        })
-        }
+        lyrics.src = "lyrics?url=" + url;
+    }
     function closeModal() {
         document.getElementById('downloadModal').style.display = 'none';
         document.getElementById('lyricsModal').style.display = 'none';

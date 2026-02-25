@@ -369,13 +369,17 @@ def get_stats():
 
     return render_template('stats.html', total_songs=total_songs, total_plays=total_plays, total_hours=total_hours, classifica=classifica)
 
-@app.route('/lyrics/<folder>/<filename>')
-def lyrics(folder, filename):
+@app.route('/get_lyrics/<folder>/<filename>')
+def get_lyrics(folder, filename):
     if folder_path := MUSIC_FOLDERS.get(folder):
         testo = lib.get_testo(os.path.join(folder_path, filename))
-        return testo if testo else "Testo non trovato", 404
+        return (testo, 200) if testo else ("Testo non trovato", 404)
     else:
         return "Cartella non trovata", 404
+
+@app.route('/lyrics')
+def a():
+    return render_template("lyrics.html")
 
 @app.after_request
 def add_header(response):
