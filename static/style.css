@@ -75,8 +75,7 @@ nav{
   border-radius: 20px;
 }
 .cover404{
-  width: 0px;
-  height: 0px;
+  display: none;
 }
 #progress{
   -webkit-appearance: none;

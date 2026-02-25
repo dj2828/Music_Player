@@ -244,7 +244,6 @@
             fetch(img)
             .then(response => {
                 if (!response.ok) {
-                    immagine.src = "/static/d.png";
                     image_container.classList.remove('cover');
                     image_container.classList.add('cover404');
                     return null;
@@ -266,7 +265,7 @@
                     immagine.src = objectUrl;
                     artworkSrc = objectUrl;
                 } else {
-                    artworkSrc = "/static/d.png";
+                    artworkSrc = "";
                 }
 
                 if ('mediaSession' in navigator) {

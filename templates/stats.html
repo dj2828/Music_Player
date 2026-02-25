@@ -105,10 +105,10 @@
 
             return fetch(imgUrl)
                 .then(response => {
-                    if (response.status === 404) return { src: "/static/d.png", cls: "cover404" };
+                    if (response.status === 404) return { src: "", cls: "cover404" };
                     return response.blob().then(blob => ({ src: URL.createObjectURL(blob), cls: "cover" }));
                 })
-                .catch(() => ({ src: "/static/d.png", cls: "cover404" })) // Fallback in caso di errore
+                .catch(() => ({ src: "", cls: "cover404" })) // Fallback in caso di errore
                 .then(imgData => ({ ...imgData, item })); // Passiamo anche i dati dell'item originale
         });
 
