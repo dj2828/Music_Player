@@ -66,6 +66,7 @@ def get_music():
         if os.path.exists(folder_path):
             temp_albums = {}
             songs = [f for f in os.listdir(folder_path) if f.lower().endswith(('.mp3', '.flac'))]
+            songs = sorted(songs, key=lambda x: x.lower())
             
             for filename in songs:
                 nome_album = album(folder_name, filename) # Usa la tua funzione ID3
