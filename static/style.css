@@ -178,6 +178,9 @@ nav{
 .cartella .circle:hover {
   transform: scale(1.2);
 }
+.album-title {
+  margin-top: 10px;
+}
 .song{
   background-color: blue;
   border: 1px solid black;
