@@ -38,11 +38,15 @@
             font-size: 16px;
         }
         .text {
-            color: #e0e0e0;
+            color: #bdbdbd;
         }
 
         .si{
             transform: scale(1.2);
+        }
+        .si span{
+            color: #fff;
+            text-shadow: 2px 1px 6px rgb(0 0 0);
         }
     </style>
 </head>
@@ -62,9 +66,26 @@
 
         let lyricsArray = null;
         let audioPlayer = window.parent.document.getElementById("audioPlayer");
+        let ultimoIndice = -1;
+
         const updateProgress = setInterval(() => {
-            if(audioPlayer.currentTime){
-                ingrandisciTesto(getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime));
+            if (audioPlayer && audioPlayer.currentTime && lyricsArray) {
+
+                const index = getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime);
+
+                if (index !== -1 && index !== ultimoIndice) {
+                    ultimoIndice = index;
+
+                    ingrandisciTesto(index);
+
+                    const rigaAttiva = document.querySelector(".si");
+                    if (rigaAttiva) {
+                        rigaAttiva.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        });
+                    }
+                }
             }
         }, 500);
 
