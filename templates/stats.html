@@ -12,7 +12,7 @@
         <br><hr>
         <h2>Brani totali: {{ total_songs }}</h2>
         <h2>Totale riproduzioni: {{ total_plays }}</h2>
-        <h2 id="ore"></h2>
+        <h2 id="ore">{{ total_hours }}</h2>
         <div id="classifica"></div>
         <hr>
         <button onclick="window.location='/'"><h3>Torna alla Home</h3></button>
@@ -88,11 +88,6 @@
         }
     </style>
     <script>
-        let totalHours = {{ total_hours }};
-        totalHours = totalHours.toString();
-        const oreElement = document.getElementById('ore');
-        oreElement.textContent = totalHours.split('.')[0] + 'H ' + totalHours.split('.')[1].substring(0, 2) + 'm';
-
         let classifica = {{ classifica|tojson }};
         const classificaDiv = document.getElementById('classifica');
         let classificaHTML = '<hr><h2>Top 10 Brani Più Ascoltati</h2>';
