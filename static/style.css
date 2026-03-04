@@ -113,7 +113,6 @@ nav{
   margin: 20px;
   border-radius: 50%;
   color: #000000;
-  /* background-color: #ffffff; */
   border: 2px solid #000000;
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
   cursor: pointer;
@@ -125,13 +124,17 @@ nav{
   transform: scale(1);
   transition: all 0.3s;
 }
-.controls div:nth-child(2){
+.controls div:nth-child(1){
+  position: absolute;
+  left: 35px;
+}
+.controls div:nth-child(3){
   transform: scale(1.5);
 }
 .controls div:hover {
   transform: scale(1.2);
 }
-.controls div:nth-child(2):hover{
+.controls div:nth-child(3):hover{
   transform: scale(1.7);
 }
 #menu .circle{
@@ -200,6 +203,9 @@ nav{
 }
 .song > * {
   pointer-events: none;
+}
+.song.pref{
+  box-shadow: 0 5px 10px rgb(255 198 0);
 }
 
 #divol{
@@ -319,10 +325,10 @@ nav{
   .controls div:active {
     transform: scale(1.2);
   }
-  .controls div:nth-child(2):hover{
+  .controls div:nth-child(3):hover{
     transform: scale(1.5);
   }
-  .controls div:nth-child(2):active{
+  .controls div:nth-child(3):active{
     transform: scale(1.7);
   }
   .cartella .circle:hover {

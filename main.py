@@ -151,7 +151,7 @@ ALBUM_FINTI = get_album_finti('config.txt')
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html', songs_by_folder=get_music())
+    return render_template('index.html', songs_by_folder=get_music(), pref=load_pref())
 
 @app.route('/errore', methods=['GET'])
 def errore():
@@ -391,6 +391,36 @@ def get_lyrics(folder, filename):
 @app.route('/lyrics')
 def a():
     return render_template("lyrics.html")
+
+PREF_FILE = 'pref.json'
+def load_pref():
+    if os.path.exists(PREF_FILE):
+        with open(PREF_FILE, 'r') as f:
+            return json.load(f)
+    else:
+        with open("pref.json", "w", encoding="utf-8") as f:
+            f.write("[]")
+    return []
+@app.route('/pref', methods=['GET', 'POST'])
+def pref():
+    if request.method == 'GET':
+        if song := request.args.get('song'):
+            pref = load_pref()
+            is_pref = song in pref
+            return jsonify({'is_pref': is_pref}), 200
+        else:
+            return "Skibidi", 400
+    song = request.form.get('song')
+    pref = load_pref()
+    if song in pref:
+        pref.remove(song)
+        status = "removed"
+    else:
+        pref.append(song)
+        status = "added"
+    with open('pref.json', 'w') as f:
+        json.dump(pref, f, indent=2)
+    return jsonify({"status": status}), 200
 
 @app.after_request
 def add_header(response):

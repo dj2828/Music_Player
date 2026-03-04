@@ -38,6 +38,7 @@
         <input type="range" value="0" id="progress">
 
         <div class="controls">
+            <div onclick="togglePref()"><i id="prefIcon" class="fa-regular fa-heart"></i></div>
             <div onclick="prevSong()"><i class="fa-solid fa-backward"></i></div>
             <div onclick="togglePlay()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
             <div onclick="nextSong()"><i class="fa-solid fa-forward"></i></div>
@@ -62,7 +63,7 @@
                 
                 <div>
                 {% for song in songs %}
-                    <button onclick='playSong("{{ folder }}/{{ song }}")' class="song">
+                    <button onclick='playSong("{{ folder }}/{{ song }}")' class="song{{ ' pref' if folder+'/'+song in pref else '' }}">
                         <h3>{{ song.replace('.mp3', '').replace('.flac', '') }}</h3>
                     </button>
                 {% endfor %}
@@ -316,6 +317,8 @@
                 randomFolderPlaylist = null;
                 currentIndex = idx;
             }
+
+            get_pref(); // Aggiorna stato preferito per la nuova canzone
         }
 
         function playFolderRandom(folder) {
@@ -425,12 +428,7 @@
 
             // Funzione dedicata all'invio dei dati
             function countPlay() {
-                if (randomFolderPlaylist) {
-                    var currentSong = randomFolderPlaylist[currentIndex];
-                } else {
-                    var currentSong = playlist[currentIndex];
-                }
-                const songPath = currentSong.folder + '/' + currentSong.song;
+                
                 
                 fetch('/increment_plays', {
                     method: 'POST',
@@ -447,6 +445,66 @@
             audioPlayer.addEventListener('ended', function() {
                 nextSong();
             });
+
+
+            // canzoni preferite
+            function togglePref(){
+                if (randomFolderPlaylist) {
+                    var currentSong = randomFolderPlaylist[currentIndex];
+                } else {
+                    var currentSong = playlist[currentIndex];
+                }
+                const songPath = currentSong.folder + '/' + currentSong.song;
+
+                fetch('/pref', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: 'song=' + encodeURIComponent(songPath)
+                }).then(response => {
+                    if (response.ok) {
+                        get_pref(); // Aggiorna lo stato preferito dopo il toggle
+                    } else {
+                        console.error('Errore nel toggle preferito');
+                    }
+                }).catch(error => console.error('Errore nel toggle preferito:', error));
+            }
+            function get_pref(){
+                if (randomFolderPlaylist) {
+                    var currentSong = randomFolderPlaylist[currentIndex];
+                } else {
+                    var currentSong = playlist[currentIndex];
+                }
+                const songPath = currentSong.folder + '/' + currentSong.song;
+                
+                fetch('/pref?song=' + encodeURIComponent(songPath), {method: 'GET',})
+                .then(response => response.json())
+                .then(data => {
+                    if(data.is_pref){
+                        // è preferita
+                        document.getElementById('prefIcon').classList.add('fa-solid');
+                        document.getElementById('prefIcon').classList.remove('fa-regular');
+                    } else {
+                        document.getElementById('prefIcon').classList.remove('fa-solid');
+                        document.getElementById('prefIcon').classList.add('fa-regular');
+                    }
+                })
+            }
+            function get_all_pref(){
+                fetch('/pref', {method: 'GET',})
+                .then(response => response.json())
+                .then(data => {
+                    if(data.is_pref){
+                        // è preferita
+                        document.getElementById('prefIcon').classList.add('fa-solid');
+                        document.getElementById('prefIcon').classList.remove('fa-regular');
+                    } else {
+                        document.getElementById('prefIcon').classList.remove('fa-solid');
+                        document.getElementById('prefIcon').classList.add('fa-regular');
+                    }
+                })
+            }
     </script>
 
     <div id="menu" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
