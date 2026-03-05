@@ -388,6 +388,10 @@ nav{
     width: 30px;
     height: 30px;
   }
+  .music-player .controls div:nth-child(1) {
+    left: -10px;
+    transform: scale(0.8);
+  }
   .music-player nav{
     transition: transform 0.3s ease, opacity 0.3s ease;
     max-height: 80px;
