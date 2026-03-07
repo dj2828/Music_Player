@@ -174,7 +174,7 @@ def get_cached_mp3(file_path, cache_dir="cache_mp3"):
             os.unlink(cached_path)
         return None
 
-def get_testo(file_path):
+def get_testo(file_path, DOCKER=False):
     def pulisci_testo(testo_raw):
         # Rimuove solo metadati tipo [ti:...] [ar:...] ecc.
         testo = re.sub(r'\[[a-z]+:.*?\]', '', testo_raw, flags=re.IGNORECASE)
@@ -197,8 +197,9 @@ def get_testo(file_path):
                 testo = tag.text
 
     if not testo.strip():
-        print(f"Testo non trovato nei metadati, cerco online... '{file_path.split('\\')[-1].split('.')[0]}'")
-        response = get(f"https://lrclib.net/api/search?q={file_path.split('\\')[-1].split('.')[0]}")
+        path = f'{file_path.split("\\")[-1].split(".")[0]}' if not DOCKER else f'{file_path.split("/")[-1].split(".")[0]}'
+        print(f"Testo non trovato nei metadati, cerco online... '{path}'")
+        response = get(f"https://lrclib.net/api/search?q={path}")
         if response.status_code == 200:
             dati = response.json()
             
