@@ -241,7 +241,7 @@
             let objectUrl = null;
             const immagine = document.getElementById('cover');
             const image_container = document.getElementById('image-container');
-            let img = `/img?folder=${encodeURIComponent(folder)}&filename=${encodeURIComponent(song)}`;
+            let img = `/img/${encodeURIComponent(folder)}/${encodeURIComponent(song)}`;
             fetch(img)
             .then(response => {
                 if (!response.ok) {

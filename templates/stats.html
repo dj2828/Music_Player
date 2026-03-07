@@ -97,7 +97,7 @@
         const promesse = classifica.map(item => {
             let folder = encodeURIComponent(item[0].split('/')[0]);
             let filename = encodeURIComponent(item[0].split('/')[1]);
-            let imgUrl = `/img?folder=${folder}&filename=${filename}`;
+            let imgUrl = `/img/${folder}/${filename}`;
 
             return fetch(imgUrl)
                 .then(response => {

@@ -105,6 +105,8 @@ def get_music():
                     final_structure[nome_alb] = tracce
                 else:
                     brani_singoli.extend(tracce)
+                    if nome_alb != "_SCONOSCIUTO_":
+                        tutti_album_singoli.append(nome_alb)
 
             if brani_singoli:
                 final_structure["Brani Singoli"] = brani_singoli
@@ -148,6 +150,7 @@ MUSIC_FOLDERS = load_music_folders('config.txt')
 IP = ip('config.txt')
 googleHome = False
 ALBUM_FINTI = get_album_finti('config.txt')
+tutti_album_singoli = [] # per tenere traccia di tutti i brani singoli, così da escluderli dagli album in img album
 
 @app.route('/', methods=['GET'])
 def index():
@@ -175,10 +178,8 @@ def music(folder, filename):
     else:
         return "Cartella non trovata", 404
 
-@app.route('/img', methods=['GET'])
-def img():
-    folder = request.args.get('folder')
-    filename = request.args.get('filename')
+@app.route('/img/<folder>/<filename>', methods=['GET'])
+def img(folder, filename):
     folder_path = MUSIC_FOLDERS.get(folder)
     mp3_path = os.path.join(folder_path, filename)
     if mp3_path.endswith('.flac'):
@@ -190,7 +191,7 @@ def img():
         album = audio.get("TALB")
         album_name = album.text[0] if album else None
 
-    if album_name and album_name not in ALBUM_FINTI:
+    if album_name and album_name not in ALBUM_FINTI and album_name not in tutti_album_singoli:
         album_name = album_name.strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
         img_path = os.path.join(COVER_FOLDER, "album", f"{album_name}.png")
         nome_img = f'{album_name}.png'
@@ -225,8 +226,19 @@ def img():
                     break
     else:
         print("Immagine già presente")
+    print(tutti_album_singoli)
+    if album_name and album_name not in ALBUM_FINTI and album_name not in tutti_album_singoli:
+        return redirect("/img/album/" + album_name)
+    else:
+        return send_from_directory(dir_img, nome_img)
 
-    return send_from_directory(dir_img, nome_img)
+@app.route('/img/album/<album_name>', methods=['GET'])
+def img_album(album_name):
+    img_path = os.path.join(COVER_FOLDER, "album", f"{album_name}.png")
+    if os.path.exists(img_path):
+        return send_from_directory(os.path.join(COVER_FOLDER, "album"), f"{album_name}.png")
+    else:
+        return "Immagine non trovata", 404
 
 @app.route('/google', methods=['POST'])
 def google_home_da_sito():
@@ -426,6 +438,8 @@ def pref():
 def add_header(response):
     if request.path.endswith(('.mp3', '.flac')):
         response.headers['Cache-Control'] = 'public, max-age=3600'
+    if request.path.startswith('/img/album/'):
+        response.headers['Cache-Control'] = 'public, max-age=86400'
     return response
 
 if __name__ == '__main__':
