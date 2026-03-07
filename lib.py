@@ -2,6 +2,7 @@ import pychromecast, os, yt_dlp, difflib, tempfile, subprocess, hashlib, re
 from mutagen.flac import FLAC
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, USLT
+from requests import get
 
 # Inizializziamo la variabile globale per evitare errori di "NameError"
 chromecast = None
@@ -181,14 +182,28 @@ def get_testo(file_path):
         # Mantiene i timestamp
         linee = [riga.strip() for riga in testo.splitlines() if riga.strip()]
         return "\n".join(linee)
+    
+    testo = ""
 
     if file_path.endswith('.flac'):
         audio = FLAC(file_path)
         if "LYRICS" in audio:
-            return pulisci_testo(audio["LYRICS"][0])
+            testo = audio["LYRICS"][0]
 
     elif file_path.endswith('.mp3'):
         audio = MP3(file_path, ID3=ID3)
         for tag in audio.values():
             if isinstance(tag, USLT):
-                return pulisci_testo(tag.text)
+                testo = tag.text
+
+    if not testo.strip():
+        print(f"Testo non trovato nei metadati, cerco online... '{file_path.split('\\')[-1].split('.')[0]}'")
+        response = get(f"https://lrclib.net/api/search?q={file_path.split('\\')[-1].split('.')[0]}")
+        if response.status_code == 200:
+            dati = response.json()
+            
+            if dati:  # Controlliamo che la lista non sia vuota
+                # Prendiamo syncedLyrics dal primo risultato
+                testo = dati[0].get("syncedLyrics", "")
+
+    return pulisci_testo(testo) if testo else None

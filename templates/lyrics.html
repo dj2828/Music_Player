@@ -132,21 +132,27 @@
                 const response = await fetch(url); 
                 
                 if (!response.ok) {
-                    throw new Error(`Errore HTTP: ${response.status}`);
+                    throw new Error(`${response.status}`);
                 }
                 
                 const lrcText = await response.text();
                 displayLyrics(lrcText);
                 
             } catch (error) {
+                if (error.message === "404"){
+                    document.getElementById('testo-output').innerHTML = 
+                    `<p style="color: #ff4d4d;">Testo non trovato</p>`;
+                }
+                else {
                 document.getElementById('testo-output').innerHTML = 
                     `<p style="color: #ff4d4d;">Errore nel caricamento del file: ${error.message}</p>
                      <p style="font-size: 14px; color: #888;">Assicurati che il file esista e che tu stia usando un server locale (es. Live Server) per evitare errori CORS.</p>`;
+                }
                 console.error("Dettaglio errore:", error);
             }
         }
 
-        // Funzione per analizzare il formato LRC
+        // Funzione per analizzare il formato LRC (supporta anche testi senza timestamp)
         function parseLRC(text) {
             const lines = text.split('\n');
             const parsedLyrics = [];
@@ -155,7 +161,10 @@
             const regex = /\[(\d{2}):(\d{2}\.\d{2})\](.*)/;
 
             lines.forEach(line => {
-                const match = line.match(regex);
+                const trimmedLine = line.trim();
+                if (trimmedLine === "") return; // ignora righe vuote
+
+                const match = trimmedLine.match(regex);
                 if (match) {
                     const textContent = match[3].trim();
                     // Aggiungiamo il testo solo se c'è (ignoriamo righe vuote)
@@ -165,6 +174,12 @@
                             text: textContent 
                         });
                     }
+                } else {
+                    // Se non c'è un timestamp, inseriamo la linea come testo libero
+                    parsedLyrics.push({
+                        originalTime: null,
+                        text: trimmedLine
+                    });
                 }
             });
             return parsedLyrics;
