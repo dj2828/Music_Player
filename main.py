@@ -261,6 +261,16 @@ def delete_song(folder, filename):
         file_path = os.path.join(folder_path, filename)
         if os.path.exists(file_path):
             os.remove(file_path)
+            pref = load_pref()
+            plays = load_plays()
+            if f"{folder}/{filename}" in pref:
+                pref.remove(f"{folder}/{filename}")
+                with open('pref.json', 'w') as f:
+                    json.dump(pref, f, indent=2)
+            if f"{folder}/{filename}" in plays:
+                del plays[f"{folder}/{filename}"]
+                with open('plays.json', 'w') as f:
+                    json.dump(plays, f, indent=2)
             return "OK", 200
         else:
             return "ERROR", 500
