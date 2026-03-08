@@ -1,34 +1,39 @@
 
 # Music Player
 
-## Config.txt
-Crea `config.txt` nella root
+## Config.yaml
 
-In config ci sono 3 tipi di config
+`Cartelle` Nome e Path della cartella
 
-`{Nome cartella che vuoi che di legga}={Path cartella}`
-Es: `Tha Supreme=X:\canz\thasup`
+Es: `Cartelle:
+  "Tha Supreme": "X:\\cartelllla\\canz\\fr\\thasup"`
 
-NON CANCELLATE `YouTube=MUSIC_FOLDER`
+**NON CANCELLATE `"YouTube": "YT_FOLDER"`**
 
-`#IP={Indirizzo IP locale}` Es: `#IP=192.168.1.8`
+`ALBUM_ORDER: {Ordine album}"`
+  Es: 
+  ```yaml
+  ALBUM_ORDER:
+  - "23 6451"
+  - "c@ra++ere spec!@le"
+  - "sFaCioLaTe miXTaPe"
+  - "CASA GOSPEL"
+  ```
+`ALBUM_ORDER: {Album finti(quelli con le copertine diverse da canzone a canzone)}"`
+  Es: 
+  ```yaml
+  ALBUM_FINTI:
+  - "Beat"
+  - "Acustiche"
+  - "Sparse"
+  - "Freestyle"
+  ```
+`IP_per_google_home: {Indirizzo IP locale}` Es: `IP_per_google_home: "192.168.1.8"`
 
-`#ALBUM_FINTI={Album finti(quelli con le copertine diverse da canzone a canzone)}` Es: `ALBUM_FINTI=Beat, Acustiche, Sparse, Freestyle`
-
-`ALBUM_ORDER={Ordine album}` Es: `ALBUM_ORDER=23 645, Blu Celeste, Sirio`
-
-## Directory
-Dove metti il server serve creare queste cartelle
-
-![](https://github.com/dj2828/Music_Player/blob/be76a3c85a3f87b6e72067feaf1f4de53ee691e4/perIlReadme.png?raw=true)
+`PORT: {Porta}` Default: 80
 
 # Per startare
 apri `server.py`
-### Per startare in Bg
-su un cmd
-```bash
-"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe" -windowstyle hidden -ExecutionPolicy Bypass -command "python {PATH SERVER.py}"
-```
 ## [Link sulla porta 80](http://localhost)
 
 (serve anche ffmpeg bel path)
