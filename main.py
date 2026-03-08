@@ -1,66 +1,34 @@
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, flash, jsonify
-import os
+import os, json
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from mutagen.mp3 import MP3
 from mutagen.flac import FLAC
 from mutagen.id3 import ID3, APIC
 import lib
-import json
 
 app = Flask(__name__)
 app.secret_key = "S4Ss0"
 
-def ip(path_txt):
-    if DOCKER:
-        return os.getenv("IP", "0.0.0.0")
-    else:
-        with open(path_txt, 'r', encoding='utf-8') as file:
-            for line in file:
-                if line.startswith('#IP'):
-                    _, ip_value = line.strip().split('=', 1)
-                    return ip_value
-def get_album_finti(path_txt):
-    album_finti = set()
-    if DOCKER:
-        return os.getenv("ALBUM_FINTI", "").split(',')
-    if os.path.exists(path_txt):
-        with open(path_txt, 'r', encoding='utf-8') as file:
-            for line in file:
-                if line.startswith('#ALBUM_FINTI'):
-                    _, albums = line.strip().split('=', 1)
-                    for album in albums.split(','):
-                        album_finti.add(album.strip())
-    return album_finti
-def load_music_folders(path_txt):
-    global ALBUM_ORDER
-    music_folders = {}
-    if not DOCKER:
-        if os.path.exists(path_txt):
-            with open(path_txt, 'r', encoding='utf-8') as file:
-                for line in file:
-                    if '=' in line and not line.startswith('#'):
-                        key, value = line.strip().split('=', 1)
-                        key = key.strip()
-                        value = value.strip()
-                        
-                        # Gestione specifica per l'ordine degli album
-                        if key == 'ALBUM_ORDER':
-                            ALBUM_ORDER = [a.strip() for a in value.split(',')]
-                            continue
-                            
-                        if value == 'YT_FOLDER':
-                            value = YT_FOLDER
-                        music_folders[key] = value
-    else:
-        # Logica Docker esistente
-        for root, dirs, files in os.walk(MUSIC_FOLDER):
-            for d in dirs:
-                full_path = os.path.join(root, d)
-                music_folders[d] = full_path
-        music_folders["YouTube"] = YT_FOLDER
-        ALBUM_ORDER = [a.strip() for a in os.getenv("ALBUM_ORDER", "").split(',')]
-    return music_folders
 def get_music():
+    def album(folder, filename):
+        folder_path = MUSIC_FOLDERS.get(folder)
+        mp3_path = os.path.join(folder_path, filename)
+        if mp3_path.endswith('.flac'):
+            audio = FLAC(mp3_path)
+            album = audio.get("ALBUM")
+            album_name = album[0] if album else None
+        else:
+            audio = MP3(mp3_path, ID3=ID3)
+            album = audio.get("TALB")
+            album_name = album.text[0] if album else None
+
+        if album_name:
+            album_name = album_name.strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
+            
+        else:
+            album_name = None
+
+        return album_name
     songs_by_folder = {}
     for folder_name, folder_path in MUSIC_FOLDERS.items():
         if os.path.exists(folder_path):
@@ -116,41 +84,22 @@ def get_music():
             songs_by_folder[folder_name] = {}
             
     return songs_by_folder
-def album(folder, filename):
-    folder_path = MUSIC_FOLDERS.get(folder)
-    mp3_path = os.path.join(folder_path, filename)
-    if mp3_path.endswith('.flac'):
-        audio = FLAC(mp3_path)
-        album = audio.get("ALBUM")
-        album_name = album[0] if album else None
-    else:
-        audio = MP3(mp3_path, ID3=ID3)
-        album = audio.get("TALB")
-        album_name = album.text[0] if album else None
 
-    if album_name:
-        album_name = album_name.strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
-        
-    else:
-        album_name = None
-
-    return album_name
-
+# config
 DOCKER = os.getenv("DOCKER")
 YT_FOLDER = os.getenv("YT_FOLDER", os.path.join("music"))
 MUSIC_FOLDER = os.getenv("MUSIC_FOLDER", '')
 COVER_FOLDER = os.getenv("COVER_FOLDER", os.path.join("cover"))
 
+MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP, PORT = lib.load_config(MUSIC_FOLDER, YT_FOLDER, DOCKER)
+
+# variabili globali
+googleHome = False
+tutti_album_singoli = [] # per tenere traccia di tutti i brani singoli, così da escluderli dagli album in img album
+
+# creazione cartelle se non esistono
 os.makedirs(YT_FOLDER, exist_ok=True)
 os.makedirs(os.path.join(COVER_FOLDER, "album"), exist_ok=True)
-if not os.path.exists('config.txt'): os.system('echo YouTube=YT_FOLDER > config.txt')
-
-ALBUM_ORDER = []
-MUSIC_FOLDERS = load_music_folders('config.txt')
-IP = ip('config.txt')
-googleHome = False
-ALBUM_FINTI = get_album_finti('config.txt')
-tutti_album_singoli = [] # per tenere traccia di tutti i brani singoli, così da escluderli dagli album in img album
 
 @app.route('/', methods=['GET'])
 def index():
@@ -226,7 +175,6 @@ def img(folder, filename):
                     break
     else:
         print("Immagine già presente")
-    print(tutti_album_singoli)
     if album_name and album_name not in ALBUM_FINTI and album_name not in tutti_album_singoli:
         return redirect("/img/album/" + album_name)
     else:
@@ -401,7 +349,7 @@ def get_lyrics(folder, filename):
         return "Cartella non trovata", 404
 
 @app.route('/lyrics')
-def a():
+def lyrics():
     return render_template("lyrics.html")
 
 PREF_FILE = 'pref.json'
@@ -443,4 +391,4 @@ def add_header(response):
     return response
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=80)
+    app.run(debug=True, host='0.0.0.0', port=PORT)

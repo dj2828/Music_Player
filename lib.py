@@ -3,6 +3,7 @@ from mutagen.flac import FLAC
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, USLT
 from requests import get
+import yaml
 
 # Inizializziamo la variabile globale per evitare errori di "NameError"
 chromecast = None
@@ -208,3 +209,55 @@ def get_testo(file_path, DOCKER=False):
                 testo = dati[0].get("syncedLyrics", "")
 
     return pulisci_testo(testo) if testo else None
+
+def gen_config():
+    config = {
+        "Cartelle": {
+            "YouTube": "YT_FOLDER"
+        },
+        "ALBUM_ORDER": [
+            "23 6451",
+            "c@ra++ere spec!@le",
+            "sFaCioLaTe miXTaPe",
+            "CASA GOSPEL"
+        ],
+        "ALBUM_FINTI": [
+            "Beat",
+            "Acustiche",
+            "Sparse",
+            "Freestyle"
+        ],
+        "IP_per_google_home": "192.168.1.8",
+        "PORT": 80
+    }
+
+    with open("config.yaml", "w", encoding="utf-8") as f:
+        yaml.dump(config, f, allow_unicode=True)
+
+def load_config(MUSIC_FOLDER, YT_FOLDER, DOCKER=False):
+    config = {}
+    if DOCKER:
+        music_folders = {}
+        for root, dirs, files in os.walk(MUSIC_FOLDER):
+            for d in dirs:
+                full_path = os.path.join(root, d)
+                music_folders[d] = full_path
+        music_folders["YouTube"] = YT_FOLDER
+        config = {
+            "Cartelle": {name: path if path != "YT_FOLDER" else YT_FOLDER for name, path in music_folders.items()},
+            "ALBUM_ORDER": [a.strip() for a in os.getenv("ALBUM_ORDER", "").split(',')],
+            "ALBUM_FINTI": [a.strip() for a in os.getenv("ALBUM_FINTI", "").split(',')],
+            "IP_per_google_home": os.getenv("IP", ""),
+            "PORT": int(os.getenv("PORT", 80))
+        }
+    else:
+        if not os.path.exists('config.yaml'): gen_config()
+        with open('config.yaml', 'r', encoding='utf-8') as config_file:
+            config = yaml.safe_load(config_file)
+
+    MUSIC_FOLDERS = {name: (path if path != "YT_FOLDER" else YT_FOLDER) for name, path in config.get("Cartelle", {}).items()}
+    ALBUM_ORDER = config.get("ALBUM_ORDER", [])
+    ALBUM_FINTI = config.get("ALBUM_FINTI", [])
+    IP_per_google_home = config.get("IP_per_google_home", "")
+    PORT = config.get("PORT", 80)
+    return MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP_per_google_home, PORT
