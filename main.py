@@ -140,6 +140,7 @@ def img(folder, filename):
         album = audio.get("TALB")
         album_name = album.text[0] if album else None
 
+    if not tutti_album_singoli: get_music() # per popolare la lista se vuota di tutti gli album singoli, così da escluderli dagli album in img album
     if album_name and album_name not in ALBUM_FINTI and album_name not in tutti_album_singoli:
         album_name = album_name.strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
         img_path = os.path.join(COVER_FOLDER, "album", f"{album_name}.png")
