@@ -298,7 +298,7 @@ nav{
 }
 
 .ios{
-  display: none;
+  display: none !important;
 }
 
 @media (max-width: 1400px) {
