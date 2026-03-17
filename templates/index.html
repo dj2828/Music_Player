@@ -533,9 +533,6 @@
             <div onclick="downloadIos()" class="circle ios">
                 <i class="fa-solid fa-download"></i>
             </div>
-            <div onclick="syncAllSongs()" class="circle ios" id="syncBtn">
-                <i class="fa-solid fa-cloud-arrow-down"></i>
-            </div>
             <div onclick="window.location.reload()" class="circle">
                 <i class="fa-solid fa-rotate-right"></i>
             </div>
@@ -887,55 +884,6 @@
             });
         }
     });
-
-    async function syncAllSongs() {
-        if (!window.webkit?.messageHandlers?.downloadAction) {
-            alert("Sincronizzazione disponibile solo su App iOS.");
-            return;
-        }
-
-        if (!confirm(`Vuoi sincronizzare l'intera libreria (${playlist.length} brani)? L'App salterà automaticamente i file già presenti.`)) {
-            return;
-        }
-
-        const syncBtn = document.getElementById('syncBtn');
-        syncBtn.style.opacity = "0.5";
-        syncBtn.style.pointerEvents = "none";
-
-        for (let i = 0; i < playlist.length; i++) {
-            const item = playlist[i];
-
-            // Otteniamo l'indirizzo base del server (es. http://192.168.1.5:5000)
-            const baseUrl = window.location.origin;
-
-            // Costruiamo gli URL come nella tua funzione downloadIos()
-            const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1")
-                .replace('FOLDER', encodeURIComponent(folder))
-                .replace('SONG', encodeURIComponent(song));
-
-            const imageUrl = (baseUrl + "{{ url_for('img', folder='FOLDER', filename='SONG') }}")
-                .replace('FOLDER', encodeURIComponent(folder))
-                .replace('SONG', encodeURIComponent(song));
-
-            const data = {
-                song: songUrl,
-                image: imageUrl
-            };
-
-            // Inviamo il messaggio a iOS
-            window.webkit.messageHandlers.downloadAction.postMessage(data);
-
-            // Aspettiamo un brevissimo istante (50ms) tra un invio e l'altro 
-            // per non intasare la coda dei messaggi del sistema
-            await new Promise(resolve => setTimeout(resolve, 50));
-        }
-
-        setTimeout(() => {
-            syncBtn.style.opacity = "1";
-            syncBtn.style.pointerEvents = "auto";
-            closeMenu();
-        }, 2000);
-    }
 
     let songsToDownload = 0;
     let downloadedCount = 0;
