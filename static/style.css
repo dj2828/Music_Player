@@ -297,6 +297,10 @@ nav{
   color: #ff5500;
 }
 
+.ios{
+  display: none;
+}
+
 @media (max-width: 1400px) {
   .container {
     flex-direction: column;

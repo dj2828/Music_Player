@@ -52,6 +52,10 @@
         <div class="title">
             <h2>{{ folder }}</h2>
             <div onclick="playFolderRandom('{{ folder }}')" class="circle"><i class="fa-solid fa-shuffle"></i></div>
+            <div onclick="syncFolder('{{ folder }}')" class="circle ios" id="sync-{{ folder|replace(' ', '-') }}" style="position: relative; margin-left: 10px;">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+                <span class="sync-status" style="position: absolute; top: -5px; right: -5px; background: red; color: white; font-size: 10px; border-radius: 50%; padding: 2px 5px; display: none;">0</span>
+            </div>
         </div>
         
         {% for album_name, songs in albums.items() %}
@@ -526,6 +530,12 @@
             <a href="/stats" style="text-decoration: none;"><div class="circle">
                 <i class="fa-solid fa-chart-area"></i>
             </div></a>
+            <div onclick="downloadIos()" class="circle ios">
+                <i class="fa-solid fa-download"></i>
+            </div>
+            <div onclick="syncAllSongs()" class="circle ios" id="syncBtn">
+                <i class="fa-solid fa-cloud-arrow-down"></i>
+            </div>
             <div onclick="window.location.reload()" class="circle">
                 <i class="fa-solid fa-rotate-right"></i>
             </div>
@@ -807,64 +817,207 @@
 
 
         // per mobile
-            let touchStartTime = 0;
-            let touchStartX = 0;
-            let touchStartY = 0;
+        let touchStartTime = 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
 
-            document.addEventListener('touchstart', function(e) {
-                touchStartTime = Date.now();
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-            });
+        document.addEventListener('touchstart', function(e) {
+            touchStartTime = Date.now();
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        });
 
-            document.addEventListener('touchend', function(e) {
-                const touchDuration = Date.now() - touchStartTime;
-                const touchEndX = e.changedTouches[0].clientX;
-                const touchEndY = e.changedTouches[0].clientY;
+        document.addEventListener('touchend', function(e) {
+            const touchDuration = Date.now() - touchStartTime;
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            
+            // Se il tocco è durato più di 500ms e non si è mosso molto = long press
+            if (touchDuration > 500 && 
+                Math.abs(touchEndX - touchStartX) < 10 && 
+                Math.abs(touchEndY - touchStartY) < 10) {
                 
-                // Se il tocco è durato più di 500ms e non si è mosso molto = long press
-                if (touchDuration > 500 && 
-                    Math.abs(touchEndX - touchStartX) < 10 && 
-                    Math.abs(touchEndY - touchStartY) < 10) {
-                    
-                    const contextMenu = document.getElementById('customContextMenu');
-                    clickedElement = e.target;
-                    
-                    // Risali fino a trovare un button con classe 'song'
-                    const songButton = clickedElement.closest('button.song');
-                    if (songButton) {
-                        clickedElement = songButton;
-                    }
-
-                    if (!clickedElement.classList.contains('song')) {
-                        // Se non è una canzone, non mostrare il menu
-                        return;
-                    }
-                    
-                    contextMenu.style.display = 'block';
-                    contextMenu.style.left = touchStartX + 'px';
-                    contextMenu.style.top = touchStartY + 'px';
+                const contextMenu = document.getElementById('customContextMenu');
+                clickedElement = e.target;
+                
+                // Risali fino a trovare un button con classe 'song'
+                const songButton = clickedElement.closest('button.song');
+                if (songButton) {
+                    clickedElement = songButton;
                 }
+
+                if (!clickedElement.classList.contains('song')) {
+                    // Se non è una canzone, non mostrare il menu
+                    return;
+                }
+                
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = touchStartX + 'px';
+                contextMenu.style.top = touchStartY + 'px';
+            }
+        });
+
+        // per far scomparire la nav su telefono quando si scrolla
+            const musicPlayer = document.querySelector('.music-player');
+
+            let lastScrollY = window.scrollY;
+            const DELTA = 20;
+
+            window.addEventListener('scroll', () => {
+            const currentScroll = window.scrollY;
+            const diff = currentScroll - lastScrollY;
+
+            if (Math.abs(diff) < DELTA) return;
+
+            const isScrollingDown = diff > 0;
+
+            musicPlayer.classList.toggle('compact', isScrollingDown);
+
+            lastScrollY = currentScroll;
+            }, { passive: true });
+
+
+
+    // download per ios
+    
+    document.addEventListener('DOMContentLoaded', function () {
+        if (window.webkit?.messageHandlers?.downloadAction) {
+            document.querySelectorAll('.ios').forEach(el => {
+                el.style.display = 'flex';
+            });
+        }
+    });
+
+    async function syncAllSongs() {
+        if (!window.webkit?.messageHandlers?.downloadAction) {
+            alert("Sincronizzazione disponibile solo su App iOS.");
+            return;
+        }
+
+        if (!confirm(`Vuoi sincronizzare l'intera libreria (${playlist.length} brani)? L'App salterà automaticamente i file già presenti.`)) {
+            return;
+        }
+
+        const syncBtn = document.getElementById('syncBtn');
+        syncBtn.style.opacity = "0.5";
+        syncBtn.style.pointerEvents = "none";
+
+        for (let i = 0; i < playlist.length; i++) {
+            const item = playlist[i];
+
+            // Otteniamo l'indirizzo base del server (es. http://192.168.1.5:5000)
+            const baseUrl = window.location.origin;
+
+            // Costruiamo gli URL come nella tua funzione downloadIos()
+            const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1")
+                .replace('FOLDER', encodeURIComponent(folder))
+                .replace('SONG', encodeURIComponent(song));
+
+            const imageUrl = (baseUrl + "{{ url_for('img', folder='FOLDER', filename='SONG') }}")
+                .replace('FOLDER', encodeURIComponent(folder))
+                .replace('SONG', encodeURIComponent(song));
+
+            const data = {
+                song: songUrl,
+                image: imageUrl
+            };
+
+            // Inviamo il messaggio a iOS
+            window.webkit.messageHandlers.downloadAction.postMessage(data);
+
+            // Aspettiamo un brevissimo istante (50ms) tra un invio e l'altro 
+            // per non intasare la coda dei messaggi del sistema
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+
+        setTimeout(() => {
+            syncBtn.style.opacity = "1";
+            syncBtn.style.pointerEvents = "auto";
+            closeMenu();
+        }, 2000);
+    }
+
+    let songsToDownload = 0;
+    let downloadedCount = 0;
+
+    // Ascolta il messaggio di conferma da iOS
+    window.addEventListener('downloadFinished', (event) => {
+        downloadedCount++;
+        console.log(`Scaricato: ${event.detail.name} (${downloadedCount}/${songsToDownload})`);
+        
+        // Se vuoi aggiornare un badge globale o una barra di progresso, fallo qui
+        const globalBadge = document.getElementById('global-sync-badge');
+        if (globalBadge) globalBadge.textContent = `${downloadedCount}/${songsToDownload}`;
+
+        if (downloadedCount >= songsToDownload && songsToDownload > 0) {
+            alert("✅ Tutti i file sono stati scaricati e salvati sull'iPad!");
+            songsToDownload = 0;
+            downloadedCount = 0;
+        }
+    });
+
+    async function syncFolder(folderName) {
+        const folderSongs = playlist.filter(item => item.folder === folderName);
+        if (folderSongs.length === 0) return;
+
+        if (!confirm(`Sincronizzare ${folderSongs.length} brani?`)) return;
+
+        songsToDownload = folderSongs.length;
+        downloadedCount = 0;
+
+        const baseUrl = window.location.origin;
+        
+        // Mostriamo un indicatore di caricamento
+        document.body.style.cursor = 'wait';
+
+        for (const item of folderSongs) {
+            const songUrl = new URL("{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1"
+                .replace('FOLDER', encodeURIComponent(item.folder))
+                .replace('SONG', encodeURIComponent(item.song)), baseUrl).href;
+
+            const imageUrl = new URL("{{ url_for('img', folder='FOLDER', filename='SONG') }}"
+                .replace('FOLDER', encodeURIComponent(item.folder))
+                .replace('SONG', encodeURIComponent(item.song)), baseUrl).href;
+
+            window.webkit.messageHandlers.downloadAction.postMessage({
+                song: songUrl,
+                image: imageUrl
             });
 
-            // per far scomparire la nav su telefono quando si scrolla
-                const musicPlayer = document.querySelector('.music-player');
+            await new Promise(r => setTimeout(r, 100));
+        }
+        
+        document.body.style.cursor = 'default';
+        // NON mettiamo l'alert qui, perché iOS sta ancora lavorando!
+        console.log("Richieste inviate, in attesa dei download reali...");
+    }
+    
+    function downloadIos() {
+        const source = randomFolderPlaylist || playlist;
+        const { folder, song } = source[currentIndex];
 
-                let lastScrollY = window.scrollY;
-                const DELTA = 20;
+        // Otteniamo l'indirizzo base del server (es. http://192.168.1.5:5000)
+        const baseUrl = window.location.origin;
 
-                window.addEventListener('scroll', () => {
-                const currentScroll = window.scrollY;
-                const diff = currentScroll - lastScrollY;
+        const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1")
+            .replace('FOLDER', encodeURIComponent(folder))
+            .replace('SONG', encodeURIComponent(song));
 
-                if (Math.abs(diff) < DELTA) return;
+        const imageUrl = (baseUrl + "{{ url_for('img', folder='FOLDER', filename='SONG') }}")
+            .replace('FOLDER', encodeURIComponent(folder))
+            .replace('SONG', encodeURIComponent(song));
 
-                const isScrollingDown = diff > 0;
+        const data = {
+            song: songUrl,
+            image: imageUrl
+        };
 
-                musicPlayer.classList.toggle('compact', isScrollingDown);
-
-                lastScrollY = currentScroll;
-                }, { passive: true });
+        if (window.webkit?.messageHandlers?.downloadAction) {
+            window.webkit.messageHandlers.downloadAction.postMessage(data);
+        } else {
+            alert("Funzione non supportata su questo dispositivo.");
+        }
+    }
 
     </script>
 

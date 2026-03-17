@@ -119,8 +119,10 @@ def download():
 @app.route('/<folder>/<filename>')
 def music(folder, filename):
     if folder_path := MUSIC_FOLDERS.get(folder):
+        mp3 = True if request.args.get('mp3') == '1' else False
         print("Richiesta file:", folder, filename,  "da", request.remote_addr)
-        if not filename.endswith('.mp3') and not request.remote_addr.startswith('192.168.') and request.remote_addr != '127.0.0.1' and not DOCKER:
+        # chiedi a gpt pk non lo capisco neanche io cosa fa sto if
+        if (not filename.endswith('.mp3') and not (request.remote_addr.startswith('192.168.') or request.remote_addr == '127.0.0.1') and not DOCKER) or mp3:
             filename = lib.get_cached_mp3(os.path.join(folder_path, filename))
             return send_from_directory(os.path.dirname(filename), os.path.basename(filename))
         return send_from_directory(folder_path, filename)
