@@ -880,7 +880,7 @@
     document.addEventListener('DOMContentLoaded', function () {
         if (window.webkit?.messageHandlers?.downloadAction) {
             document.querySelectorAll('.ios').forEach(el => {
-                el.style.display = 'flex';
+                el.style.setProperty('display', 'flex', 'important');
             });
         }
     });
