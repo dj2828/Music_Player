@@ -369,6 +369,8 @@
                     playSong(firstInFolder.folder + '/' + firstInFolder.song, null, globalIndex);
                 }
             }
+            // Se i testi sono aperti, aggiorna anche quelli per la nuova canzone
+            if (document.getElementById('lyricsModal').style.display === 'flex') openlyricsModal();
         }
 
         function prevSong() {
@@ -453,8 +455,6 @@
         // Quando finisce passa alla prossima
         audioPlayer.addEventListener('ended', function() {
             nextSong();
-            // Se i testi sono aperti, aggiorna anche quelli per la nuova canzone
-            if (document.getElementById('lyricsModal').style.display === 'flex') openlyricsModal();
         });
 
 
