@@ -395,6 +395,9 @@ nav{
     left: -10px;
     transform: scale(0.8);
   }
+  .music-player.compact .controls div:nth-child(1) {
+    left: 0px;
+  }
   .music-player nav{
     transition: transform 0.3s ease, opacity 0.3s ease;
     max-height: 80px;
@@ -427,19 +430,26 @@ nav{
     transition: all 0.3s ease;
   }
   .music-player.compact .cover{
-    height: 100px;
+    height: 67px;
   }
   .music-player.compact .cover img{
-    height: 100px;
+    height: 67px;
+    border-radius: 10px;
   }
   h1{
     font-size: 24px;
+  }
+  .music-player.compact h1, p {
+    font-size: medium;
   }
   nav{
     margin-bottom: -0px;
   }
   #progress{
     margin: 10px -5px;
+  }
+  .music-player.compact #progress{
+    margin-bottom: 0px;
   }
   .controls div{
     margin: 15px;
