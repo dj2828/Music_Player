@@ -211,6 +211,8 @@ def google_home_da_sito():
     elif url == 'stop':
         lib.playG('stop')
         googleHome = False
+    elif url.startswith('vol'):
+        lib.volG(url[3:])
     else:
         lib.playG('http://'+IP+url)
     return "OK"

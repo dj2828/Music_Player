@@ -67,6 +67,13 @@ def playG(url):
     except Exception as e:
         print(f"Errore nel comando playG: {e}")
 
+def volG(vol):
+    global chromecast
+    try:
+        chromecast.set_volume(vol)
+    except Exception as e:
+        print(f"Errore nel comando volG: {e}")
+
 def getSimileCanz(data, songs_by_folder):
     print("Canzone richiesta:", data)
     canz = difflib.get_close_matches(data, songs_by_folder, n=1, cutoff=0)
