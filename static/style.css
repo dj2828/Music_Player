@@ -77,7 +77,7 @@ nav{
   height: 100%;       /* l'immagine riempie il contenitore in altezza */
   object-fit: cover;  /* mantiene proporzioni e taglia l'eccesso */
   border-radius: 20px;
-  box-shadow: 0 0 20px 4px rgb(0 0 0 / 50%)
+  box-shadow: rgba(0, 0, 0, 0.69) 0px 5px 10px;
 }
 .cover404{
   display: none;
