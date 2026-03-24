@@ -171,7 +171,7 @@
             clearTimeout(timeout);
             if (googleHome){
                 timeout = setTimeout(() => {
-                    googleHomeF("vol" + (v === 0 ? 0 : Math.pow(10, (v - 1) * 2)));
+                    googleHomeF("vol" + v);
                 }, 150);
             }else {
                 audioPlayer.volume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
@@ -187,12 +187,12 @@
                 // Imposta volume a 20% logaritmico
                 volumeSlider.value = 20;
                 audioPlayer.volume = Math.pow(10, (0.2 - 1) * 2);
-                if (googleHome) googleHomeF("vol" + Math.pow(10, (0.2 - 1) * 2));
+                if (googleHome) googleHomeF("vol" + 0.2);
             } else {
                 // Imposta volume a 100%
                 volumeSlider.value = 100;
                 audioPlayer.volume = Math.pow(10, (1 - 1) * 2); // = 1
-                if (googleHome) googleHomeF("vol" + Math.pow(10, (1 - 1) * 2));
+                if (googleHome) googleHomeF("vol" + 1);
             }
         }
 

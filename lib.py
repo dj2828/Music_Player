@@ -70,7 +70,7 @@ def playG(url):
 def volG(vol):
     global chromecast
     try:
-        chromecast.set_volume(vol)
+        chromecast.set_volume(float(vol))
     except Exception as e:
         print(f"Errore nel comando volG: {e}")
 
