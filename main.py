@@ -249,7 +249,7 @@ def ping():
     """Endpoint leggero per verificare se il server è raggiungibile dal client.
     Restituisce JSON semplice e può essere richiamato frequentemente dal client.
     """
-    return jsonify({"status": "ok"}), 200
+    return "pong", 200
 
 @app.route('/cerca', methods=['GET'])
 def cerca():
