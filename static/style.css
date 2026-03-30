@@ -439,18 +439,22 @@ nav{
   }
   h1{
     font-size: 24px;
+    transition: all 0.3s ease;
   }
-  .music-player.compact h1, p {
-    font-size: medium;
+  .music-player.compact h1 {
+    font-size: 20px; /* ≈ 16px */
   }
   nav{
     margin-bottom: -0px;
   }
   #progress{
     margin: 10px -5px;
+    margin-top: 15px;
+    transition: all 0.3s ease;
   }
   .music-player.compact #progress{
     margin-bottom: 0px;
+    margin-top: 10px;
   }
   .controls div{
     margin: 15px;
