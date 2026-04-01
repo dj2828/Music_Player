@@ -234,7 +234,7 @@ def gen_config():
             "Sparse",
             "Freestyle"
         ],
-        "IP": "192.168.1.8",
+        "IP_per_google_home": "192.168.1.8",
         "PORT": 80
     }
 
@@ -254,7 +254,7 @@ def load_config(MUSIC_FOLDER, YT_FOLDER, DOCKER=False):
             "Cartelle": {name: path if path != "YT_FOLDER" else YT_FOLDER for name, path in music_folders.items()},
             "ALBUM_ORDER": [a.strip() for a in os.getenv("ALBUM_ORDER", "").split(',')],
             "ALBUM_FINTI": [a.strip() for a in os.getenv("ALBUM_FINTI", "").split(',')],
-            "IP": os.getenv("IP", ""),
+            "IP_per_google_home": os.getenv("IP", ""),
             "PORT": int(os.getenv("PORT", 80))
         }
     else:
@@ -265,6 +265,6 @@ def load_config(MUSIC_FOLDER, YT_FOLDER, DOCKER=False):
     MUSIC_FOLDERS = {name: (path if path != "YT_FOLDER" else YT_FOLDER) for name, path in config.get("Cartelle", {}).items()}
     ALBUM_ORDER = config.get("ALBUM_ORDER", [])
     ALBUM_FINTI = config.get("ALBUM_FINTI", [])
-    IP = config.get("IP", "")
+    IP_per_google_home = config.get("IP_per_google_home", "")
     PORT = config.get("PORT", 80)
-    return MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP, PORT
+    return MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP_per_google_home, PORT
