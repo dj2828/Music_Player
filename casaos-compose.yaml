@@ -11,6 +11,8 @@ services:
       - /DATA/Media/Music:/app/music
     environment:
       - DOCKER=True
+      - IP=0.0.0.0
+      - PORT=80
       - YT_FOLDER=/app/data/yt
       - MUSIC_FOLDER=/app/music
       - COVER_FOLDER=/app/data/cover
