@@ -28,7 +28,7 @@ Es: `Cartelle:
   - "Sparse"
   - "Freestyle"
   ```
-`IP_per_google_home: {Indirizzo IP locale}` Es: `IP_per_google_home: "192.168.1.8"`
+`IP: {Indirizzo IP locale}` Es: `IP: "192.168.1.8"`
 
 `PORT: {Porta}` Default: 80
 
