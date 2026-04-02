@@ -406,14 +406,18 @@
         }
 
         // All'avvio, recupera l'ultimo mp3 dal cookie e formatta l'URL in modo leggibile
-        const lastMp3Url = getLastPlayedMp3Url();
-        if (lastMp3Url) {
-            const formattedUrl = decodeURIComponent(lastMp3Url).slice(1);
-            console.log('Ultimo mp3 dal cookie (formattato):', formattedUrl);
-            playSong(formattedUrl, null, null, null, false);
-        } else {
-            console.log('Nessun mp3 trovato nel cookie.');
-        }
+        document.addEventListener("DOMContentLoaded", () => { 
+        // messo il doomcontent per il reload dei testi nel playsong, senza dava errore che non esisteva 
+        // lyricsModal e non andava più audioPlayer.addEventListener('ended') (come se centrasse qualcosa con lerrore btw)
+            const lastMp3Url = getLastPlayedMp3Url();
+            if (lastMp3Url) {
+                const formattedUrl = decodeURIComponent(lastMp3Url).slice(1);
+                console.log('Ultimo mp3 dal cookie (formattato):', formattedUrl);
+                playSong(formattedUrl, null, null, null, false);
+            } else {
+                console.log('Nessun mp3 trovato nel cookie.');
+            }
+        });
 
         function googleHomeF(url){
             fetch("/google", {
