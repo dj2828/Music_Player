@@ -278,9 +278,9 @@ def delete_song(folder, filename):
                     json.dump(plays, f, indent=2)
             return "OK", 200
         else:
-            return "ERROR", 500
+            return f"ERROR file_path ({file_path})", 500
     else:
-        return "ERROR", 500
+        return f"ERROR folder_path ({folder_path})", 500
     return redirect(url_for('index'))
 
 PLAYS_FILE = 'plays.json'
