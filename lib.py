@@ -4,6 +4,7 @@ from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, USLT
 from requests import get
 import yaml, json
+import requests
 
 # Inizializziamo la variabile globale per evitare errori di "NameError"
 chromecast = None
@@ -269,45 +270,46 @@ def load_config(MUSIC_FOLDER, YT_FOLDER, DOCKER=False):
     PORT = config.get("PORT", 80)
     return MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP_per_google_home, PORT
 
-def get_accordi(file_path, DOCKER=False):
+def get_accordi(file_path):
     def prendi_accordi(file_path):
         if not os.path.exists("chords.json"):
             with open("chords.json", "w", encoding="utf-8") as f:
                 json.dump({}, f)
             return None
 
-        with open("chords.json", "r") as f:
+        with open("chords.json", "r", encoding="utf-8") as f:
             chords = json.load(f)
         
-        chords = chords.get(file_path)
-        return chords if chords else None
-    def process_chord(chord_key, suffix="major"):
+        return chords.get(file_path)
+
+    def process_chord(chord_key, suffix="major", variazzione=0):
         """
         Cerca l'accordo e lo converte nel tuo formato.
         chord_key: es. 'C', 'Bb', 'G#'
         suffix: es. 'major', 'minor', '7', 'm7'
         """
+        enharmonic_map = {
+            "Db": "C#",
+            "D#": "Eb",
+            "Gb": "F#",
+            "G#": "Ab",
+            "A#": "Bb"
+        }
+        # Se la nota è nel dizionario la traduce (es. G# -> Ab), altrimenti la lascia com'è
+        chord_key = enharmonic_map.get(chord_key, chord_key)
+        chord_key = chord_key.replace("#", "sharp")
         def extract_barres(fingers_positions):
-            """
-            Analizza le posizioni delle dita per identificare un barrè.
-            Se lo stesso dito (es. il '1') è usato su più corde allo stesso tasto,
-            crea l'oggetto barre.
-            """
             barres = []
-            # Contiamo quante volte appare ogni dito (escludendo lo 0 o x)
             finger_counts = {}
             for pos in fingers_positions:
-                fret, finger = pos[1], pos[2] # tasto, dito
+                string_num, fret, finger = pos
                 if finger != 0 and fret != "x":
-                    if finger not in finger_counts:
-                        finger_counts[finger] = []
-                    finger_counts[finger].append(pos)
+                    finger_counts.setdefault(finger, []).append(pos)
 
             for finger, positions in finger_counts.items():
                 if len(positions) > 1:
-                    # Se un dito preme più di una corda allo stesso tasto, è un barrè
                     frets = [p[1] for p in positions]
-                    if len(set(frets)) == 1: # Tutte allo stesso tasto
+                    if len(set(frets)) == 1:
                         strings = [p[0] for p in positions]
                         barres.append({
                             "fromString": max(strings),
@@ -315,42 +317,38 @@ def get_accordi(file_path, DOCKER=False):
                             "fret": frets[0]
                         })
             return barres
+
         def get_chord_database():
             if os.path.exists("chords_lib.json"):
-                with open("chords_lib.json", "r") as f:
+                with open("chords_lib.json", "r", encoding="utf-8") as f:
                     return json.load(f)
             else:
+                CHORD_DB_URL = "https://raw.githubusercontent.com/tombatossals/chords-db/master/lib/guitar.json"
                 response = requests.get(CHORD_DB_URL)
                 if response.status_code == 200:
-                    with open("chords_lib.json", "w") as f:
+                    with open("chords_lib.json", "w", encoding="utf-8") as f:
                         f.write(response.text)
                     return json.loads(response.text)
                 else:
                     raise Exception(f"Failed to fetch chord database: {response.status_code}")
 
-        CHORD_DB_URL = "https://raw.githubusercontent.com/tombatossals/chords-db/master/lib/guitar.json"
         db = get_chord_database()
         
-        # Trova la nota base (C, C#, etc.)
-        chords_for_note = db.get("chords").get(chord_key)
+        chords_for_note = db.get("chords", {}).get(chord_key)
         if not chords_for_note:
-            return f"Nota {chord_key} non trovata."
+            return {"error": f"Nota {chord_key} non trovata."}
 
-        # Trova la variante (major, minor, etc.)
         variant = next((item for item in chords_for_note if item["suffix"] == suffix), None)
         if not variant:
-            return f"Sufisso {suffix} non trovato per {chord_key}."
+            return {"error": f"Suffisso {suffix} non trovato per {chord_key}."}
 
-        # Prendiamo la prima posizione suggerita (posizione 0)
-        pos = variant["positions"][0]
+        pos = variant["positions"][variazzione]
         
-        # ChordDB usa: frets (tasti), fingers (dita)
-        # strings: 6 5 4 3 2 1
         raw_frets = pos["frets"]
         raw_fingers = pos["fingers"]
         
         fingers_output = []
-        temp_positions = [] # Per calcolare i barrè
+        temp_positions = []
 
         for i in range(6):
             string_num = 6 - i
@@ -358,26 +356,31 @@ def get_accordi(file_path, DOCKER=False):
             finger = raw_fingers[i]
             
             fingers_output.append([string_num, fret])
-            if finger != 0:
+            # Modificato per non includere le corde non suonate (x) nel calcolo del barrè
+            if finger != 0 and fret != "x":
                 temp_positions.append((string_num, fret, finger))
 
-        # Generazione JSON finale
-        result = {
+        return {
             "fingers": fingers_output,
-            "barres": extract_barres(temp_positions)
+            "barres": extract_barres(temp_positions),
+            "baseFret": pos["baseFret"]
         }
 
-        return result
     def generate_chord_svg(chord_data, chord_name="Accordo"):
-        # Impostazioni dimensioni
         width = 180
         height = 200
         margin_top = 40
-        margin_left = 30
+        margin_left = 35 # Aumentato leggermente per far stare il testo "fr"
         fret_spacing = 35
         string_spacing = 25
         
-        # Colori e stili
+        valid_frets = [fret for _, fret in chord_data.get("fingers", []) if isinstance(fret, int) and fret > 0]
+        min_fret = min(valid_frets) if valid_frets else 1
+        start_fret = min_fret if min_fret > 2 else 1
+        baseFret = chord_data.get("baseFret", 1)
+        if baseFret == 0: baseFret = 1
+
+        
         svg_header = f'<svg width="{width}" height="{height}" xmlns="http://www.w3.org/2000/svg">'
         styles = """
         <style>
@@ -385,55 +388,67 @@ def get_accordi(file_path, DOCKER=False):
             .finger { fill: #bdbdbd; }
             .barre { stroke: #bdbdbd; stroke-width: 8; stroke-linecap: round; }
             .text { font-family: Arial, sans-serif; font-size: 20px; text-anchor: middle; fill: #bdbdbd; }
-            .fret-num { font-size: 10px; fill: #666; }
+            .fret-num { font-size: 12px; fill: #bdbdbd; font-weight: bold; }
         </style>
         """
         
         content = [svg_header, styles]
         
-        # Titolo accordo
+        # 1. Titolo
         content.append(f'<text x="{width/2}" y="15" class="text" font-weight="bold">{chord_name}</text>')
 
-        # Disegno Griglia (6 corde, 5 tasti)
-        for i in range(6): # Corde
+        # 2. Numero del Fret se baseFret > 1
+        if baseFret > 1:
+            fret_label_y = margin_top + (fret_spacing / 2) + 5
+            content.append(f'<text x="{margin_left - 30}" y="{fret_label_y}" class="fret-num">{baseFret}fr</text>')
+
+        # 3. Disegno Corde (Verticali)
+        for i in range(6): 
             x = margin_left + (i * string_spacing)
             content.append(f'<line x1="{x}" y1="{margin_top}" x2="{x}" y2="{margin_top + (4 * fret_spacing)}" class="grid" />')
         
-        for i in range(5): # Tasti
+        # 4. Disegno Tasti (Orizzontali)
+        for i in range(5): 
             y = margin_top + (i * fret_spacing)
-            content.append(f'<line x1="{margin_left}" y1="{y}" x2="{margin_left + (5 * string_spacing)}" y2="{y}" class="grid" />')
+            stroke_style = 'style="stroke-width: 4;"' if i == 0 and start_fret == 1 else ''
+            content.append(f'<line x1="{margin_left}" y1="{y}" x2="{margin_left + (5 * string_spacing)}" y2="{y}" class="grid" {stroke_style}/>')
 
-        # Disegno Barrè
+        # 5. Disegno Barrè (Prima delle dita, così le dita restano sopra)
         for barre in chord_data.get("barres", []):
-            fret_y = margin_top + (barre['fret'] * fret_spacing) - (fret_spacing / 2)
-            # Mappatura corde: 6 è a sinistra (margin_left), 1 è a destra
-            x_start = margin_left + ((6 - barre['fromString']) * string_spacing)
-            x_end = margin_left + ((6 - barre['toString']) * string_spacing)
-            content.append(f'<line x1="{x_start}" y1="{fret_y}" x2="{x_end}" y2="{fret_y}" class="barre" />')
+            relative_fret = barre['fret'] - start_fret + 1
+            if 1 <= relative_fret <= 4:
+                fret_y = margin_top + (relative_fret * fret_spacing) - (fret_spacing / 2)
+                x_start = margin_left + ((6 - barre['fromString']) * string_spacing)
+                x_end = margin_left + ((6 - barre['toString']) * string_spacing)
+                content.append(f'<line x1="{x_start}" y1="{fret_y}" x2="{x_end}" y2="{fret_y}" class="barre" />')
 
-        # Disegno Dita
+        # 6. Disegno Dita
         for string, fret in chord_data.get("fingers", []):
             x = margin_left + ((6 - string) * string_spacing)
-            
             if fret == "x":
                 content.append(f'<text x="{x}" y="{margin_top - 10}" class="text">×</text>')
             elif fret == 0:
                 content.append(f'<circle cx="{x}" cy="{margin_top - 12}" r="5" fill="none" stroke="#bdbdbd" stroke-width="2" />')
             else:
-                # Calcolo posizione cerchio al centro del tasto
-                y = margin_top + (fret * fret_spacing) - (fret_spacing / 2)
-                # Evitiamo di disegnare il cerchio se è coperto da un barrè (opzionale)
-                content.append(f'<circle cx="{x}" cy="{y}" r="8" class="finger" />')
+                relative_fret = fret - start_fret + 1
+                if 1 <= relative_fret <= 4:
+                    y = margin_top + (relative_fret * fret_spacing) - (fret_spacing / 2)
+                    content.append(f'<circle cx="{x}" cy="{y}" r="8" class="finger" />')
 
         content.append('</svg>')
-
         return "\n".join(content)
 
     chords = prendi_accordi(file_path)
-    if not chords: return None
+    if not chords: 
+        return None
 
-    accordi = []
+    accordi_svg = []
     for chord, suffix in chords.items():
-        accordi.append(generate_chord_svg(process_chord(chord, suffix), chord_name=chord+" - "+suffix))
+        variazzione = 0
+        if not chord.startswith(('A', 'B', 'C', 'D', 'E', 'F', 'G')):
+            variazzione = int(chord[:1])
+            chord = chord[1:]
+        chord_data = process_chord(chord, suffix, variazzione)
+        accordi_svg.append(generate_chord_svg(chord_data, chord_name=chord+(f" ({variazzione})" if variazzione > 0 else "")+(f" {suffix}" if suffix != "major" else "")))
     
-    return accordi
+    return accordi_svg

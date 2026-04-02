@@ -402,7 +402,7 @@ def chords():
     return render_template("chords.html")
 @app.route('/get_chords/<folder>/<filename>')
 def get_chords(folder, filename):
-    accordi = lib.get_accordi(folder + '/' + filename, DOCKER=DOCKER)
+    accordi = lib.get_accordi(folder + '/' + filename)
     return (accordi, 200) if accordi else ("Accordi non trovati", 404)
 
 @app.after_request
