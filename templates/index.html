@@ -336,6 +336,11 @@
             }
 
             get_pref(); // Aggiorna stato preferito per la nuova canzone
+
+            // Se i testi sono aperti, aggiorna anche quelli per la nuova canzone
+            if (document.getElementById('lyricsModal').style.display === 'flex' && !document.getElementById('lyricsModal').classList.contains('chords')) openlyricsModal();
+            // idem per gli accordi
+            if (document.getElementById('lyricsModal').style.display === 'flex' && document.getElementById('lyricsModal').classList.contains('chords')) openChordsModal();
         }
 
         function playFolderRandom(folder) {
@@ -382,8 +387,6 @@
                     playSong(firstInFolder.folder + '/' + firstInFolder.song, null, globalIndex);
                 }
             }
-            // Se i testi sono aperti, aggiorna anche quelli per la nuova canzone
-            if (document.getElementById('lyricsModal').style.display === 'flex') openlyricsModal();
         }
 
         function prevSong() {
@@ -539,6 +542,9 @@
             <div onclick="openlyricsModal()" class="circle">
                 <i class="fa-solid fa-file"></i>
             </div>
+            <div onclick="openChordsModal()" class="circle">
+                <i class="fa-solid fa-guitar"></i>
+            </div>
             <div onclick="if(googleHome){googleHome=false; googleHomeF('stop'); play(false); closeMenu()} else{googleHomeF('init'); googleHome=true; audioPlayer.pause(); play(false);};" class="circle">
                 <i class="fa-solid fa-wifi"></i>
             </div>
@@ -565,6 +571,7 @@
         </div>
     </div>
 
+    <!-- usato anche da chords -->
     <div id="lyricsModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; align-items:center; justify-content:center;">
         <div style="background:#ff5500; color:#000; padding:30px 20px; border-radius:12px; max-width:90vw; min-height: 300px; margin:auto; position:relative; display: flex; align-items: center; justify-content: center;">
             <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
@@ -637,6 +644,7 @@
         document.getElementById('downloadModal').style.display = 'flex';
     }
     function openlyricsModal() {
+        document.getElementById('lyricsModal').classList.remove('chords');
         document.getElementById('lyricsModal').style.display = 'flex';
         let lyrics = document.getElementById('iframe-lirics');
 
@@ -648,6 +656,20 @@
             .replace('SONG', encodeURIComponent(song));
         
         lyrics.src = "lyrics?url=" + url;
+    }
+    function openChordsModal() {
+        document.getElementById('lyricsModal').classList.add('chords');
+        document.getElementById('lyricsModal').style.display = 'flex';
+        let lyrics = document.getElementById('iframe-lirics');
+
+        const folder = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].folder : playlist[currentIndex].folder;
+        const song = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].song : playlist[currentIndex].song;
+
+        const url = "{{ url_for('get_chords', folder='FOLDER', filename='SONG') }}"
+            .replace('FOLDER', encodeURIComponent(folder))
+            .replace('SONG', encodeURIComponent(song));
+        
+        lyrics.src = "chords?url=" + url;
     }
     function closeModal() {
         document.getElementById('downloadModal').style.display = 'none';
@@ -752,6 +774,97 @@
         .then(() => console.log('Service worker registrato'))
         .catch(err => console.error('Errore registrazione service worker:', err));
     }
+    
+    // download per ios
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.webkit?.messageHandlers?.downloadAction) {
+                document.querySelectorAll('.ios').forEach(el => {
+                    el.style.setProperty('display', 'flex', 'important');
+                });
+            }
+        });
+
+        let songsToDownload = 0;
+        let downloadedCount = 0;
+
+        // Ascolta il messaggio di conferma da iOS
+        window.addEventListener('downloadFinished', (event) => {
+            downloadedCount++;
+            console.log(`Scaricato: ${event.detail.name} (${downloadedCount}/${songsToDownload})`);
+            
+            // Se vuoi aggiornare un badge globale o una barra di progresso, fallo qui
+            const globalBadge = document.getElementById('global-sync-badge');
+            if (globalBadge) globalBadge.textContent = `${downloadedCount}/${songsToDownload}`;
+
+            if (downloadedCount >= songsToDownload && songsToDownload > 0) {
+                alert("✅ Tutti i file sono stati scaricati e salvati sull'iPad!");
+                songsToDownload = 0;
+                downloadedCount = 0;
+            }
+        });
+
+        async function syncFolder(folderName) {
+            const folderSongs = playlist.filter(item => item.folder === folderName);
+            if (folderSongs.length === 0) return;
+
+            if (!confirm(`Sincronizzare ${folderSongs.length} brani?`)) return;
+
+            songsToDownload = folderSongs.length;
+            downloadedCount = 0;
+
+            const baseUrl = window.location.origin;
+            
+            // Mostriamo un indicatore di caricamento
+            document.body.style.cursor = 'wait';
+
+            for (const item of folderSongs) {
+                const songUrl = new URL("{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1"
+                    .replace('FOLDER', encodeURIComponent(item.folder))
+                    .replace('SONG', encodeURIComponent(item.song)), baseUrl).href;
+
+                const imageUrl = new URL("{{ url_for('img', folder='FOLDER', filename='SONG') }}"
+                    .replace('FOLDER', encodeURIComponent(item.folder))
+                    .replace('SONG', encodeURIComponent(item.song)), baseUrl).href;
+
+                window.webkit.messageHandlers.downloadAction.postMessage({
+                    song: songUrl,
+                    image: imageUrl
+                });
+
+                await new Promise(r => setTimeout(r, 100));
+            }
+            
+            document.body.style.cursor = 'default';
+            // NON mettiamo l'alert qui, perché iOS sta ancora lavorando!
+            console.log("Richieste inviate, in attesa dei download reali...");
+        }
+        
+        function downloadIos() {
+            const source = randomFolderPlaylist || playlist;
+            const { folder, song } = source[currentIndex];
+
+            // Otteniamo l'indirizzo base del server (es. http://192.168.1.5:5000)
+            const baseUrl = window.location.origin;
+
+            const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1")
+                .replace('FOLDER', encodeURIComponent(folder))
+                .replace('SONG', encodeURIComponent(song));
+
+            const imageUrl = (baseUrl + "{{ url_for('img', folder='FOLDER', filename='SONG') }}")
+                .replace('FOLDER', encodeURIComponent(folder))
+                .replace('SONG', encodeURIComponent(song));
+
+            const data = {
+                song: songUrl,
+                image: imageUrl
+            };
+
+            if (window.webkit?.messageHandlers?.downloadAction) {
+                window.webkit.messageHandlers.downloadAction.postMessage(data);
+            } else {
+                alert("Funzione non supportata su questo dispositivo.");
+            }
+        }
     </script>
 
     <!-- tasto destro -->
@@ -886,97 +999,6 @@
 
             lastScrollY = currentScroll;
             }, { passive: true });
-
-        // download per ios
-            document.addEventListener('DOMContentLoaded', function () {
-                if (window.webkit?.messageHandlers?.downloadAction) {
-                    document.querySelectorAll('.ios').forEach(el => {
-                        el.style.setProperty('display', 'flex', 'important');
-                    });
-                }
-            });
-
-            let songsToDownload = 0;
-            let downloadedCount = 0;
-
-            // Ascolta il messaggio di conferma da iOS
-            window.addEventListener('downloadFinished', (event) => {
-                downloadedCount++;
-                console.log(`Scaricato: ${event.detail.name} (${downloadedCount}/${songsToDownload})`);
-                
-                // Se vuoi aggiornare un badge globale o una barra di progresso, fallo qui
-                const globalBadge = document.getElementById('global-sync-badge');
-                if (globalBadge) globalBadge.textContent = `${downloadedCount}/${songsToDownload}`;
-
-                if (downloadedCount >= songsToDownload && songsToDownload > 0) {
-                    alert("✅ Tutti i file sono stati scaricati e salvati sull'iPad!");
-                    songsToDownload = 0;
-                    downloadedCount = 0;
-                }
-            });
-
-            async function syncFolder(folderName) {
-                const folderSongs = playlist.filter(item => item.folder === folderName);
-                if (folderSongs.length === 0) return;
-
-                if (!confirm(`Sincronizzare ${folderSongs.length} brani?`)) return;
-
-                songsToDownload = folderSongs.length;
-                downloadedCount = 0;
-
-                const baseUrl = window.location.origin;
-                
-                // Mostriamo un indicatore di caricamento
-                document.body.style.cursor = 'wait';
-
-                for (const item of folderSongs) {
-                    const songUrl = new URL("{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1"
-                        .replace('FOLDER', encodeURIComponent(item.folder))
-                        .replace('SONG', encodeURIComponent(item.song)), baseUrl).href;
-
-                    const imageUrl = new URL("{{ url_for('img', folder='FOLDER', filename='SONG') }}"
-                        .replace('FOLDER', encodeURIComponent(item.folder))
-                        .replace('SONG', encodeURIComponent(item.song)), baseUrl).href;
-
-                    window.webkit.messageHandlers.downloadAction.postMessage({
-                        song: songUrl,
-                        image: imageUrl
-                    });
-
-                    await new Promise(r => setTimeout(r, 100));
-                }
-                
-                document.body.style.cursor = 'default';
-                // NON mettiamo l'alert qui, perché iOS sta ancora lavorando!
-                console.log("Richieste inviate, in attesa dei download reali...");
-            }
-            
-            function downloadIos() {
-            const source = randomFolderPlaylist || playlist;
-            const { folder, song } = source[currentIndex];
-
-            // Otteniamo l'indirizzo base del server (es. http://192.168.1.5:5000)
-            const baseUrl = window.location.origin;
-
-            const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1")
-                .replace('FOLDER', encodeURIComponent(folder))
-                .replace('SONG', encodeURIComponent(song));
-
-            const imageUrl = (baseUrl + "{{ url_for('img', folder='FOLDER', filename='SONG') }}")
-                .replace('FOLDER', encodeURIComponent(folder))
-                .replace('SONG', encodeURIComponent(song));
-
-            const data = {
-                song: songUrl,
-                image: imageUrl
-            };
-
-            if (window.webkit?.messageHandlers?.downloadAction) {
-                window.webkit.messageHandlers.downloadAction.postMessage(data);
-            } else {
-                alert("Funzione non supportata su questo dispositivo.");
-            }
-        }
 
     </script>
 

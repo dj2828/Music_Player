@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accordi canzone</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;1,500&display=swap');
+        body {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            background-color: #ff5500;
+            color: #e0e0e0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        #chords-container {
+            background-color: #1e1e1e;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-content: center;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .text {
+            color: #bdbdbd;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- <audio controls id="audioPlayer">
+        <source src="http://localhost/Tha%20Supreme/gua10%20-%20feat.%20Lazza.flac" type="audio/flac">
+    </audio> -->
+
+    <div id="chords-container">
+        <div id="testo-output">Caricamento degli accordi in corso...</div>
+    </div>
+
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const url = params.get("url");
+        console.log("URL del testo:", url);
+
+        async function fetchChords() {
+            const response = await fetch(url);
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    document.getElementById("testo-output").innerHTML = '<p style="color: #ff4d4d;">Accordi non trovati</p>';
+                    return null;
+                } else {
+                    throw new Error(`Errore HTTP: ${response.status}`);
+                }
+            }
+
+            const data = await response.json();
+            return data;
+        }
+
+        async function displayChords() {
+            const data = await fetchChords();
+            if (!data) return;
+            data.forEach(element => {
+                console.log(element);
+            });
+
+            document.getElementById("chords-container").innerHTML =
+                data.map(chord => `
+                    <div class="chord">
+                        ${chord}
+                    </div>
+                `).join('');
+        }
+        
+        displayChords();
+    </script>
+</body>
+</html>

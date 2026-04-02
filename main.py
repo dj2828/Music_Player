@@ -397,6 +397,14 @@ def pref():
         json.dump(pref, f, indent=2)
     return jsonify({"status": status}), 200
 
+@app.route('/chords')
+def chords():
+    return render_template("chords.html")
+@app.route('/get_chords/<folder>/<filename>')
+def get_chords(folder, filename):
+    accordi = lib.get_accordi(folder + '/' + filename, DOCKER=DOCKER)
+    return (accordi, 200) if accordi else ("Accordi non trovati", 404)
+
 @app.after_request
 def add_header(response):
     if request.path.endswith(('.mp3', '.flac')):
