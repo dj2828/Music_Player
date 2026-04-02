@@ -1,7 +1,7 @@
 
 # Music Player
 
-## Config.yaml
+## config.yaml
 
 `Cartelle` Nome e Path della cartella
 
@@ -31,6 +31,18 @@ Es: `Cartelle:
 `IP_per_google_home: {Indirizzo IP locale}` Es: `IP_per_google_home: "192.168.1.8"`
 
 `PORT: {Porta}` Default: 80
+
+## chords.json
+```json
+{
+    "Fr/Babydoll.flac": {
+        "D": "minor",
+        "A": "major",
+        "1G": "minor"
+    }
+}
+```
+(`1G` 1 è un' altra forma dell' accordo)
 
 # Per startare
 apri `server.py`
