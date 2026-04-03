@@ -98,7 +98,10 @@ def down(url, MUSIC_FOLDER):
                 },
                 {  # Inserisce la copertina nel file MP3
                     'key': 'EmbedThumbnail',
-                }]}
+                }]
+            # per i cockie
+            # ,"cookies-from-browser": "chrome"
+            }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
