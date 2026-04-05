@@ -97,17 +97,6 @@
         let cartellaObj = document.getElementById('cartella');
         let googleHome = false;
 
-        // Funzione per salvare l'URL nel cookie
-        function setLastPlayedMp3Url(url) {
-            document.cookie = "lastMp3Url=" + encodeURIComponent(url) + "; path=/; max-age=31536000";
-        }
-
-        // Funzione per leggere l'URL dal cookie
-        function getLastPlayedMp3Url() {
-            const match = document.cookie.match(/(?:^|; )lastMp3Url=([^;]*)/);
-            return match ? decodeURIComponent(match[1]) : null;
-        }
-
         audioPlayer.onloadedmetadata = function() {
             progress.max = audioPlayer.duration;
             progress.value = audioPlayer.currentTime;
@@ -169,6 +158,7 @@
         const slider = document.getElementById('volumeslider');
         slider.oninput = function () {
             const v = slider.value / 100;
+            localStorage.setItem('lastVolume', slider.value);
 
             clearTimeout(timeout);
             if (googleHome){
@@ -180,22 +170,19 @@
             }
         };
         function vol() {
-            const volumeSlider = document.getElementById('volumeslider');
-            // Ricava il valore corrente dello slider in [0,1]
-            let v = volumeSlider.value / 100;
-            // Calcola il volume corrente in scala logaritmica
-            let currentVolume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
-            if (Math.abs(currentVolume - Math.pow(10, (0.2 - 1) * 2)) > 0.01) {
+            let currentVolume = slider.value / 100;
+            if (currentVolume > 0.20) {
                 // Imposta volume a 20% logaritmico
-                volumeSlider.value = 20;
+                slider.value = 20;
                 audioPlayer.volume = Math.pow(10, (0.2 - 1) * 2);
                 if (googleHome) googleHomeF("vol" + 0.2);
             } else {
                 // Imposta volume a 100%
-                volumeSlider.value = 100;
+                slider.value = 100;
                 audioPlayer.volume = Math.pow(10, (1 - 1) * 2); // = 1
                 if (googleHome) googleHomeF("vol" + 1);
             }
+            localStorage.setItem('lastVolume', slider.value);
         }
 
         window.addEventListener('keydown', function(e) {
@@ -230,7 +217,7 @@
                 .replace('FOLDER', encodeURIComponent(folder))
                 .replace('SONG', encodeURIComponent(song));
             // Salva l'URL nel cookie
-            setLastPlayedMp3Url(url);
+            localStorage.setItem('lastMp3Url', url);
 
             if (googleHome) {
                 play(true);
@@ -409,13 +396,20 @@
         document.addEventListener("DOMContentLoaded", () => { 
         // messo il doomcontent per il reload dei testi nel playsong, senza dava errore che non esisteva 
         // lyricsModal e non andava più audioPlayer.addEventListener('ended') (come se centrasse qualcosa con lerrore btw)
-            const lastMp3Url = getLastPlayedMp3Url();
+            const lastMp3Url = decodeURIComponent(localStorage.getItem('lastMp3Url') || '').slice(1);
             if (lastMp3Url) {
-                const formattedUrl = decodeURIComponent(lastMp3Url).slice(1);
-                console.log('Ultimo mp3 dal cookie (formattato):', formattedUrl);
-                playSong(formattedUrl, null, null, null, false);
+                console.log('Ultimo mp3 dal cookie (formattato):', lastMp3Url);
+                playSong(lastMp3Url, null, null, null, false);
             } else {
                 console.log('Nessun mp3 trovato nel cookie.');
+            }
+
+            const lastVolume = localStorage.getItem('lastVolume') || null;
+            if (lastVolume) {
+                const volumeSlider = document.getElementById('volumeslider');
+                volumeSlider.value = lastVolume;
+                const v = volumeSlider.value / 100;
+                audioPlayer.volume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
             }
         });
 
