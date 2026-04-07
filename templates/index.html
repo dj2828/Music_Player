@@ -69,7 +69,7 @@
                 
                 <div>
                 {% for song in songs %}
-                    <button onclick='playSong("{{ folder }}/{{ song }}")' class="song{{ ' pref' if folder+'/'+song in pref else '' }}">
+                    <button onclick='playSong("{{ folder }}/{{ song }}")' class="song{{ ' pref' if song in pref else '' }}">
                         <h3>{{ song.replace('.mp3', '').replace('.flac', '') }}</h3>
                     </button>
                 {% endfor %}
@@ -453,14 +453,13 @@
                 } else {
                     var currentSong = playlist[currentIndex];
                 }
-                const songPath = currentSong.folder + '/' + currentSong.song;
                 
                 fetch('/increment_plays', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: 'song=' + encodeURIComponent(songPath)
+                    body: 'song=' + encodeURIComponent(currentSong.song)
                 })
                 .then(response => console.log('Riproduzione conteggiata'))
                 .catch(error => console.error('Errore nel conteggio:', error));
@@ -479,14 +478,13 @@
                 } else {
                     var currentSong = playlist[currentIndex];
                 }
-                const songPath = currentSong.folder + '/' + currentSong.song;
 
                 fetch('/pref', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded'
                     },
-                    body: 'song=' + encodeURIComponent(songPath)
+                    body: 'song=' + encodeURIComponent(currentSong.song)
                 }).then(response => {
                     if (response.ok) {
                         get_pref(); // Aggiorna lo stato preferito dopo il toggle
@@ -501,9 +499,8 @@
                 } else {
                     var currentSong = playlist[currentIndex];
                 }
-                const songPath = currentSong.folder + '/' + currentSong.song;
                 
-                fetch('/pref?song=' + encodeURIComponent(songPath), {method: 'GET',})
+                fetch('/pref?song=' + encodeURIComponent(currentSong.song), {method: 'GET',})
                 .then(response => response.json())
                 .then(data => {
                     if(data.is_pref){
@@ -663,8 +660,7 @@
         const folder = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].folder : playlist[currentIndex].folder;
         const song = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].song : playlist[currentIndex].song;
 
-        const url = "{{ url_for('get_chords', folder='FOLDER', filename='SONG') }}"
-            .replace('FOLDER', encodeURIComponent(folder))
+        const url = "{{ url_for('get_chords', filename='SONG') }}"
             .replace('SONG', encodeURIComponent(song));
         
         lyrics.src = "chords?url=" + url;
@@ -917,7 +913,7 @@
             function handleInfo() {
                 if (clickedElement) {
                     const songName = clickedElement.textContent.trim();
-                    fetch('/info?song='+clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1])
+                    fetch('/info?song=' + clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1].split('/')[1])
                     .then(response => response.json())
                     .then(data => {
                         alert('Info sulla canzone: ' + songName + '\nRiproduzioni: '+data.plays);

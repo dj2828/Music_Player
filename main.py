@@ -268,12 +268,12 @@ def delete_song(folder, filename):
             os.remove(file_path)
             pref = load_pref()
             plays = load_plays()
-            if f"{folder}/{filename}" in pref:
-                pref.remove(f"{folder}/{filename}")
+            if f"{filename}" in pref:
+                pref.remove(f"{filename}")
                 with open('pref.json', 'w') as f:
                     json.dump(pref, f, indent=2)
-            if f"{folder}/{filename}" in plays:
-                del plays[f"{folder}/{filename}"]
+            if f"{filename}" in plays:
+                del plays[f"{filename}"]
                 with open('plays.json', 'w') as f:
                     json.dump(plays, f, indent=2)
             return "OK", 200
@@ -311,6 +311,23 @@ def get_info():
 
 @app.route('/stats', methods=['GET'])
 def get_stats():
+    def load_plays_con_folder():
+        def trova_folder(database, canzone):
+            for folder, album in database.items():
+                # album è un dizionario dove le chiavi sono i titoli e i valori sono liste di canzoni
+                for titolo_album, canzoni in album.items():
+                    print(f"Controllo se '{canzone}' in {canzoni}")
+                    if canzone in canzoni:
+                        return folder
+            return None
+        bd = get_music()
+        plays = load_plays()
+        plays_con_folder = {}
+        for song, count in plays.items():
+            folder = trova_folder(bd, song)
+            if folder:
+                plays_con_folder[folder + '/' + song] = count
+        return plays_con_folder
     def hours_played(plays):
         remove_song = []
         total_seconds = 0.0
@@ -339,7 +356,7 @@ def get_stats():
             plays.pop(song, None)
 
         with open(PLAYS_FILE, 'w') as f:
-            json.dump(plays, f, indent=2)
+            json.dump({a.split('/')[1]: count for a, count in plays.items()}, f, indent=2)
 
         # Conversione corretta
         total_seconds = int(total_seconds)
@@ -347,7 +364,7 @@ def get_stats():
         minutes = (total_seconds % 3600) // 60
 
         return f"{hours}h {minutes}m"
-    plays = load_plays()
+    plays = load_plays_con_folder()
     total_songs = len(plays)
     total_plays = sum(plays.values())
     total_hours = hours_played(plays)
@@ -400,9 +417,9 @@ def pref():
 @app.route('/chords')
 def chords():
     return render_template("chords.html")
-@app.route('/get_chords/<folder>/<filename>')
-def get_chords(folder, filename):
-    accordi = lib.get_accordi(folder + '/' + filename)
+@app.route('/get_chords/<filename>')
+def get_chords(filename):
+    accordi = lib.get_accordi(filename)
     return (accordi, 200) if accordi else ("Accordi non trovati", 404)
 
 @app.after_request
