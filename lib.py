@@ -285,7 +285,7 @@ def get_accordi(file_path):
         
         return chords.get(file_path)
 
-    def process_chord(chord_key, suffix="major", variazzione=0):
+    def process_chord(chord_key, variazzione=0):
         """
         Cerca l'accordo e lo converte nel tuo formato.
         chord_key: es. 'C', 'Bb', 'G#'
@@ -298,6 +298,19 @@ def get_accordi(file_path):
             "G#": "Ab",
             "A#": "Bb"
         }
+        print(f"Elaborazione accordo: {chord_key}")
+        if chord_key.endswith("m"):
+            chord_key = chord_key[:-1]
+            suffix = "minor"
+        elif chord_key.endswith("7"):
+            chord_key = chord_key[:-1]
+            suffix = "7"
+        elif chord_key.endswith("m7"):
+            chord_key = chord_key[:-1]
+            suffix = "m7"
+        else:
+            suffix = "major"
+
         # Se la nota è nel dizionario la traduce (es. G# -> Ab), altrimenti la lascia com'è
         chord_key = enharmonic_map.get(chord_key, chord_key)
         chord_key = chord_key.replace("#", "sharp")
@@ -446,12 +459,12 @@ def get_accordi(file_path):
         return None
 
     accordi_svg = []
-    for chord, suffix in chords.items():
+    for chord in chords:
         variazzione = 0
         if not chord.startswith(('A', 'B', 'C', 'D', 'E', 'F', 'G')):
             variazzione = int(chord[:1])
             chord = chord[1:]
-        chord_data = process_chord(chord, suffix, variazzione)
-        accordi_svg.append(generate_chord_svg(chord_data, chord_name=chord+(f" ({variazzione})" if variazzione > 0 else "")+(f" {suffix}" if suffix != "major" else "")))
+        chord_data = process_chord(chord, variazzione)
+        accordi_svg.append(generate_chord_svg(chord_data, chord_name=chord+(f" ({variazzione})" if variazzione > 0 else "")))
     
     return accordi_svg

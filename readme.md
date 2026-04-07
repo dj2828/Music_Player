@@ -35,14 +35,12 @@ Es: `Cartelle:
 ## chords.json
 ```json
 {
-    "Fr/Babydoll.flac": {
-        "D": "minor",
-        "A": "major",
-        "1G": "minor"
-    }
+    "Babydoll.flac": [
+        "1Dm", "2A", "1Gm"
+    ]
 }
 ```
-(`1G` 1 è un' altra forma dell' accordo)
+(`1Dm` 1 è un' altra forma dell' accordo, D è l' accordo, m è minore)
 
 # Per startare
 apri `server.py`
