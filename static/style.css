@@ -124,9 +124,9 @@ nav{
   transform: scale(1);
   transition: all 0.3s;
 }
-.controls div:nth-child(1){
+.controls div:nth-child(1){ /* il preferito */ 
   position: absolute;
-  left: 35px;
+  left: 40px;
 }
 .controls div:nth-child(3){
   transform: scale(1.5);
@@ -372,7 +372,7 @@ nav{
   }
   .music-player{
     position: sticky;
-    top: 5px;
+    top: calc(env(safe-area-inset-top) + 5px);
     left: 0;
     transform: none;
     margin-bottom: 20px;
@@ -458,5 +458,8 @@ nav{
   }
   .controls div{
     margin: 15px;
+  }
+  #menu .circle{
+    margin: 5px;
   }
 }
