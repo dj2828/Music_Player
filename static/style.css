@@ -322,6 +322,77 @@ nav{
   justify-content: center;
   box-shadow: rgba(0, 0, 0, 0.69) 0px 0px 20px 10px;
 }
+/* settings */
+/* Contenitore della label */
+.custom-label {
+  display: block;
+  position: relative;
+  padding-left: 35px; /* Spazio per il quadratino */
+  margin-bottom: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+/* Nascondi il checkbox di default del browser */
+.custom-label input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+/* Crea il quadratino personalizzato (vuoto) */
+.checkmark {
+  position: relative;
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  background-color: #eee;
+  transition: background-color 0.1s;
+  border-radius: 4px;
+  flex-shrink: 0;         /* Impedisce al quadratino di rimpicciolirsi */
+}
+/* Colore di sfondo quando passi sopra col mouse (Hover) */
+.custom-label:hover input ~ .checkmark {
+  background-color: #ccc;
+}
+/* Colore di sfondo quando il checkbox è selezionato */
+.custom-label input:checked ~ .checkmark {
+  background-color: #2196F3; /* Blu */
+}
+/* Crea il simbolo del check (V) - nascosto di default */
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+/* Mostra il simbolo del check quando selezionato */
+.custom-label input:checked ~ .checkmark:after {
+  display: block;
+}
+/* Stile del simbolo del check (una L ruotata di 45 gradi) */
+.custom-label .checkmark:after {
+  left: 6px;
+  top: 3px;
+  width: 4px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  transform: rotate(45deg);
+}
+.shuffle-div {
+  display: flex;
+  justify-content: center; /* Centra orizzontalmente tutto il contenuto */
+}
+/* Gestisce l'allineamento interno (checkbox + testo) */
+.shuffle-div label {
+  display: flex;          /* Allinea checkbox e testo sulla stessa riga */
+  align-items: center;    /* Centra verticalmente il testo rispetto al quadratino */
+  flex-direction: row-reverse; /* Inverte l'ordine visivo: Label a sinistra, Checkbox a destra */
+  justify-content: flex-end;
+  cursor: pointer;
+  gap: 10px;             /* <--- Questo controlla la distanza tra checkbox e testo */
+  min-width: 150px;       /* Opzionale: per dare una base uniforme */
+}
 
 .ios{
   display: none !important;

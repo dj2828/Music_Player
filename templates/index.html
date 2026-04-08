@@ -82,6 +82,7 @@
     <script>
         // Crea la playlist con tutte le canzoni (cartella e nome)
         const playlist = [];
+        const songs_by_folder = {{ songs_by_folder | tojson }};
         {% for folder, albums in songs_by_folder.items() %}
             {% for album_name, songs in albums.items() %}
                 {% for song in songs %}
@@ -333,7 +334,7 @@
         function playFolderRandom(folder) {
             let folderSongs;
             if (folder === "ALL"){
-                Object.keys({{ songs_by_folder | tojson }}).forEach(element => {
+                Object.keys(songs_by_folder).forEach(element => {
                     if (localStorage.getItem('shuffle-' + element) === 'true') {
                         const songsInFolder = playlist.filter(item => item.folder === element);
                         folderSongs = folderSongs ? folderSongs.concat(songsInFolder) : songsInFolder;
@@ -596,15 +597,17 @@
             <div style="text-align:center;">
                 <h3>Impostazioni</h3>
                 <p>Qui puoi modificare le impostazioni dell'app.</p>
-                <div id="ShuffleAllSetting">
-                    <p>Shuffle</p>
+                <div id="ShuffleAllSetting" style="margin-top: 10px;">
+                    <p style="margin-bottom: 5px;">Shuffle</p>
                     <script>
                         let shuffleAllDiv = document.getElementById('ShuffleAllSetting');
-                        Object.keys({{ songs_by_folder | tojson }}).forEach(element => {
+                        Object.keys(songs_by_folder).forEach(element => {
                             localStorage.setItem('shuffle-'+element, localStorage.getItem('shuffle-'+element) === null ? 'true' : localStorage.getItem('shuffle-'+element));
-                            shuffleAllDiv.innerHTML += `<div>
-                                <label ">${element}</label>
-                                <input type="checkbox" id="shuffle-${element}" ${localStorage.getItem('shuffle-' + element) === 'true' ? 'checked' : ''} onchange="localStorage.setItem('shuffle-${element}', this.checked);">
+                            shuffleAllDiv.innerHTML += `<div class="shuffle-div">
+                                <label class="custom-label" for="shuffle-${element}">${element}
+                                <input type="checkbox" class="form-check-input" id="shuffle-${element}" ${localStorage.getItem('shuffle-' + element) === 'true' ? 'checked' : ''} onchange="localStorage.setItem('shuffle-${element}', this.checked);">
+                                <span class="checkmark"></span>
+                                </label>
                                 </div>`;
                         });
                     </script>
