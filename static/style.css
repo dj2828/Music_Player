@@ -187,6 +187,7 @@ nav{
   align-items: center;
   justify-content: center;
   gap: 5px;
+  flex-wrap: wrap;
 }
 .song{
   background-color: blue;
