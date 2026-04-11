@@ -189,6 +189,16 @@ def img_album(album_name):
     if os.path.exists(img_path):
         return send_from_directory(os.path.join(COVER_FOLDER, "album"), f"{album_name}.png")
     else:
+        # genero l'immagine se non c'è, cosi da avere le immagini pronte nella home
+        songs_by_folder = get_music()
+        songs = []
+        for folder, albums in songs_by_folder.items():
+            for alb, tracce in albums.items():
+                if alb == album_name:
+                    songs = tracce
+                    print("Genero immagine per album:", album_name, folder, songs[0])
+                    img(folder, songs[0])
+                    return send_from_directory(os.path.join(COVER_FOLDER, "album"), f"{album_name}.png")
         return "Immagine non trovata", 404
 
 @app.route('/google', methods=['POST'])

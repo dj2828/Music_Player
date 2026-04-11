@@ -468,3 +468,5 @@ def get_accordi(file_path):
         accordi_svg.append(generate_chord_svg(chord_data, chord_name=chord+(f" ({variazzione})" if variazzione > 0 else "")))
     
     return accordi_svg
+
+# def carica_album()
