@@ -469,4 +469,25 @@ def get_accordi(file_path):
     
     return accordi_svg
 
-# def carica_album()
+def get_info(song):
+    print(f"Recupero info per: {song}")
+    if song.endswith('.flac'):
+        audio = FLAC(song)
+        # FLAC restituisce sempre liste di stringhe
+        title = audio.get('title', [song.split('/')[-1][:-5]])[0]
+        artist = audio.get('artist', ['Unknown Artist'])[0]
+        album = audio.get('album', ['Unknown Album'])[0]
+    elif song.endswith('.mp3'):
+        audio = MP3(song)
+        # Gli MP3 usano i frame ID3. Usiamo .text[0] per prendere il contenuto pulito
+        title = str(audio.get('TIT2', song.split('/')[-1][:-4]))
+        artist = str(audio.get('TPE1', 'Unknown Artist'))
+        album = str(audio.get('TALB', 'Unknown Album'))
+    else:
+        return {"error": "Formato non supportato"}
+
+    return {
+        "title": title, 
+        "artist": artist, 
+        "album": album
+    }

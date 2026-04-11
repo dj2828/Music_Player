@@ -205,7 +205,27 @@
             let titolo = songPath.split('/').pop().replace(/\.(mp3|flac)$/i, '');
             let cartella = songPath.split('/')[0];
             titoloObj.textContent = titolo;
-            cartellaObj.textContent = cartella;
+
+            songInfo = {
+                "artist": "",
+                "album": ""
+            };
+            fetch('/info?song=' + encodeURIComponent(songPath))
+            .then(response => response.json())
+            .then(data => {
+                if(data.info.artist != "Unknown Artist"){
+                    cartellaObj.textContent = data.info.artist;
+                    songInfo.artist = data.info.artist;
+                }
+                else if(data.info.album != "Unknown Album"){
+                    cartellaObj.textContent = data.info.album;
+                    songInfo.album = data.info.album;
+                }
+                else{
+                    cartellaObj.textContent = cartella;
+                }
+            });
+            
             document.title = titolo;
 
             // manda robe a miniplayer
@@ -288,8 +308,8 @@
 
                 navigator.mediaSession.metadata = new MediaMetadata({
                     title: titolo,
-                    artist: cartella,
-                    album: "",
+                    artist: songInfo.artist !== "Unknown Artist" ? songInfo.artist : cartella,
+                    album: songInfo.album !== "Unknown Album" ? songInfo.album : "",
                     artwork: [{
                         src: artworkSrc,
                         sizes: "512x512",
@@ -964,10 +984,10 @@
             function handleInfo() {
                 if (clickedElement) {
                     const songName = clickedElement.textContent.trim();
-                    fetch('/info?song=' + clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1].split('/')[1])
+                    fetch('/info?song=' + clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1])
                     .then(response => response.json())
                     .then(data => {
-                        alert('Info sulla canzone: ' + songName + '\nRiproduzioni: '+data.plays);
+                        alert('Titolo: ' + data.info.title + '\nArtista: ' + data.info.artist + '\nAlbum: ' + data.info.album + '\nRiproduzioni: ' + data.plays + (data.is_pref ? '\n❤️ Preferita' : ''));
                     });
                 }
             }

@@ -314,10 +314,12 @@ def increment_plays():
 
 @app.route('/info', methods=['GET'])
 def get_info():
-    song = request.args.get('song')
+    folder, song = request.args.get('song').split('/')
     plays = load_plays()
     play_count = plays.get(song, 0)
-    return jsonify({'plays': play_count})
+    info = lib.get_info(MUSIC_FOLDERS[folder] + '/' + song)
+    pref = load_pref()
+    return jsonify({'plays': play_count, 'info': info, 'is_pref': song in pref})
 
 @app.route('/stats', methods=['GET'])
 def get_stats():
