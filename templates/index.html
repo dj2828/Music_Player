@@ -1048,22 +1048,36 @@
 
         // per far scomparire la nav su telefono quando si scrolla
             const musicPlayer = document.querySelector('.music-player');
-
             let lastScrollY = window.scrollY;
             const DELTA = 20;
 
             window.addEventListener('scroll', () => {
-            const currentScroll = window.scrollY;
-            const diff = currentScroll - lastScrollY;
+                const currentScroll = window.scrollY;
+                const diff = currentScroll - lastScrollY;
 
-            if (Math.abs(diff) < DELTA) return;
+                // 1. Se siamo in cima alla pagina, espandiamo sempre
+                if (currentScroll <= 20) {
+                    musicPlayer.classList.remove('compact');
+                    lastScrollY = currentScroll;
+                    return;
+                }
 
-            const isScrollingDown = diff > 0;
+                // 2. Se lo scroll è minimo, non fare nulla
+                if (Math.abs(diff) < DELTA) return;
 
-            musicPlayer.classList.toggle('compact', isScrollingDown);
-
-            lastScrollY = currentScroll;
+                if (diff > 0) {
+                    // Scorrendo verso il basso: diventa compatto
+                    musicPlayer.classList.add('compact');
+                }
+                lastScrollY = currentScroll;
             }, { passive: true });
+
+            // Riapre il player al click e "resetta" la posizione di riferimento
+            musicPlayer.addEventListener('click', () => {
+                musicPlayer.classList.remove('compact');
+                // Aggiorniamo lastScrollY al valore attuale così lo scroll non crederà che ci sia stato un movimento improvviso
+                lastScrollY = window.scrollY;
+            });
 
     </script>
 

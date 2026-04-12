@@ -513,11 +513,14 @@ nav{
   }
   .cartella{
     padding: 10px 15px;
-    margin-top: 0px;
+    margin-top: env(safe-area-inset-top); /* viene dato solo al primo, il resto è 0px */
     margin-bottom: 15px;
     min-width: 270px;
     max-width: none;
     width: calc(100% - 200px);
+  }
+  .cartella ~ .cartella {
+    margin-top: 0px;
   }
   .cover{
     margin-top: 5px;
