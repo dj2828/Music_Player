@@ -210,28 +210,30 @@
                 "artist": "",
                 "album": ""
             };
+            let sottotitolo;
             fetch('/info?song=' + encodeURIComponent(songPath))
             .then(response => response.json())
             .then(data => {
                 if(data.info.artist != "Unknown Artist"){
-                    cartellaObj.textContent = data.info.artist;
+                    sottotitolo = data.info.artist;
                     songInfo.artist = data.info.artist;
                 }
                 else if(data.info.album != "Unknown Album"){
-                    cartellaObj.textContent = data.info.album;
+                    sottotitolo = data.info.album;
                     songInfo.album = data.info.album;
                 }
                 else{
-                    cartellaObj.textContent = cartella;
+                    sottotitolo = cartella;
                 }
+                cartellaObj.textContent = sottotitolo;
+                
+                // manda robe a miniplayer
+                try {
+                    pywebview.api.setSong(songPath, titolo, sottotitolo);
+                } catch (error) {}
             });
             
             document.title = titolo;
-
-            // manda robe a miniplayer
-            try {
-                pywebview.api.setSong(songPath, titolo, cartella);
-            } catch (error) {}
 
             const audioPlayer = document.getElementById('audioPlayer');
             const [folder, song] = songPath.split('/');
