@@ -1073,9 +1073,11 @@
             }, { passive: true });
 
             // Riapre il player al click e "resetta" la posizione di riferimento
-            musicPlayer.addEventListener('click', () => {
+            musicPlayer.addEventListener('click', (event) => {
+                // Se il click NON è avvenuto direttamente sul bordo/sfondo del player, esci
+                if (event.target.closest('.controls')) return;
+
                 musicPlayer.classList.remove('compact');
-                // Aggiorniamo lastScrollY al valore attuale così lo scroll non crederà che ci sia stato un movimento improvviso
                 lastScrollY = window.scrollY;
             });
 
