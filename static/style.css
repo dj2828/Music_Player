@@ -473,7 +473,7 @@ nav{
   }
   .music-player{
     position: sticky;
-    top: calc(env(safe-area-inset-top) + 5px);
+    top: env(safe-area-inset-top);
     left: 0;
     transform: none;
     margin-bottom: 20px;
@@ -513,7 +513,7 @@ nav{
   }
   .cartella{
     padding: 10px 15px;
-    margin-top: env(safe-area-inset-top); /* viene dato solo al primo, il resto è 0px */
+    margin-top: calc(env(safe-area-inset-top) - 5px); /* viene dato solo al primo, il resto è 0px */
     margin-bottom: 15px;
     min-width: 270px;
     max-width: none;
