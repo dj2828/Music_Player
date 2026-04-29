@@ -112,7 +112,7 @@
             const tuttiGliSvg = document.querySelectorAll(".chord");
             tuttiGliSvg.forEach(element => {
                 const testo = element.querySelector(".text").textContent;
-                const regex = /^([A-G])([b#]?)([^(\s]*)\s*\((\d+)\)/;
+                const regex = /^([A-G])([b#]?)([a-zA-Z0-9]*)\s*\(?(\d*)\)?/;
                 const match = testo.match(regex);
                 if (match) {
                     const data = {
@@ -165,7 +165,7 @@
                     <option value="#" ${tonoVal === "#" ? 'selected' : ''}>Diesis</option>
                 </select>
                 <select class="suffix">
-                    <option value="" ${suffixVal === "" ? 'selected' : ''}>Nessuna</option>
+                    <option value="" ${suffixVal === "" ? 'selected' : ''}>Maggiore</option>
                     <option value="m" ${suffixVal === "m" ? 'selected' : ''}>Minore</option>
                     <option value="7" ${suffixVal === "7" ? 'selected' : ''}>Settima</option>
                     <option value="maj7" ${suffixVal === "maj7" ? 'selected' : ''}>Maggiore 7</option>
