@@ -433,6 +433,17 @@ def chords():
 def get_chords(filename):
     accordi = lib.get_accordi(filename)
     return (accordi, 200) if accordi else ("Accordi non trovati", 404)
+@app.route('/chord', methods=['GET', 'POST'])
+def get_chord():
+    if request.method == 'POST':
+        data = request.get_json()
+        chords = data.get('chords')
+        song = data.get('song')
+        lib.salva_accordi(song, chords)
+        return "OK", 200
+    if chord := request.args.get('chord'):
+        return lib.get_accordi(f"singolo{chord}")
+    return "Not found", 404
 
 @app.after_request
 def add_header(response):

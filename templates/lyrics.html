@@ -62,7 +62,8 @@
 
     <script>
         const params = new URLSearchParams(window.location.search);
-        const url = params.get("url");
+        const folder = params.get("folder");
+        const song = params.get("filename");
 
         let lyricsArray = null;
         let audioPlayer = window.parent.document.getElementById("audioPlayer");
@@ -129,7 +130,7 @@
             try {
                 // ATTENZIONE: Sostituisci 'testo.lrc' con l'URL o il percorso reale del tuo file
                 // Es: fetch('https://tuosito.com/testo.txt')
-                const response = await fetch(url); 
+                const response = await fetch("get_lyrics/" + folder + "/" + song);
                 
                 if (!response.ok) {
                     throw new Error(`${response.status}`);

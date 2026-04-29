@@ -454,6 +454,13 @@ def get_accordi(file_path):
         content.append('</svg>')
         return "\n".join(content)
 
+    if file_path.startswith("singolo"):
+        chord = file_path[len("singolo"):]
+        variazzione = 0
+        if not chord.startswith(('A', 'B', 'C', 'D', 'E', 'F', 'G')):
+            variazzione = int(chord[:1])
+            chord = chord[1:]
+        return generate_chord_svg(process_chord(chord, variazzione), chord_name=chord)
     chords = prendi_accordi(file_path)
     if not chords: 
         return None
@@ -464,8 +471,7 @@ def get_accordi(file_path):
         if not chord.startswith(('A', 'B', 'C', 'D', 'E', 'F', 'G')):
             variazzione = int(chord[:1])
             chord = chord[1:]
-        chord_data = process_chord(chord, variazzione)
-        accordi_svg.append(generate_chord_svg(chord_data, chord_name=chord+(f" ({variazzione})" if variazzione > 0 else "")))
+        accordi_svg.append(generate_chord_svg(process_chord(chord, variazzione), chord_name=chord+(f" ({variazzione})" if variazzione > 0 else "")))
     
     return accordi_svg
 
@@ -491,3 +497,17 @@ def get_info(song):
         "artist": artist, 
         "album": album
     }
+
+def salva_accordi(song, chords_new):
+    if not os.path.exists("chords.json"):
+        with open("chords.json", "w", encoding="utf-8") as f:
+            json.dump({}, f)
+
+    with open("chords.json", "r", encoding="utf-8") as f:
+        chords = json.load(f)
+
+    print(f"Salvataggio accordi per '{song}': {chords_new}")
+    chords[song] = chords_new
+
+    with open("chords.json", "w", encoding="utf-8") as f:
+        json.dump(chords, f, indent=4)

@@ -710,12 +710,8 @@
 
         const folder = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].folder : playlist[currentIndex].folder;
         const song = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].song : playlist[currentIndex].song;
-
-        const url = "{{ url_for('get_lyrics', folder='FOLDER', filename='SONG') }}"
-            .replace('FOLDER', encodeURIComponent(folder))
-            .replace('SONG', encodeURIComponent(song));
         
-        lyrics.src = "lyrics?url=" + url;
+        lyrics.src = "lyrics?folder=" + encodeURIComponent(folder) + "&filename=" + encodeURIComponent(song);
     }
     function openChordsModal() {
         document.getElementById('lyricsModal').classList.add('chords');
@@ -724,11 +720,8 @@
 
         const folder = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].folder : playlist[currentIndex].folder;
         const song = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].song : playlist[currentIndex].song;
-
-        const url = "{{ url_for('get_chords', filename='SONG') }}"
-            .replace('SONG', encodeURIComponent(song));
         
-        lyrics.src = "chords?url=" + url;
+        lyrics.src = "chords?song=" + encodeURIComponent(song);
     }
     function openSettingsModal() {
         document.getElementById('settingsModal').style.display = 'flex';
