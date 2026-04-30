@@ -4,16 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accordi canzone</title>
+    <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;1,500&display=swap');
-        body {
+        *{
             font-family: 'Montserrat', sans-serif;
+        }
+        body {
             font-weight: 600;
             background-color: #ff5500;
             color: #e0e0e0;
             padding: 20px;
             display: grid;
             justify-content: center;
+            justify-items: center;
         }
         #chords-container {
             background-color: #1e1e1e;
@@ -34,7 +38,31 @@
             color: #bdbdbd;
         }
 
-        #new-chord{
+        button{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: blue;
+            border: 1px solid black;
+            border-radius: 10px;
+            text-align: center;
+            letter-spacing: 1px;
+            transition: background-color 0.3s, border-color 0.3s;
+            box-shadow: 3px 3px 12px black;
+            color: white;
+            padding: 5px 10px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        button:hover{
+            background-color: black;
+            border: 1px solid blue;
+        }
+        input, select{
+            border-radius: 20px; padding: 5px;
+        }
+
+        #new-chord, #test-chord{
             background-color: #1e1e1e;
             padding: 30px;
             border-radius: 12px;
@@ -48,7 +76,29 @@
         }
         .new-chor-container{
             display: flex;
-            gap: 15px;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        #new-chords-container{
+            margin-bottom: 10px;
+            display: grid;
+            gap: 5px;
+        }
+
+        @media (max-width: 1400px) {
+            button:hover{
+                background-color: blue;
+                border: 1px solid black;
+            }
+            button:active{
+                background-color: black;
+                border: 1px solid blue;
+            }
+            #new-chord, #test-chord, #chords-container{
+                padding: 20px;
+            }
+            
         }
     </style>
 </head>
@@ -62,17 +112,17 @@
         <div id="testo-output">Caricamento degli accordi in corso...</div>
     </div>
 
-    <br>
-    <button onclick="document.getElementById('new-chord').style.display = 'flex';">Aggiungi Accordi</button>
+    <button onclick="document.getElementById('new-chord').style.display = document.getElementById('new-chord').style.display === 'flex' ? 'none' : 'flex';" style="margin-top: 20px; margin-bottom: 10px;">Aggiungi Accordi</button>
     <div id="new-chord" style="display: none;">
         <div id="new-chords-container"></div>
-        <br>
+        
         <button onclick="addChord()">Aggiungi accordo</button>
-        <br><br>
-        <button onclick="saveChord()">Salva Accordo</button>
+        <button onclick="saveChord()" style="margin-top: 20px;">Salva Accordo</button>
     </div>
 
-    <div id="test-chord"></div>
+    <div id="test-chord" style="display: none; margin-top: 20px;"></div>
+
+    </div>
 
     <script>
         const params = new URLSearchParams(window.location.search);
@@ -140,6 +190,7 @@
             const data = await response.text();
             
             document.getElementById("test-chord").innerHTML = data;
+            document.getElementById("test-chord").style.display = "block";
         }
 
         function addChord(existingData = null) {
@@ -173,7 +224,7 @@
                 </select>
                 <input type="number" placeholder="Grado" class="grado" min="0" max="3" value="${gradoVal}">
                 <button onclick="testChord(this)">Test</button>
-                <button onclick="this.parentElement.remove()">Elimina</button>
+                <button onclick="this.parentElement.remove()"><i class="fa-solid fa-trash-can"></i></button>
             `;
             document.getElementById("new-chords-container").appendChild(newChordDiv);
         }
