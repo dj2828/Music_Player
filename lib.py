@@ -28,7 +28,6 @@ def init_google_home():
         print(f"❌ Errore connessione: {e}")
         return False
 
-
 def playG(url):
     global chromecast
     
