@@ -327,6 +327,23 @@ nav{
   justify-content: center;
   box-shadow: rgba(0, 0, 0, 0.69) 0px 0px 20px 10px;
 }
+/* menu */
+#menu > div{
+  background: #ff5500;
+  color:#000; 
+  padding:30px 20px; 
+  border-radius:12px; 
+  max-width:90vw; 
+  min-height: 300px;
+  margin:auto; 
+  position:relative; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  flex-wrap: wrap; 
+  align-content: center;
+}
+
 /* settings */
 /* Contenitore della label */
 .custom-label {
@@ -565,5 +582,8 @@ nav{
   }
   #menu .circle{
     margin: 5px;
+  }
+  #menu > div{
+    gap: 25px;
   }
 }

@@ -8,36 +8,26 @@ import requests
 
 # Inizializziamo la variabile globale per evitare errori di "NameError"
 chromecast = None
-DEVICE_NAME = "Studio_mini" # Nome del dispositivo da cercare
+IP_GOOGLE = "192.168.1.20"
 
 def init_google_home():
     global chromecast
     try:
-        print("Scansione dispositivi Chromecast in corso...")
-        # FIX: Aggiunto blocking=True come nel main.py, altrimenti non trova nulla
-        devices, browser = pychromecast.get_chromecasts(blocking=True)
+        print(f"Connessione a Google Home su {IP_GOOGLE}...")
         
-        # Debug: mostra i dispositivi trovati
-        for cc in devices:
-            print(f"- Trovato: {cc.name}")
-
-        # Cerca il dispositivo (case insensitive)
-        chromecast = next(
-            (cc for cc in devices if DEVICE_NAME.lower() in cc.name.lower()), 
-            None
+        # ✅ Niente unpacking, restituisce direttamente il Chromecast
+        chromecast = pychromecast.get_chromecast_from_host(
+            (IP_GOOGLE, 8009, None, None, None)
         )
-
-        if chromecast:
-            chromecast.wait()
-            print(f"✅ Connesso con successo a: {chromecast.name}")
-            return True
-        else:
-            print(f"❌ Dispositivo '{DEVICE_NAME}' non trovato nella lista.")
-            return False
+        
+        chromecast.wait()
+        print(f"✅ Connesso a: {chromecast.name}")
+        return True
 
     except Exception as e:
-        print(f"❌ Errore durante l'inizializzazione: {e}")
+        print(f"❌ Errore connessione: {e}")
         return False
+
 
 def playG(url):
     global chromecast
