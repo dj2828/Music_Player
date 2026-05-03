@@ -1,70 +1,71 @@
 <!doctype html>
 <html lang="it">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-	<title>Mini Music Player</title>
-    <link rel="icon" type="image/png" href="/static/IO.png">
-    <link rel="stylesheet" href="/static/style_mini.css">
-    <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous"></script>
-</head>
-<body>
-    <div class="music-player">
-        <img src="/static/IO.png" id="cover" class="cover">
-        
-        <div id="skibidi">
-            <div id="testo">
-            <h1 id="titolo">TITOLO</h1>
-            <p id="cartella">CARTELLA</p>
-            </div>
+        <title>Mini Music Player</title>
+        <link rel="icon" type="image/png" href="/static/IO.png" />
+        <link rel="stylesheet" href="/static/style_mini.css" />
+        <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous" defer></script>
+    </head>
+    <body>
+        <div class="music-player">
+            <img src="/static/IO.png" id="cover" class="cover" />
 
-            <div class="controls">
-                <div onclick="javascript:pywebview.api.prevSong()"><i class="fa-solid fa-backward"></i></div>
-                <div onclick="javascript:pywebview.api.togglePlay()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
-                <div onclick="javascript:pywebview.api.nextSong()"><i class="fa-solid fa-forward"></i></div>
+            <div id="skibidi">
+                <div id="testo">
+                    <h1 id="titolo">TITOLO</h1>
+                    <p id="cartella">CARTELLA</p>
+                </div>
+
+                <div class="controls">
+                    <div onclick="javascript: pywebview.api.prevSong();"><i class="fa-solid fa-backward"></i></div>
+                    <div onclick="javascript: pywebview.api.togglePlay();">
+                        <i class="fa-solid fa-play" id="ctrlIcon"></i>
+                    </div>
+                    <div onclick="javascript: pywebview.api.nextSong();"><i class="fa-solid fa-forward"></i></div>
+                </div>
             </div>
         </div>
-        </div>
 
-    <script>
-        let ctrlIcon = document.getElementById('ctrlIcon');
-        function play(a){
-            if(a==="True"){
-                ctrlIcon.classList.remove('fa-play');
-                ctrlIcon.classList.add('fa-pause');
-            } else {
-                ctrlIcon.classList.remove('fa-pause');
-                ctrlIcon.classList.add('fa-play');
+        <script>
+            let ctrlIcon = document.getElementById("ctrlIcon");
+            function play(a) {
+                if (a === "True") {
+                    ctrlIcon.classList.remove("fa-play");
+                    ctrlIcon.classList.add("fa-pause");
+                } else {
+                    ctrlIcon.classList.remove("fa-pause");
+                    ctrlIcon.classList.add("fa-play");
+                }
             }
-        }
 
-        function carica(songPath, titolo, cartella){
-            document.getElementById('titolo').textContent = titolo;
-            document.getElementById('cartella').textContent = cartella;
+            function carica(songPath, titolo, cartella) {
+                document.getElementById("titolo").textContent = titolo;
+                document.getElementById("cartella").textContent = cartella;
 
-            const [folder, song] = songPath.split('/');
+                const [folder, song] = songPath.split("/");
 
-            // immagine
-            const immagine = document.getElementById('cover');
-            let img = `/img/${encodeURIComponent(folder)}/${encodeURIComponent(song)}`;
-            fetch(img)
-                .then(response => {
-                    if (response.status === 404) {
-                        immagine.src = "/static/IO.png";
-                        return null;
-                    } else {
-                        return response.blob();
-                    }
-                })
-                .then(blob => {
-                    if (blob) {
-                        immagine.src = URL.createObjectURL(blob);
-                    }
-            });
-        }
-    </script>
-
-</body>
+                // immagine
+                const immagine = document.getElementById("cover");
+                let img = `/img/${encodeURIComponent(folder)}/${encodeURIComponent(song)}`;
+                fetch(img)
+                    .then(response => {
+                        if (response.status === 404) {
+                            immagine.src = "/static/IO.png";
+                            return null;
+                        } else {
+                            return response.blob();
+                        }
+                    })
+                    .then(blob => {
+                        if (blob) {
+                            immagine.src = URL.createObjectURL(blob);
+                        }
+                    });
+            }
+        </script>
+    </body>
 </html>

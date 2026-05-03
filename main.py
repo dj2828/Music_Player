@@ -1,4 +1,5 @@
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, flash, jsonify
+from flask_compress import Compress
 import os, json
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 from mutagen.mp3 import MP3
@@ -8,6 +9,8 @@ import lib
 
 app = Flask(__name__)
 app.secret_key = "S4Ss0"
+
+Compress(app) # per comprimere le risposte e velocizzare il caricamento, (html, css)
 
 def get_music():
     def album(folder, filename):

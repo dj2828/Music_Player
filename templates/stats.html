@@ -1,130 +1,148 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stats</title>
-    <link rel="icon" type="image/png" href="/static/IO.png">
-</head>
-<body bgcolor="ff5500">
-    <div id="container">
-        <h1>Stats</h1>
-        <br><hr>
-        <h2>Brani totali: {{ total_songs }}</h2>
-        <h2>Totale riproduzioni: {{ total_plays }}</h2>
-        <h2 id="ore">{{ total_hours }}</h2>
-        <div id="classifica"></div>
-        <hr>
-        <button onclick="window.location='/'"><h3>Torna alla Home</h3></button>
-    </div>
-    
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;1,500&display=swap');
-        * {
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Stats</title>
+        <link rel="icon" type="image/png" href="/static/IO.png" />
+        <link rel="stylesheet" href="/static/style.css" />
+    </head>
+    <body
+        style="
+            background-image: linear-gradient(135deg, #ff5500, #ff0000);
+            background-attachment: fixed; /* FISSA lo sfondo rispetto alla finestra */
+            min-height: 100vh;
             margin: 0;
-            padding: 0;
-            font-family: 'Montserrat', sans-serif;
-            color: white;
-        }
-        hr{
-            border-top-style: solid;
-            border-bottom-style: solid;
-            border-left-style: solid;
-            border-right-style: solid;
-            border-left-color: rgb(0, 0, 0);
-            border-right-color: rgb(0, 0, 0);
-            border-bottom-color: rgb(0, 0, 0);
-            border-top-color: rgb(0, 0, 0);
-            background-color: rgb(0, 0, 0);
-        }
-        #container{
-            text-align: center;
-            justify-content: center;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-        button{
-            background-color: blue;
-            border: 1px solid black;
-            border-radius: 4px;
-            text-align: center;
-            padding: 10px;
-            margin: 10px;
-            color: white;
-            letter-spacing: 1px;
+        "
+    >
+        <div id="container">
+            <h1>Stats</h1>
+            <br />
+            <hr />
+            <h2>Brani totali: {{ total_songs }}</h2>
+            <h2>Totale riproduzioni: {{ total_plays }}</h2>
+            <h2 id="ore">{{ total_hours }}</h2>
+            <div id="classifica"></div>
+            <br />
+            <button onclick="window.location = '/'"><h3>Torna alla Home</h3></button>
+        </div>
 
-            transition: background-color 0.3s, border-color 0.3s;
-        }
-        p{
-            margin: 20px;
-        }
-        #classifica{
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            width: 100%;
-        }
-        .item-classifica{
-            margin: 10px;
-            background-color: blue;
-            border-radius: 5px;
-            min-height: 60px;
-            width: calc(100% + 10px);
-            justify-content: flex-start;
-            align-items: center;
-            display: flex;
-            padding: 5px;
-        }
-        .cover {
-        margin-right: 20px;
-        border-radius: 10px;
-        height: 69px;
-        width: auto;
-        }
-        .cover404{
-        width: 0px;
-        height: 0px;
-        }
-    </style>
-    <script>
-        let classifica = {{ classifica|tojson }};
-        const classificaDiv = document.getElementById('classifica');
-        let classificaHTML = '<hr><h2>Top 10 Brani Più Ascoltati</h2>';
-        let numero = 1;
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;1,500&display=swap");
+            * {
+                margin: 0;
+                padding: 0;
+                font-family: "Montserrat", sans-serif;
+                color: white;
+            }
+            hr {
+                border-top-style: solid;
+                border-bottom-style: solid;
+                border-left-style: solid;
+                border-right-style: solid;
+                border-left-color: rgb(0, 0, 0);
+                border-right-color: rgb(0, 0, 0);
+                border-bottom-color: rgb(0, 0, 0);
+                border-top-color: rgb(0, 0, 0);
+                background-color: rgb(0, 0, 0);
+            }
+            #container {
+                text-align: center;
+                justify-content: center;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+            p {
+                margin: 20px;
+            }
+            #classifica {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+            .item-classifica {
+                margin: 10px;
+                background: linear-gradient(30deg, red, #ff5500);
+                border-radius: 30px;
+                min-height: 60px;
+                width: calc(100% + 10px);
+                justify-content: flex-start;
+                align-items: center;
+                display: flex;
+                padding: 5px;
+                box-shadow: 5px 10px 20px rgba(0, 0, 0, 0.67);
+            }
+            .cover {
+                margin: 10px;
+                border-radius: 15px;
+                height: 69px;
+                width: auto;
+            }
+            .cover404 {
+                width: 0px;
+                height: 0px;
+            }
+            button {
+                background-color: blue;
+                border: 1px solid black;
+                border-radius: 10px;
+                text-align: center;
+                padding: 10px;
+                margin: 10px;
+                color: white;
+                letter-spacing: 1px;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
+                cursor: pointer;
 
-        // Creiamo un array di "Promesse" (richieste in corso)
-        const promesse = classifica.map(item => {
-            let folder = encodeURIComponent(item[0].split('/')[0]);
-            let filename = encodeURIComponent(item[0].split('/')[1]);
-            let imgUrl = `/img/${folder}/${filename}`;
-
-            return fetch(imgUrl)
-                .then(response => {
-                    if (response.status === 404) return { src: "", cls: "cover404" };
-                    return response.blob().then(blob => ({ src: URL.createObjectURL(blob), cls: "cover" }));
-                })
-                .catch(() => ({ src: "", cls: "cover404" })) // Fallback in caso di errore
-                .then(imgData => ({ ...imgData, item })); // Passiamo anche i dati dell'item originale
-        });
-
-        // Promise.all aspetta che tutte siano pronte, mantenendo l'ordine dell'array originale
-        Promise.all(promesse).then(risultati => {
+                transition:
+                    background-color 0.3s,
+                    border-color 0.3s;
+            }
+            button:hover {
+                background-color: black;
+                border: 1px solid blue;
+            }
+        </style>
+        <script>
+            let classifica = {{ classifica|tojson }};
+            const classificaDiv = document.getElementById('classifica');
+            let classificaHTML = '<hr><h2>Top 10 Brani Più Ascoltati</h2>';
             let numero = 1;
-            
-            risultati.forEach(({ src, cls, item }) => {
-                classificaHTML += `<div style="display:flex; align-items: center;">
-                    <h3>${numero++}</h3>
-                    <div class='item-classifica'>
-                        <img src="${src}" class="${cls}">
-                        ${item[0].split('/').pop().replace(/\.(mp3|flac)$/, '')} - ${item[1]} plays
-                    </div>
-                </div>`;
+
+            // Creiamo un array di "Promesse" (richieste in corso)
+            const promesse = classifica.map(item => {
+                let folder = encodeURIComponent(item[0].split('/')[0]);
+                let filename = encodeURIComponent(item[0].split('/')[1]);
+                let imgUrl = `/img/${folder}/${filename}`;
+
+                return fetch(imgUrl)
+                    .then(response => {
+                        if (response.status === 404) return { src: "", cls: "cover404" };
+                        return response.blob().then(blob => ({ src: URL.createObjectURL(blob), cls: "cover" }));
+                    })
+                    .catch(() => ({ src: "", cls: "cover404" })) // Fallback in caso di errore
+                    .then(imgData => ({ ...imgData, item })); // Passiamo anche i dati dell'item originale
             });
 
-            // Aggiorniamo il DOM una sola volta alla fine (meglio per le performance)
-            classificaDiv.innerHTML = classificaHTML;
-        });
-    </script>
-</body>
+            // Promise.all aspetta che tutte siano pronte, mantenendo l'ordine dell'array originale
+            Promise.all(promesse).then(risultati => {
+                let numero = 1;
+
+                risultati.forEach(({ src, cls, item }) => {
+                    classificaHTML += `<div style="display:flex; align-items: center;">
+                        <h3>${numero++}</h3>
+                        <div class='item-classifica'>
+                            <img src="${src}" class="${cls}">
+                            ${item[0].split('/').pop().replace(/\.(mp3|flac)$/, '')} - ${item[1]} plays
+                        </div>
+                    </div>`;
+                });
+
+                // Aggiorniamo il DOM una sola volta alla fine (meglio per le performance)
+                classificaDiv.innerHTML = classificaHTML;
+            });
+        </script>
+    </body>
 </html>

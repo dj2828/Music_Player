@@ -1,8 +1,11 @@
 flask
+flask_compress
 yt_dlp
 mutagen
 waitress
 pychromecast
+pyyaml
+
+#  per app.py
 pywebview
 pystray
-pyyaml

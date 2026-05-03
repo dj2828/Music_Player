@@ -1,221 +1,195 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Testo Canzone</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;1,500&display=swap');
-        body {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 600;
-            background-color: #ff5500;
-            color: #e0e0e0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
-        #lyrics-container {
-            background-color: #1e1e1e;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
-        .lyric-line {
-            margin-bottom: 12px;
-            font-size: 18px;
-            line-height: 1.5;
-            transition: all 0.3s;
-        }
-        .timestamp {
-            color: #1db954;
-            font-family: monospace;
-            font-weight: bold;
-            margin-right: 15px;
-            font-size: 16px;
-        }
-        .text {
-            color: #bdbdbd;
-        }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Testo Canzone</title>
+        <link rel="stylesheet" href="/static/style_lyrics_chords.css" />
+        <style>
+            .lyric-line {
+                margin-bottom: 12px;
+                font-size: 18px;
+                line-height: 1.5;
+                transition: all 0.3s;
+            }
+            .timestamp {
+                color: #1db954;
+                font-family: monospace;
+                font-weight: bold;
+                margin-right: 15px;
+                font-size: 16px;
+            }
 
-        .si{
-            transform: scale(1.2);
-        }
-        .si span{
-            color: #fff;
-            text-shadow: 2px 1px 6px rgb(0 0 0);
-        }
-    </style>
-</head>
-<body>
-
-    <!-- <audio controls id="audioPlayer">
+            .si {
+                transform: scale(1.2);
+            }
+            .si span {
+                color: #fff;
+                text-shadow: 2px 1px 6px rgb(0 0 0);
+            }
+        </style>
+    </head>
+    <body>
+        <!-- <audio controls id="audioPlayer">
         <source src="http://localhost/Tha%20Supreme/gua10%20-%20feat.%20Lazza.flac" type="audio/flac">
     </audio> -->
 
-    <div id="lyrics-container">
-        <div id="testo-output">Caricamento del testo in corso...</div>
-    </div>
+        <div id="container">
+            <div id="testo-output">Caricamento del testo in corso...</div>
+        </div>
 
-    <script>
-        const params = new URLSearchParams(window.location.search);
-        const folder = params.get("folder");
-        const song = params.get("filename");
+        <script>
+            const params = new URLSearchParams(window.location.search);
+            const folder = params.get("folder");
+            const song = params.get("filename");
 
-        let lyricsArray = null;
-        let audioPlayer = window.parent.document.getElementById("audioPlayer");
-        let ultimoIndice = -1;
+            let lyricsArray = null;
+            let audioPlayer = window.parent.document.getElementById("audioPlayer");
+            let ultimoIndice = -1;
 
-        const updateProgress = setInterval(() => {
-            if (audioPlayer && audioPlayer.currentTime && lyricsArray) {
+            const updateProgress = setInterval(() => {
+                if (audioPlayer && audioPlayer.currentTime && lyricsArray) {
+                    const index = getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime);
 
-                const index = getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime);
+                    if (index !== -1 && index !== ultimoIndice) {
+                        ultimoIndice = index;
 
-                if (index !== -1 && index !== ultimoIndice) {
-                    ultimoIndice = index;
+                        ingrandisciTesto(index);
 
-                    ingrandisciTesto(index);
-
-                    const rigaAttiva = document.querySelector(".si");
-                    if (rigaAttiva) {
-                        rigaAttiva.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center"
-                        });
+                        const rigaAttiva = document.querySelector(".si");
+                        if (rigaAttiva) {
+                            rigaAttiva.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                            });
+                        }
                     }
                 }
-            }
-        }, 500);
+            }, 500);
 
-        function ingrandisciTesto(a){
-            let testoDiv = document.getElementById("testo-output");
-            testoDiv.children[a].classList.add("si");
-            if(a!==0) testoDiv.children[a-1].classList.remove("si");   
-        }
-
-
-        function getCurrentLrcIndex(lrcArray, currentTime) {
-            function parseTime(tag) {
-                if (typeof tag !== "string") return null;
-
-                const match = tag.match(/\[(\d{2}):(\d{2}\.\d{2})\]/);
-                if (!match) return null;
-
-                const minutes = parseInt(match[1], 10);
-                const seconds = parseFloat(match[2]);
-
-                return minutes * 60 + seconds;
+            function ingrandisciTesto(a) {
+                let testoDiv = document.getElementById("testo-output");
+                testoDiv.children[a].classList.add("si");
+                if (a !== 0) testoDiv.children[a - 1].classList.remove("si");
             }
 
-            let index = -1;
+            function getCurrentLrcIndex(lrcArray, currentTime) {
+                function parseTime(tag) {
+                    if (typeof tag !== "string") return null;
 
-            for (let i = 0; i < lrcArray.length; i++) {
-                const time = parseTime(lrcArray[i].originalTime);
-                if (time === null) continue;
+                    const match = tag.match(/\[(\d{2}):(\d{2}\.\d{2})\]/);
+                    if (!match) return null;
 
-                if (currentTime >= time) {
-                    index = i;
-                } else {
-                    break;
+                    const minutes = parseInt(match[1], 10);
+                    const seconds = parseFloat(match[2]);
+
+                    return minutes * 60 + seconds;
                 }
+
+                let index = -1;
+
+                for (let i = 0; i < lrcArray.length; i++) {
+                    const time = parseTime(lrcArray[i].originalTime);
+                    if (time === null) continue;
+
+                    if (currentTime >= time) {
+                        index = i;
+                    } else {
+                        break;
+                    }
+                }
+
+                return index;
             }
+            // Funzione per fare il fetch del testo
+            async function fetchLyrics() {
+                try {
+                    // ATTENZIONE: Sostituisci 'testo.lrc' con l'URL o il percorso reale del tuo file
+                    // Es: fetch('https://tuosito.com/testo.txt')
+                    const response = await fetch("get_lyrics/" + folder + "/" + song);
 
-            return index;
-        }
-        // Funzione per fare il fetch del testo
-        async function fetchLyrics() {
-            try {
-                // ATTENZIONE: Sostituisci 'testo.lrc' con l'URL o il percorso reale del tuo file
-                // Es: fetch('https://tuosito.com/testo.txt')
-                const response = await fetch("get_lyrics/" + folder + "/" + song);
-                
-                if (!response.ok) {
-                    throw new Error(`${response.status}`);
-                }
-                
-                const lrcText = await response.text();
-                displayLyrics(lrcText);
-                
-            } catch (error) {
-                if (error.message === "404"){
-                    document.getElementById('testo-output').innerHTML = 
-                    `<p style="color: #ff4d4d;">Testo non trovato</p>`;
-                }
-                else {
-                document.getElementById('testo-output').innerHTML = 
-                    `<p style="color: #ff4d4d;">Errore nel caricamento del file: ${error.message}</p>
+                    if (!response.ok) {
+                        throw new Error(`${response.status}`);
+                    }
+
+                    const lrcText = await response.text();
+                    displayLyrics(lrcText);
+                } catch (error) {
+                    if (error.message === "404") {
+                        document.getElementById("testo-output").innerHTML =
+                            `<p style="color: #ff4d4d;">Testo non trovato</p>`;
+                    } else {
+                        document.getElementById("testo-output").innerHTML =
+                            `<p style="color: #ff4d4d;">Errore nel caricamento del file: ${error.message}</p>
                      <p style="font-size: 14px; color: #888;">Assicurati che il file esista e che tu stia usando un server locale (es. Live Server) per evitare errori CORS.</p>`;
+                    }
+                    console.error("Dettaglio errore:", error);
                 }
-                console.error("Dettaglio errore:", error);
             }
-        }
 
-        // Funzione per analizzare il formato LRC (supporta anche testi senza timestamp)
-        function parseLRC(text) {
-            const lines = text.split('\n');
-            const parsedLyrics = [];
-            
-            // RegEx per cercare la struttura [mm:ss.xx]Testo
-            const regex = /\[(\d{2}):(\d{2}\.\d{2})\](.*)/;
+            // Funzione per analizzare il formato LRC (supporta anche testi senza timestamp)
+            function parseLRC(text) {
+                const lines = text.split("\n");
+                const parsedLyrics = [];
 
-            lines.forEach(line => {
-                const trimmedLine = line.trim();
-                if (trimmedLine === "") return; // ignora righe vuote
+                // RegEx per cercare la struttura [mm:ss.xx]Testo
+                const regex = /\[(\d{2}):(\d{2}\.\d{2})\](.*)/;
 
-                const match = trimmedLine.match(regex);
-                if (match) {
-                    const textContent = match[3].trim();
-                    // Aggiungiamo il testo solo se c'è (ignoriamo righe vuote)
-                    if (textContent !== "") {
-                        parsedLyrics.push({ 
-                            originalTime: `[${match[1]}:${match[2]}]`, 
-                            text: textContent 
+                lines.forEach(line => {
+                    const trimmedLine = line.trim();
+                    if (trimmedLine === "") return; // ignora righe vuote
+
+                    const match = trimmedLine.match(regex);
+                    if (match) {
+                        const textContent = match[3].trim();
+                        // Aggiungiamo il testo solo se c'è (ignoriamo righe vuote)
+                        if (textContent !== "") {
+                            parsedLyrics.push({
+                                originalTime: `[${match[1]}:${match[2]}]`,
+                                text: textContent,
+                            });
+                        }
+                    } else {
+                        // Se non c'è un timestamp, inseriamo la linea come testo libero
+                        parsedLyrics.push({
+                            originalTime: null,
+                            text: trimmedLine,
                         });
                     }
-                } else {
-                    // Se non c'è un timestamp, inseriamo la linea come testo libero
-                    parsedLyrics.push({
-                        originalTime: null,
-                        text: trimmedLine
-                    });
-                }
-            });
-            return parsedLyrics;
-        }
+                });
+                return parsedLyrics;
+            }
 
-        // Funzione per stampare in pagina l'HTML
-        function displayLyrics(rawText) {
-            const outputDiv = document.getElementById('testo-output');
-            outputDiv.innerHTML = ''; // Svuota il "caricamento in corso"
-            
-            lyricsArray = parseLRC(rawText);
+            // Funzione per stampare in pagina l'HTML
+            function displayLyrics(rawText) {
+                const outputDiv = document.getElementById("testo-output");
+                outputDiv.innerHTML = ""; // Svuota il "caricamento in corso"
 
-            lyricsArray.forEach(line => {
-                const p = document.createElement('p');
-                p.className = 'lyric-line';
-                
-                // Creiamo lo span per il tempo
-                // const timeSpan = document.createElement('span');
-                // timeSpan.className = 'timestamp';
-                // timeSpan.textContent = line.originalTime;
-                
-                // Creiamo lo span per il testo
-                const textSpan = document.createElement('span');
-                textSpan.className = 'text';
-                textSpan.textContent = line.text;
+                lyricsArray = parseLRC(rawText);
 
-                // p.appendChild(timeSpan);
-                p.appendChild(textSpan);
-                
-                outputDiv.appendChild(p);
-            });
-        }
+                lyricsArray.forEach(line => {
+                    const p = document.createElement("p");
+                    p.className = "lyric-line";
 
-        // Avviamo il processo
-        fetchLyrics();
-    </script>
-</body>
+                    // Creiamo lo span per il tempo
+                    // const timeSpan = document.createElement('span');
+                    // timeSpan.className = 'timestamp';
+                    // timeSpan.textContent = line.originalTime;
+
+                    // Creiamo lo span per il testo
+                    const textSpan = document.createElement("span");
+                    textSpan.className = "text";
+                    textSpan.textContent = line.text;
+
+                    // p.appendChild(timeSpan);
+                    p.appendChild(textSpan);
+
+                    outputDiv.appendChild(p);
+                });
+            }
+
+            // Avviamo il processo
+            fetchLyrics();
+        </script>
+    </body>
 </html>

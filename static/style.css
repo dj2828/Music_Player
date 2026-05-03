@@ -1,12 +1,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;1,500&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,800;1,900&display=swap");
+:root {
+    --border-radius: 30px;
+    --button-scale: 1.2;
+}
 * {
     margin: 0;
     padding: 0;
     font-family: "Montserrat", sans-serif;
     font-weight: 600;
 }
-html,
 body {
     background-color: #000000;
     overflow-x: hidden;
@@ -38,7 +41,7 @@ h1 {
     width: 400px;
     padding: 30px 35px;
     text-align: center;
-    border-radius: 10px;
+    border-radius: var(--border-radius);
 }
 nav {
     display: flex;
@@ -59,11 +62,10 @@ nav {
     align-items: center;
     justify-content: center;
 
-    transform: scale(1);
     transition: transform 0.3s;
 }
 .circle:hover {
-    transform: scale(1.2);
+    transform: scale(var(--button-scale));
 }
 .cover {
     margin-top: 20px;
@@ -77,7 +79,7 @@ nav {
     max-width: 100%; /* l'immagine riempie il contenitore in larghezza */
     height: 100%; /* l'immagine riempie il contenitore in altezza */
     object-fit: cover; /* mantiene proporzioni e taglia l'eccesso */
-    border-radius: 20px;
+    border-radius: 25px;
     box-shadow: rgba(0, 0, 0, 0.69) 0px 5px 10px;
 }
 .cover404 {
@@ -107,23 +109,9 @@ nav {
     display: flex;
     align-items: center;
     justify-content: center;
-}
-.controls div {
-    width: 40px;
-    height: 40px;
-    margin: 20px;
-    border-radius: 50%;
-    color: #000000;
-    border: 2px solid #000000;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
-    cursor: pointer;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    transform: scale(1);
-    transition: all 0.3s;
+    gap: 40px;
+    margin-top: 15px;
+    margin-bottom: 5px;
 }
 .controls div:nth-child(1) {
     /* il preferito */
@@ -133,14 +121,8 @@ nav {
 .controls div:nth-child(3) {
     transform: scale(1.5);
 }
-.controls div:hover {
-    transform: scale(1.2);
-}
 .controls div:nth-child(3):hover {
     transform: scale(1.7);
-}
-#menu .circle {
-    margin: 20px;
 }
 
 .cartella {
@@ -151,7 +133,7 @@ nav {
     width: 500px;
     padding: 20px 35px;
     text-align: center;
-    border-radius: 10px;
+    border-radius: var(--border-radius);
 }
 .title {
     display: inline-flex;
@@ -163,25 +145,8 @@ nav {
     margin-bottom: 10px;
 }
 .cartella .circle {
-    width: 40px;
-    height: 40px;
     margin-bottom: 15px;
-    border-radius: 50%;
-    color: #000000;
-    /* background-color: #ffffff; */
-    border: 1.5px solid #000000;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
-    cursor: pointer;
-
     display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    transform: scale(1);
-    transition: transform 0.3s;
-}
-.cartella .circle:hover {
-    transform: scale(1.2);
 }
 .album-title {
     margin-top: 10px;
@@ -191,7 +156,7 @@ nav {
     gap: 5px;
     flex-wrap: wrap;
 }
-.song {
+.button {
     background-color: blue;
     border: 1px solid black;
     border-radius: 10px;
@@ -201,25 +166,25 @@ nav {
     color: white;
     letter-spacing: 1px;
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
+    cursor: pointer;
 
     transition:
         background-color 0.3s,
         border-color 0.3s;
 }
-.song:hover {
+.button:hover {
     background-color: black;
     border: 1px solid blue;
 }
-.song > * {
+.button > * {
     pointer-events: none;
 }
-.song.pref {
+.button.pref {
     box-shadow: 0 5px 10px rgb(255 198 0);
 }
 
 #divol {
     display: flex;
-    align-items: center;
     justify-content: flex-end;
     gap: 30px;
 }
@@ -247,7 +212,7 @@ nav {
     box-shadow: 0 5px 7px rgba(0, 0, 0, 0.69);
 }
 #divol:hover #volume {
-    transform: scale(1.2);
+    transform: scale(var(--button-scale));
 }
 #divol:hover #volumeslider {
     opacity: 1;
@@ -260,9 +225,9 @@ nav {
     justify-content: center;
 }
 
-#offlinePopup .song {
+#offlinePopup .button {
     padding: 8px 14px;
-    border-radius: 8px;
+    border-radius: 20px;
     background-color: #ff5500;
     color: #000;
     border: none;
@@ -307,6 +272,7 @@ nav {
     color: #ff5500;
 }
 .modal-sotto {
+    /* NON è PER IL MENU */
     display: none;
     position: fixed;
     z-index: 2000;
@@ -320,8 +286,8 @@ nav {
 .modal {
     background: #ff5500;
     color: #000;
-    padding: 30px 20px;
-    border-radius: 12px;
+    padding: 30px 30px;
+    border-radius: var(--border-radius);
     max-width: 90vw;
     min-height: 300px;
     margin: auto;
@@ -330,13 +296,21 @@ nav {
     align-items: center;
     justify-content: center;
     box-shadow: rgba(0, 0, 0, 0.69) 0px 0px 20px 10px;
+    margin: 15px;
+}
+#closeModal {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 1.3em;
+    background: none;
 }
 /* menu */
 #menu > div {
     background: #ff5500;
     color: #000;
-    padding: 30px 20px;
-    border-radius: 12px;
+    padding: 30px 30px;
+    border-radius: var(--border-radius);
     max-width: 90vw;
     min-height: 300px;
     margin: auto;
@@ -346,6 +320,7 @@ nav {
     justify-content: center;
     flex-wrap: wrap;
     align-content: center;
+    gap: 40px;
 }
 
 /* settings */
@@ -439,17 +414,17 @@ nav {
         padding: 20px 15px;
     }
 
-    nav .circle:hover {
+    .circle:hover {
         transform: scale(1);
     }
-    nav .circle:active {
-        transform: scale(1.2);
+    .circle:active {
+        transform: scale(var(--button-scale));
     }
     .controls div:hover {
         transform: scale(1);
     }
     .controls div:active {
-        transform: scale(1.2);
+        transform: scale(var(--button-scale));
     }
     .controls div:nth-child(3):hover {
         transform: scale(1.5);
@@ -457,17 +432,11 @@ nav {
     .controls div:nth-child(3):active {
         transform: scale(1.7);
     }
-    .cartella .circle:hover {
-        transform: scale(1);
-    }
-    .cartella .circle:active {
-        transform: scale(1.2);
-    }
-    .song:hover {
+    .button:hover {
         background-color: blue;
         border: 1px solid black;
     }
-    .song:active {
+    .button:active {
         background-color: black;
         border: 1px solid blue;
     }
@@ -500,9 +469,8 @@ nav {
         transform: none;
         margin-bottom: 20px;
         width: calc(100% - 200px);
-        padding: 10px 15px;
+        padding: 15px;
         min-width: 270px;
-        border: 1px solid rgba(255, 255, 255, 0.1); /* Un bordo sottile aiuta la definizione */
         box-shadow: 0 0 20px 5px rgba(0, 0, 0, 1); /* Spiegazione: 0 (X), 0 (Y), 20px (sfumatura), 5px (espansione), colore */
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
@@ -511,15 +479,17 @@ nav {
     .music-player.compact {
         padding: 5px 10px;
     }
-    .music-player.compact .controls div {
+    .music-player.compact .controls .circle {
         width: 30px;
         height: 30px;
+        font-size: 12px;
+        margin-bottom: 10px;
     }
-    .music-player .controls div:nth-child(1) {
+    .music-player .controls .circle:nth-child(1) {
         left: -10px;
         transform: scale(0.8);
     }
-    .music-player.compact .controls div:nth-child(1) {
+    .music-player.compact .controls .circle:nth-child(1) {
         left: 0px;
     }
     .music-player nav {
@@ -536,7 +506,7 @@ nav {
         max-height: 0px;
     }
     .cartella {
-        padding: 10px 15px;
+        padding: 15px;
         margin-top: calc(env(safe-area-inset-top) - 5px); /* viene dato solo al primo, il resto è 0px */
         margin-bottom: 15px;
         min-width: 270px;
@@ -583,12 +553,6 @@ nav {
     .music-player.compact #progress {
         margin-bottom: 0px;
         margin-top: 10px;
-    }
-    .controls div {
-        margin: 15px;
-    }
-    #menu .circle {
-        margin: 5px;
     }
     #menu > div {
         gap: 25px;

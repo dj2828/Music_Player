@@ -1,771 +1,862 @@
 <!doctype html>
 <html lang="it">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-	<title>Music Player</title>
-    <link rel="icon" type="image/png" href="/static/IO.png">
-    <link rel="stylesheet" href="/static/style.css">
-    <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous"></script>
+        <title>Music Player</title>
+        <link rel="icon" type="image/png" href="/static/IO.png" />
+        <link rel="stylesheet" href="/static/style.css" />
+        <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous" defer></script>
 
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Music Player">
-    <link rel="apple-touch-icon" href="/static/IO_apple.png">
-</head>
-<body>
-    <div class="container">
-        <div class="music-player">
-        <nav>
-            <div onclick="openMenu()" class="circle">
-                <i class="fa-solid fa-bars"></i>
-            </div>
-            <div id="divol">
-                <input type="range" value="100" id="volumeslider">
-                <div onclick="vol()" class="circle" id="volume">
-                    <i class="fa-solid fa-volume-low"></i>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Music Player" />
+        <link rel="apple-touch-icon" href="/static/IO_apple.png" />
+    </head>
+    <body>
+        <div class="container">
+            <div class="music-player">
+                <nav>
+                    <div onclick="openMenu()" class="circle">
+                        <i class="fa-solid fa-bars"></i>
+                    </div>
+                    <div id="divol">
+                        <input type="range" value="100" id="volumeslider" />
+                        <div onclick="vol()" class="circle" id="volume">
+                            <i class="fa-solid fa-volume-low"></i>
+                        </div>
+                    </div>
+                </nav>
+                <h1 id="titolo">TITOLO</h1>
+                <p id="cartella" style="font-weight: normal">CARTELLA</p>
+
+                <div id="image-container" class="cover404"><img src="" id="cover" /></div>
+
+                <audio id="audioPlayer"></audio>
+                <input type="range" value="0" id="progress" />
+
+                <div class="controls">
+                    <div onclick="togglePref()" style="display: none">
+                        <i id="prefIcon" class="fa-regular fa-heart"></i>
+                    </div>
+                    <div onclick="prevSong()" class="circle"><i class="fa-solid fa-backward"></i></div>
+                    <div onclick="togglePlay()" class="circle"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
+                    <div onclick="nextSong()" class="circle"><i class="fa-solid fa-forward"></i></div>
                 </div>
             </div>
-        </nav>
-        <h1 id="titolo">TITOLO</h1>
-        <p id="cartella" style="font-weight: normal;">CARTELLA</p>
 
-        <div id="image-container" class="cover404"><img src="" id="cover"></div>
+            <!-- -------------------------------------------------------------- -->
 
-        <audio id="audioPlayer"></audio>
-        <input type="range" value="0" id="progress">
+            {% for folder, albums in songs_by_folder.items() %}
+            <div class="cartella">
+                <div class="title">
+                    <h2>{{ folder }}</h2>
+                    <div onclick="playFolderRandom('{{ folder }}')" class="circle">
+                        <i class="fa-solid fa-shuffle"></i>
+                    </div>
+                    <div
+                        onclick="syncFolder('{{ folder }}')"
+                        class="circle ios"
+                        id="sync-{{ folder|replace(' ', '-') }}"
+                        style="position: relative; margin-left: 10px"
+                    >
+                        <i class="fa-solid fa-cloud-arrow-down"></i>
+                        <span
+                            class="sync-status"
+                            style="
+                                position: absolute;
+                                top: -5px;
+                                right: -5px;
+                                background: red;
+                                color: white;
+                                font-size: 10px;
+                                border-radius: 50%;
+                                padding: 2px 5px;
+                                display: none;
+                            "
+                            >0</span
+                        >
+                    </div>
+                </div>
 
-        <div class="controls">
-            <div onclick="togglePref()"><i id="prefIcon" class="fa-regular fa-heart"></i></div>
-            <div onclick="prevSong()"><i class="fa-solid fa-backward"></i></div>
-            <div onclick="togglePlay()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
-            <div onclick="nextSong()"><i class="fa-solid fa-forward"></i></div>
-        </div>
-        </div>
+                {% for album_name, songs in albums.items() %}
+                <div class="album-container">
+                    <h3 class="album-title {{ 'singoli-title' if album_name == 'Brani Singoli' else '' }}">
+                        {% if album_name != 'Brani Singoli' %}<i class="fa-solid fa-compact-disc"></i> {% endif %} {{
+                        album_name }}
+                        <!-- TODO: migliore handler per immagini degli album -->
+                        {% if album_name != 'Brani Singoli' %}
+                        <img
+                            src="img/album/{{ album_name }}"
+                            style="width: 40px; border-radius: 10px; margin-left: 10px"
+                            fetchpriority="low"
+                            onerror="
+                                this.onerror = null;
+                                this.classList.add('cover404');
+                            "
+                        />
+                        {% endif %}
+                    </h3>
 
-<!-- -------------------------------------------------------------- -->
-
-    {% for folder, albums in songs_by_folder.items() %}
-    <div class="cartella">
-        <div class="title">
-            <h2>{{ folder }}</h2>
-            <div onclick="playFolderRandom('{{ folder }}')" class="circle"><i class="fa-solid fa-shuffle"></i></div>
-            <div onclick="syncFolder('{{ folder }}')" class="circle ios" id="sync-{{ folder|replace(' ', '-') }}" style="position: relative; margin-left: 10px;">
-                <i class="fa-solid fa-cloud-arrow-down"></i>
-                <span class="sync-status" style="position: absolute; top: -5px; right: -5px; background: red; color: white; font-size: 10px; border-radius: 50%; padding: 2px 5px; display: none;">0</span>
-            </div>
-        </div>
-        
-        {% for album_name, songs in albums.items() %}
-            <div class="album-container">
-                <h3 class="album-title {{ 'singoli-title' if album_name == 'Brani Singoli' else '' }}">
-                    {% if album_name != 'Brani Singoli' %}<i class="fa-solid fa-compact-disc"></i> {% endif %}
-                    {{ album_name }}
-                    <!-- TODO: migliore handler per immagini degli album -->
-                    {% if album_name != 'Brani Singoli' %} <img src="img/album/{{ album_name }}" alt="Compact Disc" style="width: 40px; border-radius: 20%; margin-left: 10px;" onerror="this.onerror=null; this.classList.add('cover404');"> {% endif %}
-                </h3>
-                
-                <div>
-                {% for song in songs %}
-                    <button onclick='playSong("{{ folder }}/{{ song }}")' class="song{{ ' pref' if song in pref else '' }}">
-                        <h3>{{ song.replace('.mp3', '').replace('.flac', '') }}</h3>
-                    </button>
+                    <div>
+                        {% for song in songs %}
+                        <button
+                            onclick='playSong("{{ folder }}/{{ song }}")'
+                            class="button song {{ 'pref' if song in pref else '' }}"
+                        >
+                            <h3>{{ song.replace('.mp3', '').replace('.flac', '') }}</h3>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
                 {% endfor %}
-                </div>
             </div>
-        {% endfor %}
-    </div>
-    {% endfor %}
-    </div>
-    <script>
-        // Crea la playlist con tutte le canzoni (cartella e nome)
-        const playlist = [];
-        const songs_by_folder = {{ songs_by_folder | tojson }};
-        {% for folder, albums in songs_by_folder.items() %}
-            {% for album_name, songs in albums.items() %}
-                {% for song in songs %}
-                    playlist.push({ folder: {{ folder|tojson }}, song: {{ song|tojson }} });
+            {% endfor %}
+        </div>
+        <script>
+            // Crea la playlist con tutte le canzoni (cartella e nome)
+            const playlist = [];
+            const songs_by_folder = {{ songs_by_folder | tojson }};
+            {% for folder, albums in songs_by_folder.items() %}
+                {% for album_name, songs in albums.items() %}
+                    {% for song in songs %}
+                        playlist.push({ folder: {{ folder|tojson }}, song: {{ song|tojson }} });
+                    {% endfor %}
                 {% endfor %}
             {% endfor %}
-        {% endfor %}
 
-        let progress = document.getElementById('progress');
-        let audioPlayer = document.getElementById('audioPlayer');
-        let ctrlIcon = document.getElementById('ctrlIcon');
-        let titoloObj = document.getElementById('titolo');
-        let cartellaObj = document.getElementById('cartella');
-        let googleHome = false;
+            let progress = document.getElementById('progress');
+            let audioPlayer = document.getElementById('audioPlayer');
+            let ctrlIcon = document.getElementById('ctrlIcon');
+            let titoloObj = document.getElementById('titolo');
+            let cartellaObj = document.getElementById('cartella');
+            let googleHome = false;
 
-        audioPlayer.onloadedmetadata = function() {
-            progress.max = audioPlayer.duration;
-            progress.value = audioPlayer.currentTime;
-        };
-
-        function play(a){
-            if(a){
-                ctrlIcon.classList.remove('fa-play');
-                ctrlIcon.classList.add('fa-pause');
-                
-            } else {
-                ctrlIcon.classList.remove('fa-pause');
-                ctrlIcon.classList.add('fa-play');
-            }
-            try {
-                pywebview.api.setPlay(a);
-            } catch (error) {}
-        }
-
-        function togglePlay(a) {
-            if(ctrlIcon.classList.contains('fa-play') || a) {
-                if (googleHome) {
-                    googleHomeF('play');
-                    play(true);
-                    return;
-                }
-                audioPlayer.play();
-                play(true);
-            } else {
-                if (googleHome) {
-                    googleHomeF('pause');
-                    play(false);
-                    return;
-                }
-                audioPlayer.pause();
-                play(false);
-            }
-        }
-
-        audioPlayer.addEventListener('play', () => {
-            const updateProgress = setInterval(() => {
-                if (audioPlayer.paused) {
-                    clearInterval(updateProgress);
-                }
+            audioPlayer.onloadedmetadata = function() {
+                progress.max = audioPlayer.duration;
                 progress.value = audioPlayer.currentTime;
-            }, 500); // 500ms bastano e consumano meno batteria
-        });
-
-        progress.oninput = function() {
-            if(ctrlIcon.classList.contains('fa-pause')){
-                audioPlayer.play();
-                play(true);
-            }
-            audioPlayer.currentTime = progress.value;
-        };
-
-        // Slider volume
-        let timeout;
-        const slider = document.getElementById('volumeslider');
-        slider.oninput = function () {
-            const v = slider.value / 100;
-            localStorage.setItem('lastVolume', slider.value);
-
-            clearTimeout(timeout);
-            if (googleHome){
-                timeout = setTimeout(() => {
-                    googleHomeF("vol" + v);
-                }, 150);
-            }else {
-                audioPlayer.volume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
-            }
-        };
-        function vol() {
-            let currentVolume = slider.value / 100;
-            if (currentVolume > 0.20) {
-                // Imposta volume a 20% logaritmico
-                slider.value = 20;
-                audioPlayer.volume = Math.pow(10, (0.2 - 1) * 2);
-                if (googleHome) googleHomeF("vol" + 0.2);
-            } else {
-                // Imposta volume a 100%
-                slider.value = 100;
-                audioPlayer.volume = Math.pow(10, (1 - 1) * 2); // = 1
-                if (googleHome) googleHomeF("vol" + 1);
-            }
-            localStorage.setItem('lastVolume', slider.value);
-        }
-
-        window.addEventListener('keydown', function(e) {
-            if (
-                (e.key === " " || e.code === "Space" || e.key === "Spacebar") &&
-                !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
-            ) {
-                e.preventDefault();
-                togglePlay();
-            }
-        });
-
-        let currentIndex = -1;
-        let randomFolderPlaylist = null;
-        let historyStack = [];
-
-        function playSong(songPath, customPlaylist = null, customIndex = null, fromHistory = false, playImmediately = true) {
-            let titolo = songPath.split('/').pop().replace(/\.(mp3|flac)$/i, '');
-            let cartella = songPath.split('/')[0];
-            titoloObj.textContent = titolo;
-
-            songInfo = {
-                "artist": "",
-                "album": ""
             };
-            let sottotitolo;
-            fetch('/info?song=' + encodeURIComponent(songPath))
-            .then(response => response.json())
-            .then(data => {
-                if(data.info.artist != "Unknown Artist"){
-                    sottotitolo = data.info.artist;
-                    songInfo.artist = data.info.artist;
+
+            function play(a){
+                if(a){
+                    ctrlIcon.classList.remove('fa-play');
+                    ctrlIcon.classList.add('fa-pause');
+
+                } else {
+                    ctrlIcon.classList.remove('fa-pause');
+                    ctrlIcon.classList.add('fa-play');
                 }
-                else if(data.info.album != "Unknown Album"){
-                    sottotitolo = data.info.album;
-                    songInfo.album = data.info.album;
+                try {
+                    pywebview.api.setPlay(a);
+                } catch (error) {}
+            }
+
+            function togglePlay(a) {
+                if(ctrlIcon.classList.contains('fa-play') || a) {
+                    if (googleHome) {
+                        googleHomeF('play');
+                        play(true);
+                        return;
+                    }
+                    audioPlayer.play();
+                    play(true);
+                } else {
+                    if (googleHome) {
+                        googleHomeF('pause');
+                        play(false);
+                        return;
+                    }
+                    audioPlayer.pause();
+                    play(false);
+                }
+            }
+
+            audioPlayer.addEventListener('play', () => {
+                const updateProgress = setInterval(() => {
+                    if (audioPlayer.paused) {
+                        clearInterval(updateProgress);
+                    }
+                    progress.value = audioPlayer.currentTime;
+                }, 500); // 500ms bastano e consumano meno batteria
+            });
+
+            progress.oninput = function() {
+                if(ctrlIcon.classList.contains('fa-pause')){
+                    audioPlayer.play();
+                    play(true);
+                }
+                audioPlayer.currentTime = progress.value;
+            };
+
+            // Slider volume
+            let timeout;
+            const slider = document.getElementById('volumeslider');
+            slider.oninput = function () {
+                const v = slider.value / 100;
+                localStorage.setItem('lastVolume', slider.value);
+
+                clearTimeout(timeout);
+                if (googleHome){
+                    timeout = setTimeout(() => {
+                        googleHomeF("vol" + v);
+                    }, 150);
+                }else {
+                    audioPlayer.volume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
+                }
+            };
+            function vol() {
+                let currentVolume = slider.value / 100;
+                if (currentVolume > 0.20) {
+                    // Imposta volume a 20% logaritmico
+                    slider.value = 20;
+                    audioPlayer.volume = Math.pow(10, (0.2 - 1) * 2);
+                    if (googleHome) googleHomeF("vol" + 0.2);
+                } else {
+                    // Imposta volume a 100%
+                    slider.value = 100;
+                    audioPlayer.volume = Math.pow(10, (1 - 1) * 2); // = 1
+                    if (googleHome) googleHomeF("vol" + 1);
+                }
+                localStorage.setItem('lastVolume', slider.value);
+            }
+
+            window.addEventListener('keydown', function(e) {
+                if (
+                    (e.key === " " || e.code === "Space" || e.key === "Spacebar") &&
+                    !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
+                ) {
+                    e.preventDefault();
+                    togglePlay();
+                }
+            });
+
+            let currentIndex = -1;
+            let randomFolderPlaylist = null;
+            let historyStack = [];
+
+            function playSong(songPath, customPlaylist = null, customIndex = null, fromHistory = false, playImmediately = true) {
+                let titolo = songPath.split('/').pop().replace(/\.(mp3|flac)$/i, '');
+                let cartella = songPath.split('/')[0];
+                titoloObj.textContent = titolo;
+
+                songInfo = {
+                    "artist": "",
+                    "album": ""
+                };
+                let sottotitolo;
+                fetch('/info?song=' + encodeURIComponent(songPath))
+                .then(response => response.json())
+                .then(data => {
+                    if(data.info.artist != "Unknown Artist"){
+                        sottotitolo = data.info.artist;
+                        songInfo.artist = data.info.artist;
+                    }
+                    else if(data.info.album != "Unknown Album"){
+                        sottotitolo = data.info.album;
+                        songInfo.album = data.info.album;
+                    }
+                    else{
+                        sottotitolo = cartella;
+                    }
+                    cartellaObj.textContent = sottotitolo;
+
+                    // manda robe a miniplayer
+                    try {
+                        pywebview.api.setSong(songPath, titolo, sottotitolo);
+                    } catch (error) {}
+                });
+
+                document.title = titolo;
+
+                const audioPlayer = document.getElementById('audioPlayer');
+                const [folder, song] = songPath.split('/');
+                const url = "{{ url_for('music', folder='FOLDER', filename='SONG') }}"
+                    .replace('FOLDER', encodeURIComponent(folder))
+                    .replace('SONG', encodeURIComponent(song));
+                // Salva l'URL nel cookie
+                localStorage.setItem('lastMp3Url', url);
+
+                if (googleHome) {
+                    play(true);
+                    googleHomeF(url);
+                }else{
+                    audioPlayer.src = url;
+                    audioPlayer.load();
+                    console.log('Playing song:', url);
+                    if (playImmediately) {
+                        // Usiamo una Promise per evitare errori se l'utente clicca velocissimo
+                        var playPromise = audioPlayer.play();
+
+                        if (playPromise !== undefined) {
+                            playPromise.then(_ => {
+                                play(true); // Aggiorna icona solo a successo avvenuto
+                            })
+                            .catch(error => {
+                                console.log("Play interrotto o fallito (normale se si cambia canzone veloce):", error);
+                            });
+                        }
+                    }
+                }
+
+                // immagine
+                let objectUrl = null;
+                const immagine = document.getElementById('cover');
+                const image_container = document.getElementById('image-container');
+                let img = `/img/${encodeURIComponent(folder)}/${encodeURIComponent(song)}`;
+                fetch(img)
+                .then(response => {
+                    if (!response.ok) {
+                        image_container.classList.remove('cover');
+                        image_container.classList.add('cover404');
+                        return null;
+                    }
+
+                    image_container.classList.remove('cover404');
+                    image_container.classList.add('cover');
+                    return response.blob();
+                })
+                .then(blob => {
+                    if (objectUrl) {
+                        URL.revokeObjectURL(objectUrl);
+                        objectUrl = null;
+                    }
+
+                    let artworkSrc;
+                    if (blob) {
+                        objectUrl = URL.createObjectURL(blob);
+                        immagine.src = objectUrl;
+                        artworkSrc = objectUrl;
+                    } else {
+                        artworkSrc = "";
+                    }
+
+                    if ('mediaSession' in navigator) {
+                    navigator.mediaSession.setActionHandler("play", () => togglePlay());
+                    navigator.mediaSession.setActionHandler("pause", () => togglePlay());
+                    navigator.mediaSession.setActionHandler("nexttrack", nextSong);
+                    navigator.mediaSession.setActionHandler("previoustrack", prevSong);
+
+                    navigator.mediaSession.setActionHandler("seekto", details => {
+                        audioPlayer.currentTime = details.seekTime;
+                        progress.value = details.seekTime;
+                    });
+
+                    navigator.mediaSession.metadata = new MediaMetadata({
+                        title: titolo,
+                        artist: songInfo.artist !== "Unknown Artist" ? songInfo.artist : cartella,
+                        album: songInfo.album !== "Unknown Album" ? songInfo.album : "",
+                        artwork: [{
+                            src: artworkSrc,
+                            sizes: "512x512",
+                            type: "image/jpeg"
+                        }]
+                    });
+                    }
+                });
+
+                // Trova l'indice della canzone nella playlist attuale
+                let idx;
+                if (customPlaylist) {
+                    idx = customIndex;
+                } else {
+                    idx = playlist.findIndex(item => item.folder === folder && item.song === song);
+                }
+
+                // Aggiorna lo storico solo se non viene da prevSong
+                if (!fromHistory && currentIndex !== -1) {
+                    historyStack.push({
+                        playlist: randomFolderPlaylist ? [...randomFolderPlaylist] : null,
+                        index: currentIndex
+                    });
+                }
+
+                // Aggiorna playlist e indice correnti
+                if (customPlaylist) {
+                    randomFolderPlaylist = customPlaylist;
+                    currentIndex = idx;
+                } else {
+                    randomFolderPlaylist = null;
+                    currentIndex = idx;
+                }
+
+                get_pref(); // Aggiorna stato preferito per la nuova canzone
+
+                // Se i testi sono aperti, aggiorna anche quelli per la nuova canzone
+                if (document.getElementById('lyricsModal').style.display === 'flex' && !document.getElementById('lyricsModal').classList.contains('chords')) openlyricsModal();
+                // idem per gli accordi
+                if (document.getElementById('lyricsModal').style.display === 'flex' && document.getElementById('lyricsModal').classList.contains('chords')) openChordsModal();
+            }
+
+            function playFolderRandom(folder) {
+                let folderSongs;
+                if (folder === "ALL"){
+                    Object.keys(songs_by_folder).forEach(element => {
+                        if (localStorage.getItem('shuffle-' + element) === 'true') {
+                            const songsInFolder = playlist.filter(item => item.folder === element);
+                            folderSongs = folderSongs ? folderSongs.concat(songsInFolder) : songsInFolder;
+                        }
+                    });
+                } else {
+                    // Filtra le canzoni della cartella
+                    folderSongs = playlist.filter(item => item.folder === folder);
+                }
+                // Mischia le canzoni
+                const shuffled = folderSongs.sort(() => Math.random() - 0.5);
+                if (shuffled.length > 0) {
+                    playSong(shuffled[0].folder + '/' + shuffled[0].song, shuffled, 0);
+                }
+            }
+
+            function nextSong() {
+                if (randomFolderPlaylist) {
+                    if (currentIndex + 1 < randomFolderPlaylist.length) {
+                        const next = randomFolderPlaylist[currentIndex + 1];
+                        playSong(next.folder + '/' + next.song, randomFolderPlaylist, currentIndex + 1);
+                    }
+                    // Se randomFolderPlaylist è attiva e siamo all'ultima canzone, si ferma (non fa nulla)
+                } else if (currentIndex >= 0) {
+                    // Siamo nella playlist globale: controlla se siamo all'ultima canzone della cartella
+                    const currentFolder = playlist[currentIndex].folder;
+                    // Trova tutte le canzoni di questa cartella
+                    const songsInFolder = playlist.filter(item => item.folder === currentFolder);
+                    // Trova la posizione della canzone corrente nella cartella
+                    const currentSongInFolder = songsInFolder.findIndex(item =>
+                        item.folder === playlist[currentIndex].folder &&
+                        item.song === playlist[currentIndex].song
+                    );
+                    if (currentSongInFolder + 1 < songsInFolder.length) {
+                        // Vai alla prossima canzone della stessa cartella
+                        const nextInFolder = songsInFolder[currentSongInFolder + 1];
+                        // Trova l'indice globale della prossima canzone della cartella
+                        const globalIndex = playlist.findIndex(item =>
+                            item.folder === nextInFolder.folder && item.song === nextInFolder.song
+                        );
+                        playSong(nextInFolder.folder + '/' + nextInFolder.song, null, globalIndex);
+                    } else {
+                        // Siamo all'ultima canzone della cartella: riparti dalla prima della cartella
+                        const firstInFolder = songsInFolder[0];
+                        const globalIndex = playlist.findIndex(item =>
+                            item.folder === firstInFolder.folder && item.song === firstInFolder.song
+                        );
+                        playSong(firstInFolder.folder + '/' + firstInFolder.song, null, globalIndex);
+                    }
+                }
+            }
+
+            function prevSong() {
+                if (audioPlayer.currentTime <= (audioPlayer.duration*2)/100){
+                    if (historyStack.length > 0) {
+                        const last = historyStack.pop();
+                        if (last.playlist) {
+                            playSong(last.playlist[last.index].folder + '/' + last.playlist[last.index].song, last.playlist, last.index, true);
+                        } else {
+                            playSong(playlist[last.index].folder + '/' + playlist[last.index].song, null, last.index, true);
+                        }
+                    }
                 }
                 else{
-                    sottotitolo = cartella;
-                }
-                cartellaObj.textContent = sottotitolo;
-                
-                // manda robe a miniplayer
-                try {
-                    pywebview.api.setSong(songPath, titolo, sottotitolo);
-                } catch (error) {}
-            });
-            
-            document.title = titolo;
-
-            const audioPlayer = document.getElementById('audioPlayer');
-            const [folder, song] = songPath.split('/');
-            const url = "{{ url_for('music', folder='FOLDER', filename='SONG') }}"
-                .replace('FOLDER', encodeURIComponent(folder))
-                .replace('SONG', encodeURIComponent(song));
-            // Salva l'URL nel cookie
-            localStorage.setItem('lastMp3Url', url);
-
-            if (googleHome) {
-                play(true);
-                googleHomeF(url);
-            }else{
-                audioPlayer.src = url;
-                audioPlayer.load();
-                console.log('Playing song:', url);
-                if (playImmediately) {
-                    // Usiamo una Promise per evitare errori se l'utente clicca velocissimo
-                    var playPromise = audioPlayer.play();
-                    
-                    if (playPromise !== undefined) {
-                        playPromise.then(_ => {
-                            play(true); // Aggiorna icona solo a successo avvenuto
-                        })
-                        .catch(error => {
-                            console.log("Play interrotto o fallito (normale se si cambia canzone veloce):", error);
-                        });
-                    }
+                    audioPlayer.currentTime = 0;
                 }
             }
 
-            // immagine
-            let objectUrl = null;
-            const immagine = document.getElementById('cover');
-            const image_container = document.getElementById('image-container');
-            let img = `/img/${encodeURIComponent(folder)}/${encodeURIComponent(song)}`;
-            fetch(img)
-            .then(response => {
-                if (!response.ok) {
-                    image_container.classList.remove('cover');
-                    image_container.classList.add('cover404');
-                    return null;
-                }
-
-                image_container.classList.remove('cover404');
-                image_container.classList.add('cover');
-                return response.blob();
-            })
-            .then(blob => {
-                if (objectUrl) {
-                    URL.revokeObjectURL(objectUrl);
-                    objectUrl = null;
-                }
-
-                let artworkSrc;
-                if (blob) {
-                    objectUrl = URL.createObjectURL(blob);
-                    immagine.src = objectUrl;
-                    artworkSrc = objectUrl;
+            // All'avvio, recupera l'ultimo mp3 dal cookie e formatta l'URL in modo leggibile
+            document.addEventListener("DOMContentLoaded", () => {
+            // messo il doomcontent per il reload dei testi nel playsong, senza dava errore che non esisteva
+            // lyricsModal e non andava più audioPlayer.addEventListener('ended') (come se centrasse qualcosa con lerrore btw)
+                const lastMp3Url = decodeURIComponent(localStorage.getItem('lastMp3Url') || '').slice(1);
+                if (lastMp3Url) {
+                    console.log('Ultimo mp3 dal cookie (formattato):', lastMp3Url);
+                    playSong(lastMp3Url, null, null, null, false);
                 } else {
-                    artworkSrc = "";
+                    console.log('Nessun mp3 trovato nel cookie.');
                 }
 
-                if ('mediaSession' in navigator) {
-                navigator.mediaSession.setActionHandler("play", () => togglePlay());
-                navigator.mediaSession.setActionHandler("pause", () => togglePlay());
-                navigator.mediaSession.setActionHandler("nexttrack", nextSong);
-                navigator.mediaSession.setActionHandler("previoustrack", prevSong);
-
-                navigator.mediaSession.setActionHandler("seekto", details => {
-                    audioPlayer.currentTime = details.seekTime;
-                    progress.value = details.seekTime;
-                });
-
-                navigator.mediaSession.metadata = new MediaMetadata({
-                    title: titolo,
-                    artist: songInfo.artist !== "Unknown Artist" ? songInfo.artist : cartella,
-                    album: songInfo.album !== "Unknown Album" ? songInfo.album : "",
-                    artwork: [{
-                        src: artworkSrc,
-                        sizes: "512x512",
-                        type: "image/jpeg"
-                    }]
-                });
+                const lastVolume = localStorage.getItem('lastVolume') || null;
+                if (lastVolume) {
+                    const volumeSlider = document.getElementById('volumeslider');
+                    volumeSlider.value = lastVolume;
+                    const v = volumeSlider.value / 100;
+                    audioPlayer.volume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
                 }
             });
 
-            // Trova l'indice della canzone nella playlist attuale
-            let idx;
-            if (customPlaylist) {
-                idx = customIndex;
-            } else {
-                idx = playlist.findIndex(item => item.folder === folder && item.song === song);
-            }
-
-            // Aggiorna lo storico solo se non viene da prevSong
-            if (!fromHistory && currentIndex !== -1) {
-                historyStack.push({
-                    playlist: randomFolderPlaylist ? [...randomFolderPlaylist] : null,
-                    index: currentIndex
-                });
-            }
-
-            // Aggiorna playlist e indice correnti
-            if (customPlaylist) {
-                randomFolderPlaylist = customPlaylist;
-                currentIndex = idx;
-            } else {
-                randomFolderPlaylist = null;
-                currentIndex = idx;
-            }
-
-            get_pref(); // Aggiorna stato preferito per la nuova canzone
-
-            // Se i testi sono aperti, aggiorna anche quelli per la nuova canzone
-            if (document.getElementById('lyricsModal').style.display === 'flex' && !document.getElementById('lyricsModal').classList.contains('chords')) openlyricsModal();
-            // idem per gli accordi
-            if (document.getElementById('lyricsModal').style.display === 'flex' && document.getElementById('lyricsModal').classList.contains('chords')) openChordsModal();
-        }
-
-        function playFolderRandom(folder) {
-            let folderSongs;
-            if (folder === "ALL"){
-                Object.keys(songs_by_folder).forEach(element => {
-                    if (localStorage.getItem('shuffle-' + element) === 'true') {
-                        const songsInFolder = playlist.filter(item => item.folder === element);
-                        folderSongs = folderSongs ? folderSongs.concat(songsInFolder) : songsInFolder;
-                    }
-                });
-            } else {
-                // Filtra le canzoni della cartella
-                folderSongs = playlist.filter(item => item.folder === folder);
-            }
-            // Mischia le canzoni
-            const shuffled = folderSongs.sort(() => Math.random() - 0.5);
-            if (shuffled.length > 0) {
-                playSong(shuffled[0].folder + '/' + shuffled[0].song, shuffled, 0);
-            }
-        }
-
-        function nextSong() {
-            if (randomFolderPlaylist) {
-                if (currentIndex + 1 < randomFolderPlaylist.length) {
-                    const next = randomFolderPlaylist[currentIndex + 1];
-                    playSong(next.folder + '/' + next.song, randomFolderPlaylist, currentIndex + 1);
-                }
-                // Se randomFolderPlaylist è attiva e siamo all'ultima canzone, si ferma (non fa nulla)
-            } else if (currentIndex >= 0) {
-                // Siamo nella playlist globale: controlla se siamo all'ultima canzone della cartella
-                const currentFolder = playlist[currentIndex].folder;
-                // Trova tutte le canzoni di questa cartella
-                const songsInFolder = playlist.filter(item => item.folder === currentFolder);
-                // Trova la posizione della canzone corrente nella cartella
-                const currentSongInFolder = songsInFolder.findIndex(item =>
-                    item.folder === playlist[currentIndex].folder &&
-                    item.song === playlist[currentIndex].song
-                );
-                if (currentSongInFolder + 1 < songsInFolder.length) {
-                    // Vai alla prossima canzone della stessa cartella
-                    const nextInFolder = songsInFolder[currentSongInFolder + 1];
-                    // Trova l'indice globale della prossima canzone della cartella
-                    const globalIndex = playlist.findIndex(item =>
-                        item.folder === nextInFolder.folder && item.song === nextInFolder.song
-                    );
-                    playSong(nextInFolder.folder + '/' + nextInFolder.song, null, globalIndex);
-                } else {
-                    // Siamo all'ultima canzone della cartella: riparti dalla prima della cartella
-                    const firstInFolder = songsInFolder[0];
-                    const globalIndex = playlist.findIndex(item =>
-                        item.folder === firstInFolder.folder && item.song === firstInFolder.song
-                    );
-                    playSong(firstInFolder.folder + '/' + firstInFolder.song, null, globalIndex);
-                }
-            }
-        }
-
-        function prevSong() {
-            if (audioPlayer.currentTime <= (audioPlayer.duration*2)/100){
-                if (historyStack.length > 0) {
-                    const last = historyStack.pop();
-                    if (last.playlist) {
-                        playSong(last.playlist[last.index].folder + '/' + last.playlist[last.index].song, last.playlist, last.index, true);
-                    } else {
-                        playSong(playlist[last.index].folder + '/' + playlist[last.index].song, null, last.index, true);
-                    }
-                }
-            }
-            else{
-                audioPlayer.currentTime = 0;
-            }
-        }
-
-        // All'avvio, recupera l'ultimo mp3 dal cookie e formatta l'URL in modo leggibile
-        document.addEventListener("DOMContentLoaded", () => { 
-        // messo il doomcontent per il reload dei testi nel playsong, senza dava errore che non esisteva 
-        // lyricsModal e non andava più audioPlayer.addEventListener('ended') (come se centrasse qualcosa con lerrore btw)
-            const lastMp3Url = decodeURIComponent(localStorage.getItem('lastMp3Url') || '').slice(1);
-            if (lastMp3Url) {
-                console.log('Ultimo mp3 dal cookie (formattato):', lastMp3Url);
-                playSong(lastMp3Url, null, null, null, false);
-            } else {
-                console.log('Nessun mp3 trovato nel cookie.');
-            }
-
-            const lastVolume = localStorage.getItem('lastVolume') || null;
-            if (lastVolume) {
-                const volumeSlider = document.getElementById('volumeslider');
-                volumeSlider.value = lastVolume;
-                const v = volumeSlider.value / 100;
-                audioPlayer.volume = v === 0 ? 0 : Math.pow(10, (v - 1) * 2);
-            }
-        });
-
-        function googleHomeF(url){
-            fetch("/google", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                },
-                body: "url=" + encodeURIComponent(url)
-            }).then(response => {
-                if (response.status === 1) {
-                    closeMenu();
-                    alert("Google Home attivato");
-                }
-                if (response.status === 404) {
-                    window.location.href = "/errore?motivo=Google%20Home%20non%20trovato";
-                }
-            });
-            return;
-        }
-
-        // conteggio riproduzioni
-            let playCounted = false;
-            audioPlayer.addEventListener('play', function() {
-                playCounted = false; 
-            });
-
-            audioPlayer.addEventListener('timeupdate', function() {
-                // Verifica se sono passati 30 secondi E se non abbiamo ancora contato la riproduzione
-                if (!playCounted && audioPlayer.currentTime >= 30) {
-                    countPlay();
-                    playCounted = true; // Impedisce nuovi invii finché non cambia brano
-                }
-            });
-
-            // Funzione dedicata all'invio dei dati
-            function countPlay() {
-                if (randomFolderPlaylist) {
-                    var currentSong = randomFolderPlaylist[currentIndex];
-                } else {
-                    var currentSong = playlist[currentIndex];
-                }
-                
-                fetch('/increment_plays', {
-                    method: 'POST',
+            function googleHomeF(url){
+                fetch("/google", {
+                    method: "POST",
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
+                        "Content-Type": "application/x-www-form-urlencoded"
                     },
-                    body: 'song=' + encodeURIComponent(currentSong.song)
-                })
-                .then(response => console.log('Riproduzione conteggiata'))
-                .catch(error => console.error('Errore nel conteggio:', error));
-            }
-
-        // Quando finisce passa alla prossima
-        audioPlayer.addEventListener('ended', function() {
-            nextSong();
-        });
-
-
-        // canzoni preferite
-            function togglePref(){
-                if (randomFolderPlaylist) {
-                    var currentSong = randomFolderPlaylist[currentIndex];
-                } else {
-                    var currentSong = playlist[currentIndex];
-                }
-
-                fetch('/pref', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: 'song=' + encodeURIComponent(currentSong.song)
+                    body: "url=" + encodeURIComponent(url)
                 }).then(response => {
-                    if (response.ok) {
-                        get_pref(); // Aggiorna lo stato preferito dopo il toggle
-                    } else {
-                        console.error('Errore nel toggle preferito');
+                    if (response.status === 1) {
+                        closeMenu();
+                        alert("Google Home attivato");
                     }
-                }).catch(error => console.error('Errore nel toggle preferito:', error));
+                    if (response.status === 404) {
+                        window.location.href = "/errore?motivo=Google%20Home%20non%20trovato";
+                    }
+                });
+                return;
             }
-            function get_pref(){
-                if (randomFolderPlaylist) {
-                    var currentSong = randomFolderPlaylist[currentIndex];
-                } else {
-                    var currentSong = playlist[currentIndex];
+
+            // conteggio riproduzioni
+                let playCounted = false;
+                audioPlayer.addEventListener('play', function() {
+                    playCounted = false;
+                });
+
+                audioPlayer.addEventListener('timeupdate', function() {
+                    // Verifica se sono passati 30 secondi E se non abbiamo ancora contato la riproduzione
+                    if (!playCounted && audioPlayer.currentTime >= 30) {
+                        countPlay();
+                        playCounted = true; // Impedisce nuovi invii finché non cambia brano
+                    }
+                });
+
+                // Funzione dedicata all'invio dei dati
+                function countPlay() {
+                    if (randomFolderPlaylist) {
+                        var currentSong = randomFolderPlaylist[currentIndex];
+                    } else {
+                        var currentSong = playlist[currentIndex];
+                    }
+
+                    fetch('/increment_plays', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'song=' + encodeURIComponent(currentSong.song)
+                    })
+                    .then(response => console.log('Riproduzione conteggiata'))
+                    .catch(error => console.error('Errore nel conteggio:', error));
                 }
-                
-                fetch('/pref?song=' + encodeURIComponent(currentSong.song), {method: 'GET',})
-                .then(response => response.json())
-                .then(data => {
-                    if(data.is_pref){
-                        // è preferita
-                        document.getElementById('prefIcon').classList.add('fa-solid');
-                        document.getElementById('prefIcon').classList.remove('fa-regular');
+
+            // Quando finisce passa alla prossima
+            audioPlayer.addEventListener('ended', function() {
+                nextSong();
+            });
+
+
+            // canzoni preferite
+                function togglePref(){
+                    if (randomFolderPlaylist) {
+                        var currentSong = randomFolderPlaylist[currentIndex];
                     } else {
-                        document.getElementById('prefIcon').classList.remove('fa-solid');
-                        document.getElementById('prefIcon').classList.add('fa-regular');
+                        var currentSong = playlist[currentIndex];
                     }
-                })
-            }
-            function get_all_pref(){
-                fetch('/pref', {method: 'GET',})
-                .then(response => response.json())
-                .then(data => {
-                    if(data.is_pref){
-                        // è preferita
-                        document.getElementById('prefIcon').classList.add('fa-solid');
-                        document.getElementById('prefIcon').classList.remove('fa-regular');
+
+                    fetch('/pref', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: 'song=' + encodeURIComponent(currentSong.song)
+                    }).then(response => {
+                        if (response.ok) {
+                            get_pref(); // Aggiorna lo stato preferito dopo il toggle
+                        } else {
+                            console.error('Errore nel toggle preferito');
+                        }
+                    }).catch(error => console.error('Errore nel toggle preferito:', error));
+                }
+                function get_pref(){
+                    if (randomFolderPlaylist) {
+                        var currentSong = randomFolderPlaylist[currentIndex];
                     } else {
-                        document.getElementById('prefIcon').classList.remove('fa-solid');
-                        document.getElementById('prefIcon').classList.add('fa-regular');
+                        var currentSong = playlist[currentIndex];
                     }
-                })
-            }
-    </script>
 
-    <div id="menu" style="position: fixed; inset: 0; height: 100dvh; padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); background: rgba(0,0,0,0.5); z-index: 2000; display: none;">
-        <div>
-            <div onclick="openSettingsModal()" class="circle">
-                <i class="fa-solid fa-gear"></i>
-            </div>
-            <div onclick="opendownModal()" class="circle">
-                <i class="fa-solid fa-download"></i>
-            </div>
-            <div onclick="openlyricsModal()" class="circle">
-                <i class="fa-solid fa-file"></i>
-            </div>
-            <div onclick="openChordsModal()" class="circle">
-                <i class="fa-solid fa-guitar"></i>
-            </div>
-            <div onclick="if(googleHome){googleHome=false; googleHomeF('stop'); play(false); closeMenu()} else{googleHomeF('init'); googleHome=true; audioPlayer.pause(); play(false);};" class="circle">
-                <i class="fa-solid fa-wifi"></i>
-            </div>
-            <div onclick="playFolderRandom('ALL')" class="circle">
-                <i class="fa-solid fa-shuffle"></i>
-            </div>
-            <a href="/stats" style="text-decoration: none;"><div class="circle">
-                <i class="fa-solid fa-chart-area"></i>
-            </div></a>
-            <div onclick="downloadIos()" class="circle ios">
-                <i class="fa-solid fa-download"></i>
-            </div>
-            <div onclick="window.location.reload()" class="circle">
-                <i class="fa-solid fa-rotate-right"></i>
+                    fetch('/pref?song=' + encodeURIComponent(currentSong.song), {method: 'GET',})
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.is_pref){
+                            // è preferita
+                            document.getElementById('prefIcon').classList.add('fa-solid');
+                            document.getElementById('prefIcon').classList.remove('fa-regular');
+                        } else {
+                            document.getElementById('prefIcon').classList.remove('fa-solid');
+                            document.getElementById('prefIcon').classList.add('fa-regular');
+                        }
+                    })
+                }
+                function get_all_pref(){
+                    fetch('/pref', {method: 'GET',})
+                    .then(response => response.json())
+                    .then(data => {
+                        if(data.is_pref){
+                            // è preferita
+                            document.getElementById('prefIcon').classList.add('fa-solid');
+                            document.getElementById('prefIcon').classList.remove('fa-regular');
+                        } else {
+                            document.getElementById('prefIcon').classList.remove('fa-solid');
+                            document.getElementById('prefIcon').classList.add('fa-regular');
+                        }
+                    })
+                }
+        </script>
+
+        <div
+            id="menu"
+            style="
+                position: fixed;
+                inset: 0;
+                height: 100dvh;
+                padding-top: env(safe-area-inset-top);
+                padding-bottom: env(safe-area-inset-bottom);
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 2000;
+                display: none;
+                padding-left: 15px;
+                padding-right: 15px;
+            "
+        >
+            <div>
+                <div onclick="openSettingsModal()" class="circle">
+                    <i class="fa-solid fa-gear"></i>
+                </div>
+                <div onclick="opendownModal()" class="circle">
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                <div onclick="openlyricsModal()" class="circle">
+                    <i class="fa-solid fa-file"></i>
+                </div>
+                <div onclick="openChordsModal()" class="circle">
+                    <i class="fa-solid fa-guitar"></i>
+                </div>
+                <div
+                    onclick="
+                        if (googleHome) {
+                            googleHome = false;
+                            googleHomeF('stop');
+                            play(false);
+                            closeMenu();
+                        } else {
+                            googleHomeF('init');
+                            googleHome = true;
+                            audioPlayer.pause();
+                            play(false);
+                        }
+                    "
+                    class="circle"
+                >
+                    <i class="fa-solid fa-wifi"></i>
+                </div>
+                <div onclick="playFolderRandom('ALL')" class="circle">
+                    <i class="fa-solid fa-shuffle"></i>
+                </div>
+                <a href="/stats" style="text-decoration: none"
+                    ><div class="circle">
+                        <i class="fa-solid fa-chart-area"></i></div
+                ></a>
+                <div onclick="downloadIos()" class="circle ios">
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                <div onclick="window.location.reload()" class="circle">
+                    <i class="fa-solid fa-rotate-right"></i>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="downloadModal" class="modal-sotto">
-        <div class="modal">
-            <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
-            <div style="text-align:center;">
-                <input type="text" id="yt_url" placeholder="Incolla link YouTube || Cerca su YouTube" style="width:300px; border-radius: 20px; padding: 20px; font-size: medium; font-weight: normal;">
-                <button onclick="downloadYT()" class="song">Scarica da YouTube</button>
-                <div id="downloadMsg" style="color:black; margin-top:20px;"></div>
+        <div id="downloadModal" class="modal-sotto">
+            <div class="modal">
+                <button onclick="closeModal()" id="closeModal" class="circle">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+                <div style="text-align: center">
+                    <input
+                        type="text"
+                        id="yt_url"
+                        placeholder="Incolla link YouTube || Cerca su YouTube"
+                        style="width: 330px; border-radius: 20px; padding: 20px; font-size: medium; font-weight: normal"
+                    />
+                    <button onclick="downloadYT()" class="button">Scarica da YouTube</button>
+                    <div id="downloadMsg" style="color: black; margin-top: 20px"></div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- usato anche da chords -->
-    <div id="lyricsModal" class="modal-sotto">
-        <div class="modal">
-            <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
-            <iframe src="" frameborder="0" width="1000px" height="700px" id="iframe-lirics" style="padding: 10px;"></iframe>
+        <!-- usato anche da chords -->
+        <div id="lyricsModal" class="modal-sotto">
+            <div class="modal" style="padding: 5px 5px">
+                <iframe
+                    src=""
+                    frameborder="0"
+                    width="1000px"
+                    height="700px"
+                    id="iframe-lirics"
+                    style="padding: 10px"
+                ></iframe>
+            </div>
         </div>
-    </div>
 
-    <div id="settingsModal" class="modal-sotto">
-        <div class="modal" style="align-items: flex-start;">
-            <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
-            <div style="text-align:center;">
-                <h3>Impostazioni</h3>
-                <p>Qui puoi modificare le impostazioni dell'app.</p>
-                <div id="ShuffleAllSetting" style="margin-top: 10px;">
-                    <p style="margin-bottom: 5px;">Shuffle</p>
-                    <script>
-                        let shuffleAllDiv = document.getElementById('ShuffleAllSetting');
-                        Object.keys(songs_by_folder).forEach(element => {
-                            localStorage.setItem('shuffle-'+element, localStorage.getItem('shuffle-'+element) === null ? 'true' : localStorage.getItem('shuffle-'+element));
-                            shuffleAllDiv.innerHTML += `<div class="shuffle-div">
+        <div id="settingsModal" class="modal-sotto">
+            <div class="modal" style="align-items: flex-start">
+                <button onclick="closeModal()" id="closeModal" class="circle">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+                <div style="text-align: center">
+                    <h3>Impostazioni</h3>
+                    <p>Qui puoi modificare le impostazioni dell'app.</p>
+                    <div id="ShuffleAllSetting" style="margin-top: 10px">
+                        <p style="margin-bottom: 5px">Shuffle</p>
+                        <script>
+                            let shuffleAllDiv = document.getElementById("ShuffleAllSetting");
+                            Object.keys(songs_by_folder).forEach(element => {
+                                localStorage.setItem(
+                                    "shuffle-" + element,
+                                    localStorage.getItem("shuffle-" + element) === null
+                                        ? "true"
+                                        : localStorage.getItem("shuffle-" + element),
+                                );
+                                shuffleAllDiv.innerHTML += `<div class="shuffle-div">
                                 <label class="custom-label" for="shuffle-${element}">${element}
-                                <input type="checkbox" class="form-check-input" id="shuffle-${element}" ${localStorage.getItem('shuffle-' + element) === 'true' ? 'checked' : ''} onchange="localStorage.setItem('shuffle-${element}', this.checked);">
+                                <input type="checkbox" class="form-check-input" id="shuffle-${element}" ${localStorage.getItem("shuffle-" + element) === "true" ? "checked" : ""} onchange="localStorage.setItem('shuffle-${element}', this.checked);">
                                 <span class="checkmark"></span>
                                 </label>
                                 </div>`;
-                        });
-                    </script>
+                            });
+                        </script>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-    async function downloadYT(url=null) {
-        if (url === null) url = document.getElementById('yt_url').value;
-        const msgDiv = document.getElementById('downloadMsg');
-        
-        if (!url.trim()) {
-            msgDiv.textContent = 'Inserisci un URL o una ricerca';
-            msgDiv.style.color = 'blue';
-            return;
-        }
-        if(url.startsWith('http://') || url.startsWith('https://')){
-            msgDiv.textContent = 'Download in background avviato.';
-            msgDiv.style.color = 'black';
+        <script>
+            async function downloadYT(url = null) {
+                if (url === null) url = document.getElementById("yt_url").value;
+                const msgDiv = document.getElementById("downloadMsg");
 
-            const response = await fetch('/down', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'yt_url=' + encodeURIComponent(url)
-            });
-            const status = response.status;
-            if (status === 200) window.location.reload();
-            else if (status === 500) {
-                msgDiv.textContent = 'Errore durante il download.';
-                msgDiv.style.color = 'blue';
-            }
-        }
-        else{
-            // è una ricerca
-            msgDiv.textContent = 'Ricerca in corso...';
-            msgDiv.style.color = 'black';
-            const response = await fetch('/cerca?q=' + encodeURIComponent(url));
-            const results = await response.json();
-            
-            if (results.error) {
-                msgDiv.textContent = results.error;
-                msgDiv.style.color = 'red';
-                return;
-            }
-            
-            if (results.length === 0) {
-                msgDiv.textContent = 'Nessun risultato trovato.';
-                msgDiv.style.color = 'red';
-                return;
-            }
-            
-            // Mostra i risultati della ricerca
-            let resultsHtml = '<h3>Risultati della ricerca:</h3><div id="resultsList"><ul>';
-            results.forEach(video => {
-                resultsHtml += `<li>
+                if (!url.trim()) {
+                    msgDiv.textContent = "Inserisci un URL o una ricerca";
+                    msgDiv.style.color = "blue";
+                    return;
+                }
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    msgDiv.textContent = "Download in background avviato.";
+                    msgDiv.style.color = "black";
+
+                    const response = await fetch("/down", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: "yt_url=" + encodeURIComponent(url),
+                    });
+                    const status = response.status;
+                    if (status === 200) window.location.reload();
+                    else if (status === 500) {
+                        msgDiv.textContent = "Errore durante il download.";
+                        msgDiv.style.color = "blue";
+                    }
+                } else {
+                    // è una ricerca
+                    msgDiv.textContent = "Ricerca in corso...";
+                    msgDiv.style.color = "black";
+                    const response = await fetch("/cerca?q=" + encodeURIComponent(url));
+                    const results = await response.json();
+
+                    if (results.error) {
+                        msgDiv.textContent = results.error;
+                        msgDiv.style.color = "red";
+                        return;
+                    }
+
+                    if (results.length === 0) {
+                        msgDiv.textContent = "Nessun risultato trovato.";
+                        msgDiv.style.color = "red";
+                        return;
+                    }
+
+                    // Mostra i risultati della ricerca
+                    let resultsHtml = '<h3>Risultati della ricerca:</h3><div id="resultsList"><ul>';
+                    results.forEach(video => {
+                        resultsHtml += `<li>
                     <strong>${video.title}</strong><br>
                     <p>${video.channel}</p>
                     <button onclick="downloadYT('${video.url}')" class="song" style="margin-top:5px;">Scarica questo</button>
                 </li><br>`;
+                    });
+                    resultsHtml += "</ul></div>";
+                    msgDiv.innerHTML = resultsHtml;
+                }
+            }
+
+            function opendownModal() {
+                document.getElementById("downloadModal").style.display = "flex";
+            }
+            function openlyricsModal() {
+                document.getElementById("lyricsModal").classList.remove("chords");
+                document.getElementById("lyricsModal").style.display = "flex";
+                let lyrics = document.getElementById("iframe-lirics");
+
+                const folder = randomFolderPlaylist
+                    ? randomFolderPlaylist[currentIndex].folder
+                    : playlist[currentIndex].folder;
+                const song = randomFolderPlaylist
+                    ? randomFolderPlaylist[currentIndex].song
+                    : playlist[currentIndex].song;
+
+                lyrics.src = "lyrics?folder=" + encodeURIComponent(folder) + "&filename=" + encodeURIComponent(song);
+            }
+            function openChordsModal() {
+                document.getElementById("lyricsModal").classList.add("chords");
+                document.getElementById("lyricsModal").style.display = "flex";
+                let lyrics = document.getElementById("iframe-lirics");
+
+                const folder = randomFolderPlaylist
+                    ? randomFolderPlaylist[currentIndex].folder
+                    : playlist[currentIndex].folder;
+                const song = randomFolderPlaylist
+                    ? randomFolderPlaylist[currentIndex].song
+                    : playlist[currentIndex].song;
+
+                lyrics.src = "chords?song=" + encodeURIComponent(song);
+            }
+            function openSettingsModal() {
+                document.getElementById("settingsModal").style.display = "flex";
+            }
+            function closeModal() {
+                document.getElementById("downloadModal").style.display = "none";
+                document.getElementById("lyricsModal").style.display = "none";
+                document.getElementById("iframe-lirics").src = ""; // reset iframe
+                document.getElementById("settingsModal").style.display = "none";
+            }
+            // Chiudi modale con ESC o clic fuori
+            window.addEventListener("keydown", function (e) {
+                if (e.key === "Escape") closeModal();
             });
-            resultsHtml += '</ul></div>';
-            msgDiv.innerHTML = resultsHtml;
-        }
-    }
+            document.getElementById("downloadModal").addEventListener("click", function (e) {
+                if (e.target === this) closeModal();
+            });
+            document.getElementById("lyricsModal").addEventListener("click", function (e) {
+                if (e.target === this) closeModal();
+            });
+            document.getElementById("settingsModal").addEventListener("click", function (e) {
+                if (e.target === this) closeModal();
+            });
 
-    function opendownModal() {
-        document.getElementById('downloadModal').style.display = 'flex';
-    }
-    function openlyricsModal() {
-        document.getElementById('lyricsModal').classList.remove('chords');
-        document.getElementById('lyricsModal').style.display = 'flex';
-        let lyrics = document.getElementById('iframe-lirics');
+            function openMenu() {
+                document.getElementById("menu").style.display = "flex";
+            }
+            function closeMenu() {
+                document.getElementById("menu").style.display = "none";
+            }
+            // Chiudi modale con ESC o clic fuori
+            window.addEventListener("keydown", function (e) {
+                if (e.key === "Escape") closeMenu();
+            });
+            document.getElementById("menu").addEventListener("click", function (e) {
+                if (e.target === this) closeMenu();
+            });
 
-        const folder = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].folder : playlist[currentIndex].folder;
-        const song = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].song : playlist[currentIndex].song;
-        
-        lyrics.src = "lyrics?folder=" + encodeURIComponent(folder) + "&filename=" + encodeURIComponent(song);
-    }
-    function openChordsModal() {
-        document.getElementById('lyricsModal').classList.add('chords');
-        document.getElementById('lyricsModal').style.display = 'flex';
-        let lyrics = document.getElementById('iframe-lirics');
-
-        const folder = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].folder : playlist[currentIndex].folder;
-        const song = (randomFolderPlaylist) ? randomFolderPlaylist[currentIndex].song : playlist[currentIndex].song;
-        
-        lyrics.src = "chords?song=" + encodeURIComponent(song);
-    }
-    function openSettingsModal() {
-        document.getElementById('settingsModal').style.display = 'flex';
-    }
-    function closeModal() {
-        document.getElementById('downloadModal').style.display = 'none';
-        document.getElementById('lyricsModal').style.display = 'none';
-            document.getElementById('iframe-lirics').src = ""; // reset iframe
-        document.getElementById('settingsModal').style.display = 'none';
-    }
-    // Chiudi modale con ESC o clic fuori
-    window.addEventListener('keydown', function(e) {
-        if (e.key === "Escape") closeModal();
-    });
-    document.getElementById('downloadModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
-    document.getElementById('lyricsModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
-    document.getElementById('settingsModal').addEventListener('click', function(e) {
-        if (e.target === this) closeModal();
-    });
-
-
-    function openMenu() {
-        document.getElementById('menu').style.display = 'flex';
-    }
-    function closeMenu() {
-        document.getElementById('menu').style.display = 'none';
-    }
-    // Chiudi modale con ESC o clic fuori
-    window.addEventListener('keydown', function(e) {
-        if (e.key === "Escape") closeMenu();
-    });
-    document.getElementById('menu').addEventListener('click', function(e) {
-        if (e.target === this) closeMenu();
-    });
-
-
-    // offline popup + controllo disponibilità server
-    // popup HTML (verrà mostrato quando il server non risponde)
-    const offlinePopupHtml = `
+            // offline popup + controllo disponibilità server
+            // popup HTML (verrà mostrato quando il server non risponde)
+            const offlinePopupHtml = `
     <div id="offlinePopup" style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100vw; height:100vh; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
         <div style="background:#222; color:#fff; padding:20px; border-radius:8px; min-width:300px; text-align:center;">
             <h3 id="offlineTitle">Server non raggiungibile</h3>
@@ -773,233 +864,267 @@
             <button id="offlineRetry" class="song" style="margin-top:12px;">Riprova ora</button>
         </div>
     </div>`;
-    document.body.insertAdjacentHTML('beforeend', offlinePopupHtml);
+            document.body.insertAdjacentHTML("beforeend", offlinePopupHtml);
 
-    // Funzione di controllo ping con backoff esponenziale
-    (function() {
-        const offlinePopup = document.getElementById('offlinePopup');
-        const offlineMsg = document.getElementById('offlineMsg');
-        const offlineRetry = document.getElementById('offlineRetry');
-        let isOffline = false;
-        let retryDelay = 2000; // ms
-        const maxDelay = 60000; // ms
-        let retryTimer = null;
+            // Funzione di controllo ping con backoff esponenziale
+            (function () {
+                const offlinePopup = document.getElementById("offlinePopup");
+                const offlineMsg = document.getElementById("offlineMsg");
+                const offlineRetry = document.getElementById("offlineRetry");
+                let isOffline = false;
+                let retryDelay = 2000; // ms
+                const maxDelay = 60000; // ms
+                let retryTimer = null;
 
-        async function doPing() {
-            try {
-                const resp = await fetch('/ping?ts=' + Date.now(), { cache: 'no-store' });
-                if (resp && resp.ok) {
-                    if (isOffline) {
-                        // Torna online: nascondi popup e ricarica per sincronizzare lo stato
-                        isOffline = false;
-                        offlinePopup.style.display = 'none';
-                        retryDelay = 2000;
+                async function doPing() {
+                    try {
+                        const resp = await fetch("/ping?ts=" + Date.now(), { cache: "no-store" });
+                        if (resp && resp.ok) {
+                            if (isOffline) {
+                                // Torna online: nascondi popup e ricarica per sincronizzare lo stato
+                                isOffline = false;
+                                offlinePopup.style.display = "none";
+                                retryDelay = 2000;
+                            }
+                            return true;
+                        }
+                    } catch (err) {
+                        // errore di rete
                     }
-                    return true;
+                    // Se arriviamo qui, ping fallito
+                    if (!isOffline) {
+                        isOffline = true;
+                        offlinePopup.style.display = "flex";
+                    }
+                    offlineMsg.textContent =
+                        "Tentativo di riconnessione in corso... Prossimo tentativo fra " + retryDelay / 1000 + "s";
+                    // programma il prossimo tentativo con backoff esponenziale
+                    clearTimeout(retryTimer);
+                    retryTimer = setTimeout(() => {
+                        // aumenta delay per il prossimo tentativo
+                        retryDelay = Math.min(maxDelay, retryDelay * 2);
+                        doPing();
+                    }, retryDelay);
+                    return false;
                 }
-            } catch (err) {
-                // errore di rete
-            }
-            // Se arriviamo qui, ping fallito
-            if (!isOffline) {
-                isOffline = true;
-                offlinePopup.style.display = 'flex';
-            }
-            offlineMsg.textContent = 'Tentativo di riconnessione in corso... Prossimo tentativo fra ' + (retryDelay/1000) + 's';
-            // programma il prossimo tentativo con backoff esponenziale
-            clearTimeout(retryTimer);
-            retryTimer = setTimeout(() => {
-                // aumenta delay per il prossimo tentativo
-                retryDelay = Math.min(maxDelay, retryDelay * 2);
+
+                // Retry manuale
+                document.getElementById("offlineRetry").addEventListener("click", () => {
+                    retryDelay = 2000;
+                    clearTimeout(retryTimer);
+                    doPing();
+                });
+
+                // Controllo iniziale e poi controllo periodico (se online)
                 doPing();
-            }, retryDelay);
-            return false;
-        }
+                setInterval(() => {
+                    if (!isOffline) doPing();
+                }, 10000);
+            })();
 
-        // Retry manuale
-        document.getElementById('offlineRetry').addEventListener('click', () => {
-            retryDelay = 2000;
-            clearTimeout(retryTimer);
-            doPing();
-        });
-
-        // Controllo iniziale e poi controllo periodico (se online)
-        doPing();
-        setInterval(() => {
-            if (!isOffline) doPing();
-        }, 10000);
-    })();
-
-    // service worker per la cache in offline (usa la route /sw fornita dal server)
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw')
-        .then(() => console.log('Service worker registrato'))
-        .catch(err => console.error('Errore registrazione service worker:', err));
-    }
-    
-    // download per ios
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.webkit?.messageHandlers?.downloadAction) {
-                document.querySelectorAll('.ios').forEach(el => {
-                    el.style.setProperty('display', 'flex', 'important');
-                });
+            // service worker per la cache in offline (usa la route /sw fornita dal server)
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker
+                    .register("/sw")
+                    .then(() => console.log("Service worker registrato"))
+                    .catch(err => console.error("Errore registrazione service worker:", err));
             }
-        });
 
-        let songsToDownload = 0;
-        let downloadedCount = 0;
+            // download per ios
+            document.addEventListener("DOMContentLoaded", function () {
+                if (window.webkit?.messageHandlers?.downloadAction) {
+                    document.querySelectorAll(".ios").forEach(el => {
+                        el.style.setProperty("display", "flex", "important");
+                    });
+                }
+            });
 
-        // Ascolta il messaggio di conferma da iOS
-        window.addEventListener('downloadFinished', (event) => {
-            downloadedCount++;
-            console.log(`Scaricato: ${event.detail.name} (${downloadedCount}/${songsToDownload})`);
-            
-            // Se vuoi aggiornare un badge globale o una barra di progresso, fallo qui
-            const globalBadge = document.getElementById('global-sync-badge');
-            if (globalBadge) globalBadge.textContent = `${downloadedCount}/${songsToDownload}`;
+            let songsToDownload = 0;
+            let downloadedCount = 0;
 
-            if (downloadedCount >= songsToDownload && songsToDownload > 0) {
-                alert("✅ Tutti i file sono stati scaricati e salvati sull'iPad!");
-                songsToDownload = 0;
+            // Ascolta il messaggio di conferma da iOS
+            window.addEventListener("downloadFinished", event => {
+                downloadedCount++;
+                console.log(`Scaricato: ${event.detail.name} (${downloadedCount}/${songsToDownload})`);
+
+                // Se vuoi aggiornare un badge globale o una barra di progresso, fallo qui
+                const globalBadge = document.getElementById("global-sync-badge");
+                if (globalBadge) globalBadge.textContent = `${downloadedCount}/${songsToDownload}`;
+
+                if (downloadedCount >= songsToDownload && songsToDownload > 0) {
+                    alert("✅ Tutti i file sono stati scaricati e salvati sull'iPad!");
+                    songsToDownload = 0;
+                    downloadedCount = 0;
+                }
+            });
+
+            async function syncFolder(folderName) {
+                const folderSongs = playlist.filter(item => item.folder === folderName);
+                if (folderSongs.length === 0) return;
+
+                if (!confirm(`Sincronizzare ${folderSongs.length} brani?`)) return;
+
+                songsToDownload = folderSongs.length;
                 downloadedCount = 0;
+
+                const baseUrl = window.location.origin;
+
+                // Mostriamo un indicatore di caricamento
+                document.body.style.cursor = "wait";
+
+                for (const item of folderSongs) {
+                    const songUrl = new URL(
+                        "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1"
+                            .replace("FOLDER", encodeURIComponent(item.folder))
+                            .replace("SONG", encodeURIComponent(item.song)),
+                        baseUrl,
+                    ).href;
+
+                    const imageUrl = new URL(
+                        "{{ url_for('img', folder='FOLDER', filename='SONG') }}"
+                            .replace("FOLDER", encodeURIComponent(item.folder))
+                            .replace("SONG", encodeURIComponent(item.song)),
+                        baseUrl,
+                    ).href;
+
+                    window.webkit.messageHandlers.downloadAction.postMessage({
+                        song: songUrl,
+                        image: imageUrl,
+                    });
+
+                    await new Promise(r => setTimeout(r, 100));
+                }
+
+                document.body.style.cursor = "default";
+                // NON mettiamo l'alert qui, perché iOS sta ancora lavorando!
+                console.log("Richieste inviate, in attesa dei download reali...");
             }
-        });
 
-        async function syncFolder(folderName) {
-            const folderSongs = playlist.filter(item => item.folder === folderName);
-            if (folderSongs.length === 0) return;
+            function downloadIos() {
+                const source = randomFolderPlaylist || playlist;
+                const { folder, song } = source[currentIndex];
 
-            if (!confirm(`Sincronizzare ${folderSongs.length} brani?`)) return;
+                // Otteniamo l'indirizzo base del server (es. http://192.168.1.5:5000)
+                const baseUrl = window.location.origin;
 
-            songsToDownload = folderSongs.length;
-            downloadedCount = 0;
+                const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1")
+                    .replace("FOLDER", encodeURIComponent(folder))
+                    .replace("SONG", encodeURIComponent(song));
 
-            const baseUrl = window.location.origin;
-            
-            // Mostriamo un indicatore di caricamento
-            document.body.style.cursor = 'wait';
+                const imageUrl = (baseUrl + "{{ url_for('img', folder='FOLDER', filename='SONG') }}")
+                    .replace("FOLDER", encodeURIComponent(folder))
+                    .replace("SONG", encodeURIComponent(song));
 
-            for (const item of folderSongs) {
-                const songUrl = new URL("{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1"
-                    .replace('FOLDER', encodeURIComponent(item.folder))
-                    .replace('SONG', encodeURIComponent(item.song)), baseUrl).href;
-
-                const imageUrl = new URL("{{ url_for('img', folder='FOLDER', filename='SONG') }}"
-                    .replace('FOLDER', encodeURIComponent(item.folder))
-                    .replace('SONG', encodeURIComponent(item.song)), baseUrl).href;
-
-                window.webkit.messageHandlers.downloadAction.postMessage({
+                const data = {
                     song: songUrl,
-                    image: imageUrl
-                });
+                    image: imageUrl,
+                };
 
-                await new Promise(r => setTimeout(r, 100));
+                if (window.webkit?.messageHandlers?.downloadAction) {
+                    window.webkit.messageHandlers.downloadAction.postMessage(data);
+                } else {
+                    alert("Funzione non supportata su questo dispositivo.");
+                }
             }
-            
-            document.body.style.cursor = 'default';
-            // NON mettiamo l'alert qui, perché iOS sta ancora lavorando!
-            console.log("Richieste inviate, in attesa dei download reali...");
-        }
-        
-        function downloadIos() {
-            const source = randomFolderPlaylist || playlist;
-            const { folder, song } = source[currentIndex];
+        </script>
 
-            // Otteniamo l'indirizzo base del server (es. http://192.168.1.5:5000)
-            const baseUrl = window.location.origin;
-
-            const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1")
-                .replace('FOLDER', encodeURIComponent(folder))
-                .replace('SONG', encodeURIComponent(song));
-
-            const imageUrl = (baseUrl + "{{ url_for('img', folder='FOLDER', filename='SONG') }}")
-                .replace('FOLDER', encodeURIComponent(folder))
-                .replace('SONG', encodeURIComponent(song));
-
-            const data = {
-                song: songUrl,
-                image: imageUrl
-            };
-
-            if (window.webkit?.messageHandlers?.downloadAction) {
-                window.webkit.messageHandlers.downloadAction.postMessage(data);
-            } else {
-                alert("Funzione non supportata su questo dispositivo.");
-            }
-        }
-    </script>
-
-    <!-- tasto destro -->
-    <div id="customContextMenu">
-        <div onclick="handleDelete(); document.getElementById('customContextMenu').style.display='none';">Elimina</div>
-        <div onclick="handleInfo(); document.getElementById('customContextMenu').style.display='none';">Info</div>
-    </div>
-    <script>
-        // Tasto destro
+        <!-- tasto destro -->
+        <div id="customContextMenu">
+            <div
+                onclick="
+                    handleDelete();
+                    document.getElementById('customContextMenu').style.display = 'none';
+                "
+            >
+                Elimina
+            </div>
+            <div
+                onclick="
+                    handleInfo();
+                    document.getElementById('customContextMenu').style.display = 'none';
+                "
+            >
+                Info
+            </div>
+        </div>
+        <script>
+            // Tasto destro
             let clickedElement = null;
-            document.addEventListener('contextmenu', function(e) {
+            document.addEventListener("contextmenu", function (e) {
                 e.preventDefault();
-                
-                const contextMenu = document.getElementById('customContextMenu');
+
+                const contextMenu = document.getElementById("customContextMenu");
                 clickedElement = e.target;
-                
+
                 // Risali fino a trovare un button con classe 'song'
-                const songButton = clickedElement.closest('button.song');
+                const songButton = clickedElement.closest("button.song");
                 if (songButton) {
                     clickedElement = songButton;
                 }
-                
-                if (!clickedElement.classList.contains('song')) {
+
+                if (!clickedElement.classList.contains("song")) {
                     // Se non è una canzone, non mostrare il menu
                     return;
                 }
 
-                contextMenu.style.display = 'block';
-                contextMenu.style.left = e.clientX + 'px';
-                contextMenu.style.top = e.clientY + 'px';
-                
+                contextMenu.style.display = "block";
+                contextMenu.style.left = e.clientX + "px";
+                contextMenu.style.top = e.clientY + "px";
+
                 // console.log('Cliccato su:', clickedElement);
             });
 
             function handleDelete() {
-            if (clickedElement) {
-                const songName = clickedElement.textContent.trim();
-                if (confirm('Sei sicuro di voler eliminare: ' + songName)) {
-                    fetch('/delete/'+clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1])
-                    .then(response => {
-                        if (response.ok) {
-                            alert('Canzone eliminata con successo: ' + songName);
-                            // Ricarica la pagina per aggiornare la lista delle canzoni
-                            window.location.reload();
-                        } else {
-                            alert('Errore durante l\'eliminazione della canzone: ' + songName);
-                        }
-                    });
+                if (clickedElement) {
+                    const songName = clickedElement.textContent.trim();
+                    if (confirm("Sei sicuro di voler eliminare: " + songName)) {
+                        fetch("/delete/" + clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1]).then(
+                            response => {
+                                if (response.ok) {
+                                    alert("Canzone eliminata con successo: " + songName);
+                                    // Ricarica la pagina per aggiornare la lista delle canzoni
+                                    window.location.reload();
+                                } else {
+                                    alert("Errore durante l'eliminazione della canzone: " + songName);
+                                }
+                            },
+                        );
+                    }
                 }
-            }}
+            }
 
             function handleInfo() {
                 if (clickedElement) {
                     const songName = clickedElement.textContent.trim();
-                    fetch('/info?song=' + clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1])
-                    .then(response => response.json())
-                    .then(data => {
-                        alert('Titolo: ' + data.info.title + '\nArtista: ' + data.info.artist + '\nAlbum: ' + data.info.album + '\nRiproduzioni: ' + data.plays + (data.is_pref ? '\n❤️ Preferita' : ''));
-                    });
+                    fetch("/info?song=" + clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1])
+                        .then(response => response.json())
+                        .then(data => {
+                            alert(
+                                "Titolo: " +
+                                    data.info.title +
+                                    "\nArtista: " +
+                                    data.info.artist +
+                                    "\nAlbum: " +
+                                    data.info.album +
+                                    "\nRiproduzioni: " +
+                                    data.plays +
+                                    (data.is_pref ? "\n❤️ Preferita" : ""),
+                            );
+                        });
                 }
             }
 
             // Chiudi il menu quando clicchi altrove
-            document.addEventListener('click', function(e) {
-                const contextMenu = document.getElementById('customContextMenu');
-                if (e.target.id !== 'customContextMenu' && !contextMenu.contains(e.target)) {
-                    contextMenu.style.display = 'none';
+            document.addEventListener("click", function (e) {
+                const contextMenu = document.getElementById("customContextMenu");
+                if (e.target.id !== "customContextMenu" && !contextMenu.contains(e.target)) {
+                    contextMenu.style.display = "none";
                 }
             });
 
             // Chiudi il menu quando scorri
-            document.addEventListener('scroll', function() {
-            document.getElementById('customContextMenu').style.display = 'none';
+            document.addEventListener("scroll", function () {
+                document.getElementById("customContextMenu").style.display = "none";
             });
 
             // per mobile
@@ -1007,78 +1132,81 @@
             let touchStartX = 0;
             let touchStartY = 0;
 
-            document.addEventListener('touchstart', function(e) {
+            document.addEventListener("touchstart", function (e) {
                 touchStartTime = Date.now();
                 touchStartX = e.touches[0].clientX;
                 touchStartY = e.touches[0].clientY;
             });
 
-            document.addEventListener('touchend', function(e) {
+            document.addEventListener("touchend", function (e) {
                 const touchDuration = Date.now() - touchStartTime;
                 const touchEndX = e.changedTouches[0].clientX;
                 const touchEndY = e.changedTouches[0].clientY;
-                
+
                 // Se il tocco è durato più di 500ms e non si è mosso molto = long press
-                if (touchDuration > 500 && 
-                    Math.abs(touchEndX - touchStartX) < 10 && 
-                    Math.abs(touchEndY - touchStartY) < 10) {
-                    
-                    const contextMenu = document.getElementById('customContextMenu');
+                if (
+                    touchDuration > 500 &&
+                    Math.abs(touchEndX - touchStartX) < 10 &&
+                    Math.abs(touchEndY - touchStartY) < 10
+                ) {
+                    const contextMenu = document.getElementById("customContextMenu");
                     clickedElement = e.target;
-                    
+
                     // Risali fino a trovare un button con classe 'song'
-                    const songButton = clickedElement.closest('button.song');
+                    const songButton = clickedElement.closest("button.song");
                     if (songButton) {
                         clickedElement = songButton;
                     }
 
-                    if (!clickedElement.classList.contains('song')) {
+                    if (!clickedElement.classList.contains("song")) {
                         // Se non è una canzone, non mostrare il menu
                         return;
                     }
-                    
-                    contextMenu.style.display = 'block';
-                    contextMenu.style.left = touchStartX + 'px';
-                    contextMenu.style.top = touchStartY + 'px';
+
+                    contextMenu.style.display = "block";
+                    contextMenu.style.left = touchStartX + "px";
+                    contextMenu.style.top = touchStartY + "px";
                 }
             });
 
-        // per far scomparire la nav su telefono quando si scrolla
-            const musicPlayer = document.querySelector('.music-player');
+            // per far scomparire la nav su telefono quando si scrolla
+            const musicPlayer = document.querySelector(".music-player");
             let lastScrollY = window.scrollY;
             const DELTA = 20;
 
-            window.addEventListener('scroll', () => {
-                const currentScroll = window.scrollY;
-                const diff = currentScroll - lastScrollY;
+            window.addEventListener(
+                "scroll",
+                () => {
+                    const currentScroll = window.scrollY;
+                    const diff = currentScroll - lastScrollY;
 
-                // 1. Se siamo in cima alla pagina, espandiamo sempre
-                if (currentScroll <= 20) {
-                    musicPlayer.classList.remove('compact');
+                    // 1. Se siamo in cima alla pagina, espandiamo sempre
+                    if (currentScroll <= 20) {
+                        musicPlayer.classList.remove("compact");
+                        lastScrollY = currentScroll;
+                        return;
+                    }
+
+                    // 2. Se lo scroll è minimo, non fare nulla
+                    if (Math.abs(diff) < DELTA) return;
+
+                    if (diff > 0) {
+                        // Scorrendo verso il basso: diventa compatto
+                        musicPlayer.classList.add("compact");
+                    }
                     lastScrollY = currentScroll;
-                    return;
-                }
-
-                // 2. Se lo scroll è minimo, non fare nulla
-                if (Math.abs(diff) < DELTA) return;
-
-                if (diff > 0) {
-                    // Scorrendo verso il basso: diventa compatto
-                    musicPlayer.classList.add('compact');
-                }
-                lastScrollY = currentScroll;
-            }, { passive: true });
+                },
+                { passive: true },
+            );
 
             // Riapre il player al click e "resetta" la posizione di riferimento
-            musicPlayer.addEventListener('click', (event) => {
+            musicPlayer.addEventListener("click", event => {
                 // Se il click NON è avvenuto direttamente sul bordo/sfondo del player, esci
-                if (event.target.closest('.controls')) return;
+                if (event.target.closest(".controls")) return;
 
-                musicPlayer.classList.remove('compact');
+                musicPlayer.classList.remove("compact");
                 lastScrollY = window.scrollY;
             });
-
-    </script>
-
-</body>
+        </script>
+    </body>
 </html>
