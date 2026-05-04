@@ -619,7 +619,7 @@
 
             document.addEventListener("click", function(e) { // chiude il menu a ellisse se clicco fuori
                 const ellipseContainer = document.getElementById("ellipse-container");
-                if (!e.target.closest(".music-player")) {
+                if (!e.target.closest("#ellipse-container")) {
                     ellipseContainer.classList.remove("attivo");
                 }
             });
