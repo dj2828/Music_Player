@@ -24,10 +24,31 @@
                     <div onclick="openMenu()" class="circle">
                         <i class="fa-solid fa-bars"></i>
                     </div>
-                    <div id="divol">
-                        <input type="range" value="100" id="volumeslider" />
-                        <div onclick="vol()" class="circle" id="volume">
-                            <i class="fa-solid fa-volume-low"></i>
+                    <div id="ellipse-container" style="display: flex">
+                        <div id="subcontainer-ellipse">
+                            <div id="divol">
+                                <input type="range" value="100" id="volumeslider" />
+                                <div onclick="vol()" class="circle" id="volume">
+                                    <i class="fa-solid fa-volume-low"></i>
+                                </div>
+                            </div>
+                            <div onclick="handleInfo(true)" class="circle">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </div>
+                            <div onclick="togglePref()" class="circle">
+                                <i id="prefIcon" class="fa-regular fa-heart"></i>
+                            </div>
+                        </div>
+                        <div
+                            id="ellipse-button"
+                            style="flex-direction: column"
+                            class="circle"
+                            onclick="document.getElementById('ellipse-container').classList.toggle('attivo')"
+                        >
+                            <!-- rotate è perchè non ho voglia di girarlo a mano -->
+                            <div class="ellipse-palla"></div>
+                            <div class="ellipse-palla"></div>
+                            <div class="ellipse-palla"></div>
                         </div>
                     </div>
                 </nav>
@@ -40,9 +61,6 @@
                 <input type="range" value="0" id="progress" />
 
                 <div class="controls">
-                    <div onclick="togglePref()" style="display: none">
-                        <i id="prefIcon" class="fa-regular fa-heart"></i>
-                    </div>
                     <div onclick="prevSong()" class="circle"><i class="fa-solid fa-backward"></i></div>
                     <div onclick="togglePlay()" class="circle"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
                     <div onclick="nextSong()" class="circle"><i class="fa-solid fa-forward"></i></div>
@@ -789,33 +807,32 @@
             function opendownModal() {
                 document.getElementById("downloadModal").style.display = "flex";
             }
-            function openlyricsModal() {
-                document.getElementById("lyricsModal").classList.remove("chords");
-                document.getElementById("lyricsModal").style.display = "flex";
-                let lyrics = document.getElementById("iframe-lirics");
-
+            function getCurrentSongPath() {
                 const folder = randomFolderPlaylist
                     ? randomFolderPlaylist[currentIndex].folder
                     : playlist[currentIndex].folder;
                 const song = randomFolderPlaylist
                     ? randomFolderPlaylist[currentIndex].song
                     : playlist[currentIndex].song;
+                return folder + '/' + song;
+            }
+            function openlyricsModal() {
+                document.getElementById("lyricsModal").classList.remove("chords");
+                document.getElementById("lyricsModal").style.display = "flex";
+                let lyrics = document.getElementById("iframe-lirics");
 
-                lyrics.src = "lyrics?folder=" + encodeURIComponent(folder) + "&filename=" + encodeURIComponent(song);
+                const songPath = getCurrentSongPath();
+
+                lyrics.src = "lyrics?path=" + encodeURIComponent(songPath);
             }
             function openChordsModal() {
                 document.getElementById("lyricsModal").classList.add("chords");
                 document.getElementById("lyricsModal").style.display = "flex";
                 let lyrics = document.getElementById("iframe-lirics");
 
-                const folder = randomFolderPlaylist
-                    ? randomFolderPlaylist[currentIndex].folder
-                    : playlist[currentIndex].folder;
-                const song = randomFolderPlaylist
-                    ? randomFolderPlaylist[currentIndex].song
-                    : playlist[currentIndex].song;
+                const songPath = getCurrentSongPath();
 
-                lyrics.src = "chords?song=" + encodeURIComponent(song);
+                lyrics.src = "chords?path=" + encodeURIComponent(songPath);
             }
             function openSettingsModal() {
                 document.getElementById("settingsModal").style.display = "flex";
@@ -859,9 +876,9 @@
             const offlinePopupHtml = `
     <div id="offlinePopup" style="display:none; position:fixed; z-index:3000; left:0; top:0; width:100vw; height:100vh; align-items:center; justify-content:center; background:rgba(0,0,0,0.5);">
         <div style="background:#222; color:#fff; padding:20px; border-radius:8px; min-width:300px; text-align:center;">
-            <h3 id="offlineTitle">Server non raggiungibile</h3>
-            <p id="offlineMsg">Sto tentando di riconnettere...</p>
-            <button id="offlineRetry" class="song" style="margin-top:12px;">Riprova ora</button>
+            <h3 id="offlineTitle" style="margin-bottom: 6px;">Server non raggiungibile</h3>
+            <p id="offlineMsg" style="margin-top: 6px;">Sto tentando di riconnettere...</p>
+            <button id="offlineRetry" class="button" style="margin-top:12px;">Riprova ora</button>
         </div>
     </div>`;
             document.body.insertAdjacentHTML("beforeend", offlinePopupHtml);
@@ -1093,26 +1110,29 @@
                 }
             }
 
-            function handleInfo() {
-                if (clickedElement) {
-                    const songName = clickedElement.textContent.trim();
-                    fetch("/info?song=" + clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1])
-                        .then(response => response.json())
-                        .then(data => {
-                            alert(
-                                "Titolo: " +
-                                    data.info.title +
-                                    "\nArtista: " +
-                                    data.info.artist +
-                                    "\nAlbum: " +
-                                    data.info.album +
-                                    "\nRiproduzioni: " +
-                                    data.plays +
-                                    (data.is_pref ? "\n❤️ Preferita" : ""),
-                            );
-                        });
+            function handleInfo(canz_attuale = false) {
+                let songName;
+                if (canz_attuale)
+                    songName = getCurrentSongPath();
+                else
+                    songName = clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1];
+
+                fetch("/info?song=" + encodeURIComponent(songName))
+                    .then(response => response.json())
+                    .then(data => {
+                        alert(
+                            "Titolo: " +
+                                data.info.title +
+                                "\nArtista: " +
+                                data.info.artist +
+                                "\nAlbum: " +
+                                data.info.album +
+                                "\nRiproduzioni: " +
+                                data.plays +
+                                (data.is_pref ? "\n❤️ Preferita" : ""),
+                        );
+                    });
                 }
-            }
 
             // Chiudi il menu quando clicchi altrove
             document.addEventListener("click", function (e) {
@@ -1193,6 +1213,7 @@
                     if (diff > 0) {
                         // Scorrendo verso il basso: diventa compatto
                         musicPlayer.classList.add("compact");
+                        document.getElementById("ellipse-container").classList.remove("attivo"); // chiudi freaky menu se aperto
                     }
                     lastScrollY = currentScroll;
                 },
