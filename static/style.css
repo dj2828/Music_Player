@@ -391,18 +391,22 @@ nav {
     border-radius: 50%;
     transform: translateY(0);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition-delay: 0.15s;
     margin-bottom: 1px;
 }
 .ellipse-palla:last-child {
     margin-bottom: 0;
 }
 #ellipse-container.attivo .ellipse-palla:nth-child(1) {
+    transition-delay: 0.15s;
     transform: translateX(-2px);
 }
 #ellipse-container.attivo .ellipse-palla:nth-child(2) {
+    transition-delay: 0.15s;
     transform: translateX(4px);
 }
 #ellipse-container.attivo .ellipse-palla:nth-child(3) {
+    transition-delay: 0.15s;
     transform: translateX(-2px);
 }
 #ellipse-container.attivo #ellipse-button {

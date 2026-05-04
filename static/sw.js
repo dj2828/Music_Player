@@ -11,20 +11,20 @@ self.addEventListener("activate", e => {
 });
 
 // Aggiunta della gestione a runtime (opzionale ma consigliata per le risorse esterne)
-// self.addEventListener("fetch", e => {
-//     e.respondWith(
-//         caches.match(e.request).then(response => {
-//             // Se la risorsa è nella cache, restituiscila
-//             if (response) {
-//                 return response;
-//             }
+self.addEventListener("fetch", e => {
+    e.respondWith(
+        caches.match(e.request).then(response => {
+            // Se la risorsa è nella cache, restituiscila
+            if (response) {
+                return response;
+            }
 
-//             // Altrimenti, scaricala dalla rete
-//             return fetch(e.request).then(networkResponse => {
-//                 // Non cachiamo le risorse esterne (es. kit.fontawesome.com o fonts.googleapis.com)
-//                 // per evitare errori CORS, a meno che non si tratti di una strategia avanzata.
-//                 return networkResponse;
-//             });
-//         }),
-//     );
-// });
+            // Altrimenti, scaricala dalla rete
+            return fetch(e.request).then(networkResponse => {
+                // Non cachiamo le risorse esterne (es. kit.fontawesome.com o fonts.googleapis.com)
+                // per evitare errori CORS, a meno che non si tratti di una strategia avanzata.
+                return networkResponse;
+            });
+        }),
+    );
+});
