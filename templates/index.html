@@ -616,6 +616,13 @@
                         }
                     })
                 }
+
+            document.addEventListener("click", function(e) { // chiude il menu a ellisse se clicco fuori
+                const ellipseContainer = document.getElementById("ellipse-container");
+                if (!e.target.closest(".music-player")) {
+                    ellipseContainer.classList.remove("attivo");
+                }
+            });
         </script>
 
         <div
