@@ -681,7 +681,7 @@
                 <div onclick="downloadIos()" class="circle ios">
                     <i class="fa-solid fa-download"></i>
                 </div>
-                <div onclick="window.location.reload()" class="circle">
+                <div onclick="svuotaCacheSW()" class="circle">
                     <i class="fa-solid fa-rotate-right"></i>
                 </div>
             </div>
@@ -752,6 +752,22 @@
         </div>
 
         <script>
+            async function svuotaCacheSW() {
+                if ('caches' in window) {
+                    // Ottieni tutti i nomi delle cache
+                    const cacheNames = await caches.keys();
+                    // Elimina ogni cache trovata
+                    await Promise.all(
+                        cacheNames.map(name => caches.delete(name))
+                    );
+                    console.log('Tutte le cache sono state eliminate.');
+                    
+                    // Ricarica la pagina per applicare le modifiche
+                    window.location.reload();
+                } else {
+                    console.warn('Le Cache API non sono supportate in questo browser.');
+                }
+            }
             async function downloadYT(url = null) {
                 if (url === null) url = document.getElementById("yt_url").value;
                 const msgDiv = document.getElementById("downloadMsg");
