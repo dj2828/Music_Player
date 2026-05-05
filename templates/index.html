@@ -845,14 +845,14 @@
                 document.getElementById("lyricsModal").style.display = "flex";
                 let lyrics = document.getElementById("iframe-lirics");
 
-                lyrics.src = "lyrics?path=" + getCurrentSongPath(); // no encodeURIComponent pk è salvato nel json senza encoding
+                lyrics.src = "lyrics?path=" + encodeURIComponent(getCurrentSongPath());
             }
             function openChordsModal() {
                 document.getElementById("lyricsModal").classList.add("chords");
                 document.getElementById("lyricsModal").style.display = "flex";
                 let lyrics = document.getElementById("iframe-lirics");
 
-                lyrics.src = "chords?song=" + getCurrentSongPath(true); // no encodeURIComponent pk è salvato nel json senza encoding
+                lyrics.src = "chords?song=" + encodeURIComponent(getCurrentSongPath(true));
             }
             function openSettingsModal() {
                 document.getElementById("settingsModal").style.display = "flex";
