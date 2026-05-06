@@ -55,7 +55,7 @@
                 <h1 id="titolo">TITOLO</h1>
                 <p id="cartella" style="font-weight: normal">CARTELLA</p>
 
-                <div id="image-container" class="cover404"><img src="" id="cover" /></div>
+                <div id="cover-container" class="cover404"><img src="" id="cover" /></div>
 
                 <audio id="audioPlayer"></audio>
                 <input type="range" value="0" id="progress" />
@@ -114,7 +114,7 @@
                             fetchpriority="low"
                             onerror="
                                 this.onerror = null;
-                                this.classList.add('cover404');
+                                this.style.display = 'none';
                             "
                         />
                         {% endif %}
@@ -323,18 +323,16 @@
                 // immagine
                 let objectUrl = null;
                 const immagine = document.getElementById('cover');
-                const image_container = document.getElementById('image-container');
+                const image_container = document.getElementById('cover-container');
                 let img = `/img/${encodeURIComponent(folder)}/${encodeURIComponent(song)}`;
                 fetch(img)
                 .then(response => {
                     if (!response.ok) {
-                        image_container.classList.remove('cover');
                         image_container.classList.add('cover404');
                         return null;
                     }
 
                     image_container.classList.remove('cover404');
-                    image_container.classList.add('cover');
                     return response.blob();
                 })
                 .then(blob => {
@@ -681,7 +679,7 @@
                 <div onclick="downloadIos()" class="circle ios">
                     <i class="fa-solid fa-download"></i>
                 </div>
-                <div onclick="svuotaCacheSW()" class="circle">
+                <div onclick="window.location.reload()" class="circle">
                     <i class="fa-solid fa-rotate-right"></i>
                 </div>
             </div>
@@ -752,22 +750,6 @@
         </div>
 
         <script>
-            async function svuotaCacheSW() {
-                if ('caches' in window) {
-                    // Ottieni tutti i nomi delle cache
-                    const cacheNames = await caches.keys();
-                    // Elimina ogni cache trovata
-                    await Promise.all(
-                        cacheNames.map(name => caches.delete(name))
-                    );
-                    console.log('Tutte le cache sono state eliminate.');
-                    
-                    // Ricarica la pagina per applicare le modifiche
-                    window.location.reload();
-                } else {
-                    console.warn('Le Cache API non sono supportate in questo browser.');
-                }
-            }
             async function downloadYT(url = null) {
                 if (url === null) url = document.getElementById("yt_url").value;
                 const msgDiv = document.getElementById("downloadMsg");
