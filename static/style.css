@@ -283,6 +283,7 @@ nav {
     height: 100vh;
     align-items: center;
     justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
 }
 .modal {
     background: #ff5500;
@@ -401,6 +402,12 @@ nav {
 }
 
 /* ellipse */
+#ellipse-container{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 1;
+}
 .ellipse-palla {
     width: 3px;
     height: 3px;
@@ -410,43 +417,47 @@ nav {
     transform: translateY(0);
     transition: transform 0.3s var(--curva-animazione);
     transition-delay: 0.15s;
-    margin-bottom: 1px;
+    margin-right: 1px;
 }
 .ellipse-palla:last-child {
-    margin-bottom: 0;
+    margin-right: 0;
 }
 #ellipse-container.attivo .ellipse-palla:nth-child(1) {
-    transition-delay: 0.15s;
-    transform: translateX(-2px);
+    transition-delay: 0s;
+    transform: translateY(2px);
 }
 #ellipse-container.attivo .ellipse-palla:nth-child(2) {
-    transition-delay: 0.15s;
-    transform: translateX(4px);
+    transition-delay: 0s;
+    transform: translateY(-4px);
 }
 #ellipse-container.attivo .ellipse-palla:nth-child(3) {
-    transition-delay: 0.15s;
-    transform: translateX(-2px);
+    transition-delay: 0s;
+    transform: translateY(2px);
 }
 #ellipse-container.attivo #ellipse-button {
     transform: scale(var(--button-scale));
 }
 #subcontainer-ellipse {
     display: flex;
-    margin-right: 15px;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 15px;
     gap: 10px;
     opacity: 0;
     transition:
         transform 0.3s var(--curva-animazione),
         opacity 0.2s,
         clip-path 0.3s var(--curva-animazione);
-    transform: translateX(50px);
-    clip-path: inset(-20px -20px -20px 100%); /* nascosto da sinistra */
+    transform: translateY(-50px);
+    clip-path: inset(-20px -20px 100% -20px); /* nascosto da sinistra */
     pointer-events: none;
+    position: Absolute;
+    margin-top: 55px;
 }
 #ellipse-container.attivo #subcontainer-ellipse {
     opacity: 1;
-    transform: translateX(0);
-    clip-path: inset(-20px -20px -20px 0); /* margine negativo per far passare l'ombra */
+    transform: translateY(0);
+    clip-path: inset(-20px -20px -20px -20px); /* margine negativo per far passare l'ombra */
     pointer-events: auto;
 }
 
@@ -600,11 +611,5 @@ nav {
     }
     #menu > div {
         gap: 25px;
-    }
-    #divol {
-        display: none; /* Nascondiamo il controllo del volume su schermi piccoli perchè non ci sta */
-    }
-    #subcontainer-ellipse {
-        padding-left: 15px; /* aggiungeto per evitare che l'ombra venga tagliata, visto che togli divol */
     }
 }

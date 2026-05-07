@@ -24,7 +24,17 @@
                     <div onclick="openMenu()" class="circle">
                         <i class="fa-solid fa-bars"></i>
                     </div>
-                    <div id="ellipse-container" style="display: flex">
+                    <div id="ellipse-container">
+                        <div
+                            id="ellipse-button"
+                            class="circle"
+                            style="z-index: 1;"
+                            onclick="document.getElementById('ellipse-container').classList.toggle('attivo')"
+                        >
+                            <div class="ellipse-palla"></div>
+                            <div class="ellipse-palla"></div>
+                            <div class="ellipse-palla"></div>
+                        </div>
                         <div id="subcontainer-ellipse">
                             <div id="divol">
                                 <input type="range" value="100" id="volumeslider" />
@@ -32,23 +42,18 @@
                                     <i class="fa-solid fa-volume-low"></i>
                                 </div>
                             </div>
-                            <div onclick="handleInfo(true)" class="circle">
-                                <i class="fa-solid fa-circle-info"></i>
+                            <div onclick="openlyricsModal()" class="circle">
+                                <i class="fa-solid fa-file"></i>
+                            </div>
+                            <div onclick="openChordsModal()" class="circle">
+                                <i class="fa-solid fa-guitar"></i>
                             </div>
                             <div onclick="togglePref()" class="circle">
                                 <i id="prefIcon" class="fa-regular fa-heart"></i>
                             </div>
-                        </div>
-                        <div
-                            id="ellipse-button"
-                            style="flex-direction: column"
-                            class="circle"
-                            onclick="document.getElementById('ellipse-container').classList.toggle('attivo')"
-                        >
-                            <!-- rotate è perchè non ho voglia di girarlo a mano -->
-                            <div class="ellipse-palla"></div>
-                            <div class="ellipse-palla"></div>
-                            <div class="ellipse-palla"></div>
+                            <div onclick="handleInfo(true)" class="circle">
+                                <i class="fa-solid fa-circle-info"></i>
+                            </div>
                         </div>
                     </div>
                 </nav>
@@ -645,12 +650,6 @@
                 <div onclick="opendownModal()" class="circle">
                     <i class="fa-solid fa-download"></i>
                 </div>
-                <div onclick="openlyricsModal()" class="circle">
-                    <i class="fa-solid fa-file"></i>
-                </div>
-                <div onclick="openChordsModal()" class="circle">
-                    <i class="fa-solid fa-guitar"></i>
-                </div>
                 <div
                     onclick="
                         if (googleHome) {
@@ -685,7 +684,7 @@
             </div>
         </div>
 
-        <div id="downloadModal" class="modal-sotto">
+        <div id="downloadModal" class="modal-sotto" style="background: none;">
             <div class="modal">
                 <button onclick="closeModal()" id="closeModal" class="circle">
                     <i class="fa-solid fa-times"></i>
@@ -820,7 +819,7 @@
                     ? randomFolderPlaylist[currentIndex].song
                     : playlist[currentIndex].song;
                 if (soloSong) return song; // per chords
-                return folder + '/' + song;
+                return folder + "/" + song;
             }
             function openlyricsModal() {
                 document.getElementById("lyricsModal").classList.remove("chords");
@@ -1114,10 +1113,8 @@
 
             function handleInfo(canz_attuale = false) {
                 let songName;
-                if (canz_attuale)
-                    songName = getCurrentSongPath();
-                else
-                    songName = clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1];
+                if (canz_attuale) songName = getCurrentSongPath();
+                else songName = clickedElement.onclick.toString().match(/playSong\("([^"]+)"\)/)[1];
 
                 fetch("/info?song=" + encodeURIComponent(songName))
                     .then(response => response.json())
@@ -1134,7 +1131,7 @@
                                 (data.is_pref ? "\n❤️ Preferita" : ""),
                         );
                     });
-                }
+            }
 
             // Chiudi il menu quando clicchi altrove
             document.addEventListener("click", function (e) {
