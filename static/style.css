@@ -482,16 +482,10 @@ nav {
     .circle:active {
         transform: scale(var(--button-scale));
     }
-    .controls div:hover {
-        transform: scale(1);
-    }
-    .controls div:active {
-        transform: scale(var(--button-scale));
-    }
-    .controls div:nth-child(3):hover {
+    .controls div:nth-child(2):hover {
         transform: scale(1.5);
     }
-    .controls div:nth-child(3):active {
+    .controls div:nth-child(2):active {
         transform: scale(1.7);
     }
     .button:hover {
