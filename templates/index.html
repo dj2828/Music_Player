@@ -51,7 +51,7 @@
                             <div onclick="togglePref()" class="circle">
                                 <i id="prefIcon" class="fa-regular fa-heart"></i>
                             </div>
-                            <div onclick="handleInfo(true)" class="circle">
+                            <div onclick="document.getElementById('ellipse-container').classList.remove('attivo'); handleInfo(true)" class="circle">
                                 <i class="fa-solid fa-circle-info"></i>
                             </div>
                         </div>
@@ -822,6 +822,7 @@
                 return folder + "/" + song;
             }
             function openlyricsModal() {
+                document.getElementById("ellipse-container").classList.remove("attivo");
                 document.getElementById("lyricsModal").classList.remove("chords");
                 document.getElementById("lyricsModal").style.display = "flex";
                 let lyrics = document.getElementById("iframe-lirics");
@@ -829,6 +830,7 @@
                 lyrics.src = "lyrics?path=" + encodeURIComponent(getCurrentSongPath());
             }
             function openChordsModal() {
+                document.getElementById("ellipse-container").classList.remove("attivo");
                 document.getElementById("lyricsModal").classList.add("chords");
                 document.getElementById("lyricsModal").style.display = "flex";
                 let lyrics = document.getElementById("iframe-lirics");
