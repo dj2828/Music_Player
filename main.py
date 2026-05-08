@@ -8,7 +8,7 @@ from mutagen.id3 import ID3, APIC
 import lib
 
 app = Flask(__name__)
-app.secret_key = os.urandom(32)
+app.secret_key = "S4Ss0"
 
 Compress(app) # per comprimere le risposte e velocizzare il caricamento, (html, css)
 
