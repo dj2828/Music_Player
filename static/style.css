@@ -181,6 +181,7 @@ nav {
 .button.song {
     display: flex;
     align-items: center;
+    height: 52px; /* per tenere quelli senza immagine alla stessa altezza di quelli con le immagini (numero preso da ispeziona)*/
 }
 
 #divol {
