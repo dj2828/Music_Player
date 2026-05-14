@@ -183,7 +183,7 @@ nav {
 .button.song {
     display: flex;
     align-items: center;
-    height: 52px; /* per tenere quelli senza immagine alla stessa altezza di quelli con le immagini (numero preso da ispeziona)*/
+    min-height: 52px; /* per tenere quelli senza immagine alla stessa altezza di quelli con le immagini (numero preso da ispeziona)*/
 }
 
 #divol {
@@ -601,7 +601,7 @@ nav {
         font-size: 20px; /* ≈ 16px */
     }
     nav {
-        margin-bottom: -0px;
+        margin-bottom: 10px;
     }
     #progress {
         margin: 10px -5px;
