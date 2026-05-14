@@ -787,7 +787,12 @@
                         body: "yt_url=" + encodeURIComponent(url),
                     });
                     const status = response.status;
-                    if (status === 200) window.location.reload();
+                    if (status === 200){
+                        const data = await response.json();
+                        alert(data.url);
+                        localStorage.setItem('lastMp3Url', data.url);
+                        window.location.reload();
+                    } 
                     else if (status === 500) {
                         msgDiv.textContent = "Errore durante il download.";
                         msgDiv.style.color = "blue";

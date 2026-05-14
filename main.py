@@ -114,8 +114,8 @@ def errore():
 
 @app.route('/down', methods=['POST'])
 def download():
-    if lib.down(request.form.get('yt_url'), YT_FOLDER):
-        return redirect(url_for('index'))
+    if nome := lib.down(request.form.get('yt_url'), YT_FOLDER):
+        return jsonify({"url": url_for('music', folder="YouTube", filename=nome)}), 200
     else:
         return jsonify({"status": "error"}), 500
     

@@ -71,33 +71,39 @@ def getSimileCanz(data, songs_by_folder):
     return canz[0].replace('[', '').replace(']', '')
 
 def down(url, MUSIC_FOLDER):
+    downloaded_file = {}
+
+    def pp_hook(d):
+        if d['status'] == 'finished':
+            downloaded_file['path'] = d['info_dict'].get('filepath') or d.get('filename')
+
     ydl_opts = {
-            'format': 'bestaudio/best',
-            'outtmpl': os.path.join(MUSIC_FOLDER, '%(title)s.%(ext)s'),
-            'writethumbnail': True,
-            'postprocessors': [
-                {  # Converti audio in mp3
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '192',
-                },
-                {  # Converte la thumbnail in jpg
-                    'key': 'FFmpegThumbnailsConvertor',
-                    'format': 'png',
-                },
-                {  # Inserisce la copertina nel file MP3
-                    'key': 'EmbedThumbnail',
-                }]
-            # per i cockie
-            # ,"cookies-from-browser": "chrome"
+        'format': 'bestaudio/best',
+        'outtmpl': os.path.join(MUSIC_FOLDER, '%(title)s.%(ext)s'),
+        'writethumbnail': True,
+        'postprocessor_hooks': [pp_hook],
+        'postprocessors': [
+            {
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            },
+            {
+                'key': 'FFmpegThumbnailsConvertor',
+                'format': 'png',
+            },
+            {
+                'key': 'EmbedThumbnail',
             }
+        ]
+    }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
-        return True
+        return os.path.basename(downloaded_file.get('path')) # ritorna il nome del file
     except Exception as e:
         print("Errore durante il download:", e)
-        return False
+        return None
 
 def search_videos(query, max_results=5):
     """
