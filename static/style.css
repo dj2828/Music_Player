@@ -71,12 +71,14 @@ nav {
     margin-bottom: 10px;
     height: 255px;
     clip-path: inset(0 -10px -15px -10px);
+    opacity: 1;
     transition: all 0.2s var(--curva-animazione);
 }
 #cover-container.cover404 {
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     height: 0 !important;
+    opacity: 0;
     clip-path: inset(50% 0 50% 0);
 }
 #cover-container img {
