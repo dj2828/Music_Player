@@ -526,10 +526,11 @@ def imgBadQuality(folder, img, max_width=100, output_format="webp"):
 def imgResized(path, max_width=640):
     from PIL import Image
 
-    image = Image.open(path)
+    if os.path.exists(path):
+        image = Image.open(path)
 
-    if image.width > max_width:
-        ratio = max_width / image.width
-        new_size = (max_width, int(image.height * ratio))
-        image = image.resize(new_size, Image.LANCZOS)
-        image.save(path, optimize=True)
+        if image.width > max_width:
+            ratio = max_width / image.width
+            new_size = (max_width, int(image.height * ratio))
+            image = image.resize(new_size, Image.LANCZOS)
+            image.save(path, optimize=True)
