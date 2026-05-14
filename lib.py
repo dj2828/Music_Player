@@ -527,5 +527,3 @@ def imgResized(path, max_width=640):
         new_size = (max_width, int(image.height * ratio))
         image = image.resize(new_size, Image.LANCZOS)
         image.save(path, optimize=True)
-
-    return folder, new_filename
