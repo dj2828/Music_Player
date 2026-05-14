@@ -28,7 +28,7 @@
                         <div
                             id="ellipse-button"
                             class="circle"
-                            style="z-index: 1;"
+                            style="z-index: 1"
                             onclick="document.getElementById('ellipse-container').classList.toggle('attivo')"
                         >
                             <div class="ellipse-palla"></div>
@@ -51,7 +51,13 @@
                             <div onclick="togglePref()" class="circle">
                                 <i id="prefIcon" class="fa-regular fa-heart"></i>
                             </div>
-                            <div onclick="document.getElementById('ellipse-container').classList.remove('attivo'); handleInfo(true)" class="circle">
+                            <div
+                                onclick="
+                                    document.getElementById('ellipse-container').classList.remove('attivo');
+                                    handleInfo(true);
+                                "
+                                class="circle"
+                            >
                                 <i class="fa-solid fa-circle-info"></i>
                             </div>
                         </div>
@@ -114,8 +120,9 @@
                         <!-- TODO: migliore handler per immagini degli album -->
                         {% if album_name != 'Brani Singoli' %}
                         <img
-                            src="img/album/{{ album_name }}"
-                            style="width: 40px; border-radius: 10px; margin-left: 10px"
+                            src="img/album/{{ album_name }}?bad=true"
+                            style="width: 40px; border-radius: 8px; margin-left: 10px"
+                            loading="lazy"
                             fetchpriority="low"
                             onerror="
                                 this.onerror = null;
@@ -125,12 +132,22 @@
                         {% endif %}
                     </h3>
 
-                    <div>
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center">
                         {% for song in songs %}
                         <button
                             onclick='playSong("{{ folder }}/{{ song }}")'
                             class="button song {{ 'pref' if song in pref else '' }}"
                         >
+                            <img
+                                src="/img/{{ folder | urlencode }}/{{ song | urlencode }}?bad=true"
+                                style="width: 30px; border-radius: 7px; margin-right: 10px"
+                                loading="lazy"
+                                fetchpriority="low"
+                                onerror="
+                                    this.onerror = null;
+                                    this.style.display = 'none';
+                                "
+                            />
                             <h3>{{ song.replace('.mp3', '').replace('.flac', '') }}</h3>
                         </button>
                         {% endfor %}
@@ -684,7 +701,7 @@
             </div>
         </div>
 
-        <div id="downloadModal" class="modal-sotto" style="background: none;">
+        <div id="downloadModal" class="modal-sotto" style="background: none">
             <div class="modal">
                 <button onclick="closeModal()" id="closeModal" class="circle">
                     <i class="fa-solid fa-times"></i>

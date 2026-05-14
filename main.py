@@ -179,19 +179,21 @@ def img(folder, filename):
                     except:
                         pass
                     break
+        lib.imgResized(img_path)
     else:
         print("Immagine già presente")
+    bad_quality = request.args.get("bad", None)
     if album_name and album_name not in ALBUM_FINTI and album_name not in tutti_album_singoli:
-        return redirect("/img/album/" + album_name)
+        return redirect("/img/album/" + album_name + ("?bad=true" if bad_quality else ""))
     else:
+        if bad_quality:
+            return send_from_directory(*lib.imgBadQuality(dir_img, nome_img))
         return send_from_directory(dir_img, nome_img)
 
 @app.route('/img/album/<album_name>', methods=['GET'])
 def img_album(album_name):
     img_path = os.path.join(COVER_FOLDER, "album", f"{album_name}.png")
-    if os.path.exists(img_path):
-        return send_from_directory(os.path.join(COVER_FOLDER, "album"), f"{album_name}.png")
-    else:
+    if not os.path.exists(img_path):
         # genero l'immagine se non c'è, cosi da avere le immagini pronte nella home
         songs_by_folder = get_music()
         songs = []
@@ -201,8 +203,11 @@ def img_album(album_name):
                     songs = tracce
                     print("Genero immagine per album:", album_name, folder, songs[0])
                     img(folder, songs[0])
-                    return send_from_directory(os.path.join(COVER_FOLDER, "album"), f"{album_name}.png")
+                    break
         return "Immagine non trovata", 404
+    if request.args.get("bad", None):
+        return send_from_directory(*lib.imgBadQuality(os.path.join(COVER_FOLDER, "album"), f"{album_name}.png"))
+    return send_from_directory(os.path.join(COVER_FOLDER, "album"), f"{album_name}.png")
 
 @app.route('/google', methods=['POST'])
 def google_home_da_sito():

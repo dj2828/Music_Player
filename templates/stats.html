@@ -134,7 +134,7 @@
                     classificaHTML += `<div style="display:flex; align-items: center;">
                         <h3>${numero++}</h3>
                         <div class='item-classifica'>
-                            <img src="${src}" class="${cls}">
+                            <img src="${src}" class="${cls}" loading="lazy">
                             ${item[0].split('/').pop().replace(/\.(mp3|flac)$/, '')} - ${item[1]} plays
                         </div>
                     </div>`;

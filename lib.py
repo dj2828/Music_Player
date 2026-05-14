@@ -216,16 +216,8 @@ def gen_config():
             "YouTube": "YT_FOLDER"
         },
         "ALBUM_ORDER": [
-            "23 6451",
-            "c@ra++ere spec!@le",
-            "sFaCioLaTe miXTaPe",
-            "CASA GOSPEL"
         ],
         "ALBUM_FINTI": [
-            "Beat",
-            "Acustiche",
-            "Sparse",
-            "Freestyle"
         ],
         "IP_per_google_home": "192.168.1.8",
         "PORT": 80
@@ -500,3 +492,40 @@ def salva_accordi(song, chords_new):
 
     with open("chords.json", "w", encoding="utf-8") as f:
         json.dump(chords, f, indent=4)
+
+def imgBadQuality(folder, img, max_width=100, output_format="webp"):
+    from PIL import Image
+
+    name, ext = os.path.splitext(img)
+    new_filename = f"{name}_bad.{output_format}"
+
+    if not os.path.exists(os.path.join(folder, new_filename)):
+
+        path = os.path.join(folder, img)
+        image = Image.open(path)
+
+        # Converti in RGB se necessario (es. PNG con trasparenza)
+        if image.mode in ("RGBA", "P"):
+            image = image.convert("RGB")
+
+        if image.width > max_width:
+            ratio = max_width / image.width
+            new_size = (max_width, int(image.height * ratio))
+            image = image.resize(new_size, Image.LANCZOS)
+
+        image.save(os.path.join(folder, new_filename), quality=60, optimize=True)
+
+    return folder, new_filename
+
+def imgResized(path, max_width=640):
+    from PIL import Image
+
+    image = Image.open(path)
+
+    if image.width > max_width:
+        ratio = max_width / image.width
+        new_size = (max_width, int(image.height * ratio))
+        image = image.resize(new_size, Image.LANCZOS)
+        image.save(path, optimize=True)
+
+    return folder, new_filename
