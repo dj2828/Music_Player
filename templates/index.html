@@ -789,7 +789,6 @@
                     const status = response.status;
                     if (status === 200){
                         const data = await response.json();
-                        alert(data.url);
                         localStorage.setItem('lastMp3Url', data.url);
                         window.location.reload();
                     } 
