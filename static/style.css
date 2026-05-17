@@ -570,14 +570,11 @@ nav {
     }
     .cartella {
         padding: 15px;
-        margin-top: calc(env(safe-area-inset-top) - 5px); /* viene dato solo al primo, il resto è 0px */
+        margin-top: 0px;
         margin-bottom: 15px;
         min-width: 270px;
         max-width: none;
         width: calc(100% - 200px);
-    }
-    .cartella ~ .cartella {
-        margin-top: 0px;
     }
     #cover-container {
         margin-top: 5px;
@@ -610,7 +607,7 @@ nav {
         margin-bottom: 10px;
     }
     #progress {
-        margin: 10px -5px;
+        margin: 5px -5px;
         margin-top: 15px;
         transition:
             margin-bottom 0.3s var(--curva-animazione),
