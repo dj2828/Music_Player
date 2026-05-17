@@ -468,6 +468,12 @@ nav {
     pointer-events: auto;
 }
 
+.img-songs {
+    width: 30px;
+    border-radius: 7px;
+    margin-right: 10px;
+}
+
 @media (max-width: 1400px) {
     .container {
         flex-direction: column;
@@ -616,5 +622,8 @@ nav {
     }
     #menu > div {
         gap: 25px;
+    }
+    .img-songs{
+        width: 25px;
     }
 }
