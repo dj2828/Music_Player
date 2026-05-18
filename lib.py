@@ -508,7 +508,10 @@ def imgBadQuality(folder, img, max_width=100, output_format="webp"):
     if not os.path.exists(os.path.join(folder, new_filename)):
 
         path = os.path.join(folder, img)
-        image = Image.open(path)
+        try:
+            image = Image.open(path)
+        except:
+            return None
 
         # Converti in RGB se necessario (es. PNG con trasparenza)
         if image.mode in ("RGBA", "P"):

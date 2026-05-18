@@ -187,7 +187,10 @@ def img(folder, filename):
         return redirect("/img/album/" + album_name + ("?bad=true" if bad_quality else ""))
     else:
         if bad_quality:
-            return send_from_directory(*lib.imgBadQuality(dir_img, nome_img))
+            link_bad_quality = lib.imgBadQuality(dir_img, nome_img)
+            if link_bad_quality:
+                return send_from_directory(*link_bad_quality)
+            return "Not found", 404
         return send_from_directory(dir_img, nome_img)
 
 @app.route('/img/album/<album_name>', methods=['GET'])
