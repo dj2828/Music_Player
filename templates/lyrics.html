@@ -26,6 +26,7 @@
                 background-color: #1e1e1e;
                 margin: 0;
                 overflow-x: hidden;
+                height: 100vh;
             }
             body::after {
                 content: '';
@@ -230,8 +231,12 @@
             }
 
             // Avviamo il processo
+            if (window.parent.document.getElementById('cover-container').classList.contains('cover404'))
+                document.body.style.backgroundImage = "none";
+            else
+                document.body.style.backgroundImage = `url(${window.parent.document.getElementById('cover').src})`;
+
             fetchLyrics();
-            document.body.style.backgroundImage = `url(${window.parent.document.getElementById('cover').src})`;
         </script>
     </body>
 </html>
