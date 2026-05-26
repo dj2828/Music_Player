@@ -720,14 +720,38 @@
 
         <!-- usato anche da chords -->
         <div id="lyricsModal" class="modal-sotto">
-            <div class="modal" style="padding: 5px 5px">
+            <div class="modal" style="
+                overflow: hidden;
+                padding: 0;
+                width: 1000px;
+                height: 700px;
+                ">
+                <div style="
+                    background: none !important;
+                    color: #bdbdbd;
+                    border-color: #bdbdbd;
+                    position: absolute;
+                    right: 40px;
+                    bottom: 40px;
+                " class="circle" onclick="
+                    const lyricsModal = document.getElementById('lyricsModal').querySelector('.modal');
+                    const lyricsIframe = document.getElementById('iframe-lirics');
+                    if (!document.fullscreenElement) {
+                        lyricsModal.requestFullscreen();
+                        lyricsModal.style.borderRadius = 0;
+                        lyricsIframe.contentDocument.getElementById('container').classList.add('fullscreen');
+                    } else {
+                        document.exitFullscreen();
+                        lyricsModal.style.borderRadius = getComputedStyle(document.documentElement).getPropertyValue('--border-radius');
+                        lyricsIframe.contentDocument.getElementById('container').classList.remove('fullscreen');
+                    }
+                "><i class="fa-solid fa-expand"></i></div>
                 <iframe
                     src=""
                     frameborder="0"
-                    width="1000px"
-                    height="700px"
+                    width="100%"
+                    height="100%"
                     id="iframe-lirics"
-                    style="padding: 10px"
                 ></iframe>
             </div>
         </div>

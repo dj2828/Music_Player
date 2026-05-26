@@ -4,31 +4,76 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Testo Canzone</title>
-        <link rel="stylesheet" href="/static/style_lyrics_chords.css" />
         <style>
+            @import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,600;1,500&display=swap");
+            ::-webkit-scrollbar {
+                display: none !important;
+            }
+            * {
+                scrollbar-width: none !important;
+            }
+            body {
+                font-family: "Montserrat", sans-serif;
+                font-weight: 600;
+                color: #bdbdbd;
+                padding: 20px;
+                display: grid;
+                justify-content: center;
+                justify-items: center;
+                background-repeat: no-repeat;
+                background-size: cover;
+                backdrop-filter: blur(100px);
+                background-color: #1e1e1e;
+                margin: 0;
+                overflow-x: hidden;
+            }
+            body::after {
+                content: '';
+                position: fixed;
+                inset: 0;
+                background: rgba(0, 0, 0, 0.67);
+                z-index: -1;
+            }
+
             .lyric-line {
                 margin-bottom: 12px;
                 font-size: 18px;
-                line-height: 1.5;
+                line-height: 3;
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
-            .timestamp {
-                color: #1db954;
-                font-family: monospace;
-                font-weight: bold;
-                margin-right: 15px;
-                font-size: 16px;
+
+            #container{
+                text-align: center;
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                align-content: center;
+                justify-content: center;
+                align-items: flex-start;
             }
 
             .si {
-                transform: scale(1.2);
+                transform: scale(1.5);
+            }
+            #container.fullscreen .si {
+                transform: scale(2);
             }
             .si span {
                 color: #fff;
                 text-shadow:
-                    0 0 11px #7777ff,
-                    0 0 19px blue,
-                    0 0 40px blue;
+                0 0 11px #7777ff,
+                0 0 19px blue,
+                0 0 40px blue;
+            }
+            
+            @media (max-width: 800px) {
+                .lyric-line {
+                    font-size: 16px;
+                    line-height: 2.5;
+                }
+                .si {
+                    transform: scale(1.3);
+                }
             }
         </style>
     </head>
@@ -36,7 +81,6 @@
         <!-- <audio controls id="audioPlayer">
         <source src="http://localhost/Tha%20Supreme/gua10%20-%20feat.%20Lazza.flac" type="audio/flac">
     </audio> -->
-
         <div id="container">
             <div id="testo-output">Caricamento del testo in corso...</div>
         </div>
@@ -173,11 +217,6 @@
                     const p = document.createElement("p");
                     p.className = "lyric-line";
 
-                    // Creiamo lo span per il tempo
-                    // const timeSpan = document.createElement('span');
-                    // timeSpan.className = 'timestamp';
-                    // timeSpan.textContent = line.originalTime;
-
                     // Creiamo lo span per il testo
                     const textSpan = document.createElement("span");
                     textSpan.className = "text";
@@ -192,6 +231,7 @@
 
             // Avviamo il processo
             fetchLyrics();
+            document.body.style.backgroundImage = `url(${window.parent.document.getElementById('cover').src})`;
         </script>
     </body>
 </html>
