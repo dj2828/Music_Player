@@ -113,10 +113,14 @@
             let ultimoIndice = -1;
 
             const updateProgress = setInterval(() => {
+                centraTesto();
+            }, 500);
+
+            function centraTesto(force = false) {
                 if (audioPlayer && audioPlayer.currentTime && lyricsArray) {
                     const index = getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime);
 
-                    if (index !== -1 && index !== ultimoIndice) {
+                    if (index !== -1 && index !== ultimoIndice || force) {
                         ultimoIndice = index;
 
                         ingrandisciTesto(index);
@@ -130,7 +134,7 @@
                         }
                     }
                 }
-            }, 500);
+            }
 
             function ingrandisciTesto(a) {
                 let testoDiv = document.getElementById("testo-output");

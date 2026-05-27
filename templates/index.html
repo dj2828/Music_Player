@@ -740,10 +740,12 @@
                         lyricsModal.requestFullscreen();
                         lyricsModal.style.borderRadius = 0;
                         lyricsIframe.contentDocument.getElementById('container').classList.add('fullscreen');
+                        lyricsIframe.contentWindow.centraTesto(true);
                     } else {
                         document.exitFullscreen();
                         lyricsModal.style.borderRadius = getComputedStyle(document.documentElement).getPropertyValue('--border-radius');
                         lyricsIframe.contentDocument.getElementById('container').classList.remove('fullscreen');
+                        lyricsIframe.contentWindow.centraTesto(true);
                     }
                 "><i class="fa-solid fa-expand"></i></div>
                 <iframe
