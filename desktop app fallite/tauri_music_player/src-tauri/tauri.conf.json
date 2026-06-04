@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "music_player",
+    "version": "0.1.0",
+    "identifier": "music-player.dj",
+    "build": {
+        "frontendDist": "../src"
+    },
+    "app": {
+        "withGlobalTauri": true,
+        "windows": [],
+        "security": {
+            "csp": "default-src 'self' ipc: http://ipc.localhost; media-src 'self' asset: http://asset.localhost; connect-src 'self' https://ka-f.fontawesome.com http://ipc.localhost; style-src 'self' 'unsafe-inline'; font-src 'self' https://ka-f.fontawesome.com https://fonts.gstatic.com; img-src 'self' data:;",
+            "assetProtocol": {
+              "enable": true,
+              "scope": ["/**"]
+            }
+        }
+    },
+    "bundle": {
+        "active": true,
+        "targets": ["deb", "nsis"],
+        "icon": [
+            "icons/icon.ico"
+        ],
+        "resources": [
+            "directories.txt"
+        ]
+    }
+}

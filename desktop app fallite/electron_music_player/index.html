@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="it">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+	<title>Music Player</title>
+    <!-- <link rel="icon" type="image/png" href="img/IO.png"> -->
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div id="titlebar"><i onclick="window.electronAPI.minimize()" class="fa-solid fa-minus"></i><i class="fa-solid fa-xmark" onclick="window.electronAPI.close()" style="padding-right: 20px;"></i></div>
+    <div id="container">
+        <div class="music-player">
+        <nav>
+            <div onclick="openMenu()" class="circle">
+                <i class="fa-solid fa-bars"></i>
+            </div>
+            <div onclick="window.location.reload()" class="circle">
+                <i class="fa-solid fa-rotate-right"></i>
+            </div>
+        </nav>
+        <h1 id="titolo">TITOLO</h1>
+        <p id="cartella">CARTELLA</p>
+
+        <img src="" id="cover" class="cover404">
+
+        <audio id="audioPlayer">
+            <source id="audioSource" src="" type="audio/mpeg">
+        </audio>
+        <input type="range" value="0" id="progress">
+
+        <div class="controls">
+            <div onclick="prevSong()"><i class="fa-solid fa-backward"></i></div>
+            <div onclick="togglePlay()"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
+            <div onclick="nextSong()"><i class="fa-solid fa-forward"></i></div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        // spawn cartelle
+        let playlist = [];
+        (async () => {
+        const songs_by_folder = await window.electronAPI.callNode('getSongs');
+        console.log(songs_by_folder);
+        const root = document.getElementById('container');
+
+        for (const [folder, songs] of Object.entries(songs_by_folder)) {
+            const cartella = document.createElement('div');
+            cartella.className = 'cartella';
+
+            const title = document.createElement('div');
+            title.className = 'title';
+
+            const h2 = document.createElement('h2');
+            h2.textContent = folder;
+            title.appendChild(h2);
+
+            const shuffle = document.createElement('div');
+            shuffle.className = 'circle';
+            shuffle.innerHTML = '<i class="fa-solid fa-shuffle"></i>';
+            shuffle.addEventListener('click', () => playFolderRandom(folder));
+            title.appendChild(shuffle);
+
+            const songsContainer = document.createElement('div');
+            songsContainer.className = 'songs-js';
+
+            songs.forEach(song => {
+                const btn = document.createElement('button');
+                btn.className = 'song';
+                const h3 = document.createElement('h3');
+                h3.textContent = song.replace('.mp3', '');
+                btn.appendChild(h3);
+                btn.addEventListener('click', () => playSong(folder + '/' + song));
+                songsContainer.appendChild(btn);
+                playlist.push({ folder: folder, song: song });
+            });
+
+            cartella.appendChild(title);
+            cartella.appendChild(songsContainer);
+            root.appendChild(cartella);
+        }
+        console.log(playlist)
+        })();
+
+        let progress = document.getElementById('progress');
+        let audioPlayer = document.getElementById('audioPlayer');
+        let ctrlIcon = document.getElementById('ctrlIcon');
+        let titoloObj = document.getElementById('titolo');
+        let cartellaObj = document.getElementById('cartella');
+        let googleHome = false;
+
+        // Funzione per salvare l'URL nel cookie
+        function setLastPlayedMp3Url(url) {
+            document.cookie = "lastMp3Url=" + encodeURIComponent(url) + "; path=/; max-age=31536000";
+        }
+
+        // Funzione per leggere l'URL dal cookie
+        function getLastPlayedMp3Url() {
+            const match = document.cookie.match(/(?:^|; )lastMp3Url=([^;]*)/);
+            return match ? decodeURIComponent(match[1]) : null;
+        }
+
+        audioPlayer.onloadedmetadata = function() {
+            progress.max = audioPlayer.duration;
+            progress.value = audioPlayer.currentTime;
+        };
+
+        function play(a){
+            if(a){
+                ctrlIcon.classList.remove('fa-play');
+                ctrlIcon.classList.add('fa-pause');
+            } else {
+                ctrlIcon.classList.remove('fa-pause');
+                ctrlIcon.classList.add('fa-play');
+            }
+        }
+
+        function togglePlay(a) {
+            if(ctrlIcon.classList.contains('fa-play') || a) {
+                if (googleHome) {
+                    googleHomeF('play');
+                    play(true);
+                    return;
+                }
+                audioPlayer.play();
+                play(true);
+            } else {
+                if (googleHome) {
+                    googleHomeF('pause');
+                    play(false);
+                    return;
+                }
+                audioPlayer.pause();
+                play(false);
+            }
+        }
+
+        if(audioPlayer.play()){
+            setInterval(function() {
+                progress.value = audioPlayer.currentTime;
+            }, 50);
+        }
+
+        progress.oninput = function() {
+            if(ctrlIcon.classList.contains('fa-pause')){
+                audioPlayer.play();
+                play(true);
+            }
+            audioPlayer.currentTime = progress.value;
+        };
+
+        window.addEventListener('keydown', function(e) {
+            if (
+                (e.key === " " || e.code === "Space" || e.key === "Spacebar") &&
+                !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
+            ) {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+
+        let currentIndex = -1;
+        let randomFolderPlaylist = null;
+        let historyStack = [];
+
+        async function playSong(songPath, customPlaylist = null, customIndex = null, fromHistory = false, playImmediately = true) {
+            console.log('Playing songPath:', songPath);
+            let titolo = songPath.split('/').pop().replace('.mp3', '');
+            let cartella = songPath.split('/')[0];
+            titoloObj.textContent = titolo;
+            cartellaObj.textContent = cartella;
+            document.title = titolo;
+
+            const audioPlayer = document.getElementById('audioPlayer');
+            const audioSource = document.getElementById('audioSource');
+            const [folder, song] = songPath.split('/');
+            const url = await window.electronAPI.callNode('getSongUrl', { folder, song });
+            // Salva l'URL nel cookie
+            setLastPlayedMp3Url(url);
+
+            // immagine
+            const immagine = document.getElementById('cover');
+            let img = await window.electronAPI.callNode('getSongImg', { folder, song });
+            if (!img) {
+                immagine.src = "img/d.png";
+                immagine.classList.remove('cover');
+                immagine.classList.add('cover404');
+            } else {
+                // img è una data URL (o file://), assegnala direttamente
+                immagine.classList.remove('cover404');
+                immagine.classList.add('cover');
+                immagine.src = img;
+            }
+
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                title: titolo,
+                artist: "",
+                album: "",
+                artwork: [
+                    { src: img, sizes: "512x512", type: "image/jpeg" }
+                ]
+                });
+                navigator.mediaSession.setActionHandler("play", () => togglePlay());
+                navigator.mediaSession.setActionHandler("pause", () => togglePlay());
+                navigator.mediaSession.setActionHandler("nexttrack", () => nextSong());
+                navigator.mediaSession.setActionHandler("previoustrack", () => prevSong());
+                navigator.mediaSession.setActionHandler('seekto', (details) => {
+                    if (details.fastSeek && 'fastSeek' in audioPlayer) {
+                    audioPlayer.fastSeek(details.seekTime);
+                    } else {
+                    audioPlayer.currentTime = details.seekTime;
+                    }
+                });
+            }
+
+            if (googleHome) {
+                play(true);
+                googleHomeF(url);
+            }else{
+                audioSource.src = url;
+                audioPlayer.load();
+                console.log('Playing song:', url);
+                if (playImmediately) togglePlay(true);
+            }
+
+            // Trova l'indice della canzone nella playlist attuale
+            let idx;
+            if (customPlaylist) {
+                idx = customIndex;
+            } else {
+                idx = playlist.findIndex(item => item.folder === folder && item.song === song);
+            }
+
+            // Aggiorna lo storico solo se non viene da prevSong
+            if (!fromHistory && currentIndex !== -1) {
+                historyStack.push({
+                    playlist: randomFolderPlaylist ? [...randomFolderPlaylist] : null,
+                    index: currentIndex
+                });
+            }
+
+            // Aggiorna playlist e indice correnti
+            if (customPlaylist) {
+                randomFolderPlaylist = customPlaylist;
+                currentIndex = idx;
+            } else {
+                randomFolderPlaylist = null;
+                currentIndex = idx;
+            }
+
+            nextSongPreload();
+        }
+
+        function playFolderRandom(folder) {
+            // Filtra le canzoni della cartella
+            const folderSongs = playlist.filter(item => item.folder === folder);
+            // Mischia le canzoni
+            const shuffled = folderSongs.sort(() => Math.random() - 0.5);
+            if (shuffled.length > 0) {
+                playSong(shuffled[0].folder + '/' + shuffled[0].song, shuffled, 0);
+            }
+        }
+
+        document.getElementById('audioPlayer').addEventListener('ended', function() {
+            nextSong();
+        });
+
+        function nextSong() {
+            if (randomFolderPlaylist) {
+                if (currentIndex + 1 < randomFolderPlaylist.length) {
+                    const next = randomFolderPlaylist[currentIndex + 1];
+                    playSong(next.folder + '/' + next.song, randomFolderPlaylist, currentIndex + 1);
+                }
+                // Se randomFolderPlaylist è attiva e siamo all'ultima canzone, si ferma (non fa nulla)
+            } else if (currentIndex >= 0) {
+                // Siamo nella playlist globale: controlla se siamo all'ultima canzone della cartella
+                const currentFolder = playlist[currentIndex].folder;
+                // Trova tutte le canzoni di questa cartella
+                const songsInFolder = playlist.filter(item => item.folder === currentFolder);
+                // Trova la posizione della canzone corrente nella cartella
+                const currentSongInFolder = songsInFolder.findIndex(item =>
+                    item.folder === playlist[currentIndex].folder &&
+                    item.song === playlist[currentIndex].song
+                );
+                if (currentSongInFolder + 1 < songsInFolder.length) {
+                    // Vai alla prossima canzone della stessa cartella
+                    const nextInFolder = songsInFolder[currentSongInFolder + 1];
+                    // Trova l'indice globale della prossima canzone della cartella
+                    const globalIndex = playlist.findIndex(item =>
+                        item.folder === nextInFolder.folder && item.song === nextInFolder.song
+                    );
+                    playSong(nextInFolder.folder + '/' + nextInFolder.song, null, globalIndex);
+                } else {
+                    // Siamo all'ultima canzone della cartella: riparti dalla prima della cartella
+                    const firstInFolder = songsInFolder[0];
+                    const globalIndex = playlist.findIndex(item =>
+                        item.folder === firstInFolder.folder && item.song === firstInFolder.song
+                    );
+                    playSong(firstInFolder.folder + '/' + firstInFolder.song, null, globalIndex);
+                }
+            }
+        }
+
+        function prevSong() {
+            if (audioPlayer.currentTime <= (audioPlayer.duration*2)/100){
+                if (historyStack.length > 0) {
+                    const last = historyStack.pop();
+                    if (last.playlist) {
+                        playSong(last.playlist[last.index].folder + '/' + last.playlist[last.index].song, last.playlist, last.index, true);
+                    } else {
+                        playSong(playlist[last.index].folder + '/' + playlist[last.index].song, null, last.index, true);
+                    }
+                }
+            }
+            else{
+                audioPlayer.currentTime = 0;
+            }
+        }
+
+        // si scaria la prossima canzone
+        function nextSongPreload() {
+            let next;
+            if (randomFolderPlaylist && currentIndex + 1 < randomFolderPlaylist.length) {
+                next = randomFolderPlaylist[currentIndex + 1];
+            } else if (!randomFolderPlaylist && currentIndex + 1 < playlist.length) {
+                next = playlist[currentIndex + 1];
+            }
+            if (next) {
+                const preloadLink = document.createElement('link');
+                preloadLink.rel = 'preload';
+                preloadLink.as = 'fetch';
+                preloadLink.href = `/` + encodeURIComponent(next.folder) + `/` + encodeURIComponent(next.song);
+                document.head.appendChild(preloadLink);
+            }
+        }
+
+        // All'avvio, recupera l'ultimo mp3 dal cookie e formatta l'URL in modo leggibile
+        const lastMp3Url = getLastPlayedMp3Url();
+        if (lastMp3Url) {
+            const formattedUrl = decodeURIComponent(lastMp3Url).slice(1);
+            console.log('Ultimo mp3 dal cookie (formattato):', formattedUrl);
+            playSong(formattedUrl, null, null, null, false);
+        } else {
+            console.log('Nessun mp3 trovato nel cookie.');
+        }
+
+        function googleHomeF(url){
+            fetch("/google", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                body: "url=" + encodeURIComponent(url)
+            }).then(response => {
+                if (response.status === 1) {
+                    closeMenu();
+                    alert("Google Home attivato");
+                }
+                if (response.status === 404) {
+                    window.location.href = "/errore?motivo=Google%20Home%20non%20trovato";
+                }
+            });
+            return;
+        }
+
+    </script>
+
+    <div id="menu" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+        <div style="background:#ff5500; color:#000; padding:30px 20px; border-radius:12px; min-width:600px; max-width:90vw; min-height: 300px; margin:auto; position:relative; display: flex; align-items: center; justify-content: center;">
+            <!-- <div onclick="openModal()" class="circle">
+                <i class="fa-solid fa-download"></i>
+            </div>
+            <div onclick="if(googleHome){googleHome=false; googleHomeF('stop'); play(false); closeMenu()} else{googleHomeF('init'); googleHome=true; audioPlayer.pause(); play(false);};" class="circle">
+                <i class="fa-solid fa-wifi"></i>
+            </div> -->
+            <div class="circle" onclick="window.electronAPI.callNode('config');"></div>
+        </div>
+    </div>
+
+    <div id="downloadModal" style="display:none; position:fixed; z-index:2000; left:0; top:0; width:100vw; height:100vh; align-items:center; justify-content:center;">
+        <div style="background:#ff5500; color:#000; padding:30px 20px; border-radius:12px; min-width:600px; max-width:90vw; min-height: 300px; margin:auto; position:relative; display: flex; align-items: center; justify-content: center;">
+            <button onclick="closeModal()" style="position:absolute; top:10px; right:15px; background:none; border:none; font-size:22px; cursor:pointer;">&times;</button>
+            <form action="/down" method="post" style="text-align:center;">
+                <input type="text" name="yt_url" placeholder="Incolla link YouTube || Cerca su YouTube" style="width:500px; height: 200px; border-radius: 20px; padding: 20px; font-size: large;">
+                <button type="submit" class="song">Scarica da YouTube</button>
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                    <div style="color:black; margin-top:20px;">{{ messages[0] }}</div>
+                    {% endif %}
+                {% endwith %}
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function openModal() {
+        document.getElementById('downloadModal').style.display = 'flex';
+    }
+    function closeModal() {
+        document.getElementById('downloadModal').style.display = 'none';
+    }
+    // Chiudi modale con ESC o clic fuori
+    window.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") closeModal();
+    });
+    document.getElementById('downloadModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    function openMenu() {
+        document.getElementById('menu').style.display = 'flex';
+    }
+    function closeMenu() {
+        document.getElementById('menu').style.display = 'none';
+    }
+    // Chiudi modale con ESC o clic fuori
+    window.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") closeMenu();
+    });
+    document.getElementById('menu').addEventListener('click', function(e) {
+        if (e.target === this) closeMenu();
+    });
+    </script>
+
+</body>
+</html>
