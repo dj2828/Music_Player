@@ -702,9 +702,9 @@
 
         <div id="downloadModal" class="modal-sotto" style="background: none">
             <div class="modal">
-                <button onclick="closeModal()" id="closeModal" class="circle" style="background-color: #ff5500;">
+                <div onclick="closeModal()" id="closeModal" class="circle" style="background-color: #ff5500;">
                     <i class="fa-solid fa-times"></i>
-                </button>
+                </div>
                 <div style="text-align: center">
                     <input
                         type="text"
@@ -761,9 +761,9 @@
 
         <div id="settingsModal" class="modal-sotto">
             <div class="modal" style="align-items: flex-start">
-                <button onclick="closeModal()" id="closeModal" class="circle">
+                <div onclick="closeModal()" id="closeModal" class="circle">
                     <i class="fa-solid fa-times"></i>
-                </button>
+                </div>
                 <div style="text-align: center">
                     <h3>Impostazioni</h3>
                     <p>Qui puoi modificare le impostazioni dell'app.</p>
@@ -860,7 +860,7 @@
                         <strong>${video.title}</strong>
                         <p>${video.channel}</p>
                         <p>${video.duration}</p>
-                        <button onclick="downloadYT('${video.url}')" class="circle" style="margin-top:5px;"><i class="fa-solid fa-download" aria-hidden="true"></i></button>
+                        <div onclick="downloadYT('${video.url}')" class="circle" style="margin-top:5px;"><i class="fa-solid fa-download" aria-hidden="true"></i></div>
                         </div>
                     </div>
                 </li><br>`;
