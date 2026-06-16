@@ -5,6 +5,8 @@ mutagen
 waitress
 pychromecast
 pyyaml
+syncedlyrics
+ytmusicapi
 
 #  per app.py
 pywebview

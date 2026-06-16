@@ -845,9 +845,24 @@
                     let resultsHtml = '<h3>Risultati della ricerca:</h3><div id="resultsList"><ul>';
                     results.forEach(video => {
                         resultsHtml += `<li>
-                    <strong>${video.title}</strong><br>
-                    <p>${video.channel}</p>
-                    <button onclick="downloadYT('${video.url}')" class="song" style="margin-top:5px;">Scarica questo</button>
+                    <div style="
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        margin: 10px;
+                    ">
+                        <img src="${video.thumbnail}" style="margin-right: 20px; border-radius: 20px; ">
+                        <div style="
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                        ">
+                        <strong>${video.title}</strong>
+                        <p>${video.channel}</p>
+                        <p>${video.duration}</p>
+                        <button onclick="downloadYT('${video.url}')" class="circle" style="margin-top:5px;"><i class="fa-solid fa-download" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
                 </li><br>`;
                     });
                     resultsHtml += "</ul></div>";

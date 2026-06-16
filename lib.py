@@ -1,10 +1,11 @@
-import pychromecast, os, yt_dlp, difflib, tempfile, subprocess, hashlib, re
+import pychromecast, os, yt_dlp, difflib, subprocess, hashlib, re
 from mutagen.flac import FLAC
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, USLT
-from requests import get
 import yaml, json
 import requests
+from ytmusicapi import YTMusic
+import syncedlyrics
 
 # Inizializziamo la variabile globale per evitare errori di "NameError"
 chromecast = None
@@ -89,6 +90,10 @@ def down(url, MUSIC_FOLDER):
                 'preferredquality': '192',
             },
             {
+                'key': 'FFmpegMetadata',   # <-- scrive artist, album, year, ecc.
+                'add_metadata': True,
+            },
+            {
                 'key': 'FFmpegThumbnailsConvertor',
                 'format': 'png',
             },
@@ -106,38 +111,51 @@ def down(url, MUSIC_FOLDER):
         return None
 
 def search_videos(query, max_results=5):
-    """
-    Cerca video su YouTube e ritorna una lista con i risultati.
-    
-    Args:
-        query: stringa di ricerca
-        max_results: numero di risultati da ritornare (default 5)
-    
-    Returns:
-        Lista di dizionari con info video (title, url, duration, channel)
-    """
-    ydl_opts = {
-        'quiet': True,
-        'no_warnings': True,
-        'extract_flat': 'in_playlist',
-    }
-    
+    ytmusic = YTMusic()  # no auth necessaria per la ricerca
+
     try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            results = ydl.extract_info(f'ytsearch{max_results}:{query}', download=False)
-        
+        results = ytmusic.search(query, filter='songs', limit=max_results)
+
+        if not results: # fallback su youtube
+            ydl_opts = {
+                'quiet': True,
+                'no_warnings': True,
+                'extract_flat': 'in_playlist',
+            }
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                results = ydl.extract_info(f'ytsearch{max_results}:{query}', download=False)
+            print(results)
+            videos = []
+            for entry in results['entries']:
+                thumbnails = entry.get('thumbnails', [])
+                best_thumb = thumbnails[-1]['url'] if thumbnails else None
+                videos.append({
+                    'title': entry.get('title'),
+                    'url': f"https://youtube.com/watch?v={entry['id']}",
+                    'channel': entry['artists'][0]['name'] if entry.get('artists') else None,
+                    'duration': entry.get('duration'),
+                    'thumbnail': best_thumb,
+                })
+            return videos
+                
         videos = []
-        for entry in results['entries']:
+        for entry in results:
+            thumbnails = entry.get('thumbnails', [])
+            best_thumb = thumbnails[-1]['url'] if thumbnails else None
+
             videos.append({
                 'title': entry.get('title'),
-                'url': f"https://www.youtube.com/watch?v={entry.get('id')}",
-                'channel': entry.get('uploader'),
+                'url': f"https://music.youtube.com/watch?v={entry['videoId']}",
+                'channel': entry['artists'][0]['name'] if entry.get('artists') else None,
+                'duration': entry.get('duration'),
+                'thumbnail': best_thumb,
             })
-        
+
         return videos
     except Exception as e:
         print(f"Errore durante la ricerca: {e}")
         return []
+
 
 def get_cached_mp3(file_path, cache_dir="cache_mp3"):
     """
@@ -204,15 +222,18 @@ def get_testo(file_path, DOCKER=False):
                 testo = tag.text
 
     if not testo.strip():
-        path = f'{file_path.split("\\")[-1].split(".")[0]}' if not DOCKER else f'{file_path.split("/")[-1].split(".")[0]}'
-        print(f"Testo non trovato nei metadati, cerco online... '{path}'")
-        response = get(f"https://lrclib.net/api/search?q={path}")
-        if response.status_code == 200:
-            dati = response.json()
+        if file_path.endswith('.flac'):
+            audio = FLAC(file_path)
+            artist = audio.get("ARTIST", [None])[0]
+            title = audio.get("TITLE", [None])[0]
+
+        elif file_path.endswith('.mp3'):
+            audio = MP3(file_path, ID3=ID3)
+            artist = str(audio.get("TPE1", "")) or None
+            title = str(audio.get("TIT2", "")) or None
             
-            if dati:  # Controlliamo che la lista non sia vuota
-                # Prendiamo syncedLyrics dal primo risultato
-                testo = dati[0].get("syncedLyrics", "")
+        print(f"Testo non trovato nei metadati, cerco online... '{artist} {title}'")
+        testo = syncedlyrics.search(f"{artist} {title}") # prima fetchava solo da lrclib, ora da tipo tutto
 
     return pulisci_testo(testo) if testo else None
 
