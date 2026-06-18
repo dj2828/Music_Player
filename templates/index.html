@@ -276,8 +276,14 @@
             let currentIndex = -1;
             let randomFolderPlaylist = null;
             let historyStack = [];
+            let currentAbortController = null;
 
             function playSong(songPath, customPlaylist = null, customIndex = null, fromHistory = false, playImmediately = true) {
+                // Cancella i fetch precedenti
+                if (currentAbortController) currentAbortController.abort();
+                currentAbortController = new AbortController();
+                const signal = currentAbortController.signal;
+
                 let titolo = songPath.split('/').pop().replace(/\.(mp3|flac)$/i, '');
                 let cartella = songPath.split('/')[0];
                 titoloObj.textContent = titolo;
@@ -287,7 +293,7 @@
                     "album": ""
                 };
                 let sottotitolo;
-                fetch('/info?song=' + encodeURIComponent(songPath))
+                fetch('/info?song=' + encodeURIComponent(songPath), { signal })
                 .then(response => response.json())
                 .then(data => {
                     if(data.info.artist != "Unknown Artist"){
@@ -307,7 +313,9 @@
                     try {
                         pywebview.api.setSong(songPath, titolo, sottotitolo);
                     } catch (error) {}
-                });
+                }).catch(err => {
+                    if (err.name === 'AbortError') return; // ignorato
+                });;
 
                 document.title = titolo;
 
@@ -346,7 +354,7 @@
                 const immagine = document.getElementById('cover');
                 const image_container = document.getElementById('cover-container');
                 let img = `/img/${encodeURIComponent(folder)}/${encodeURIComponent(song)}`;
-                fetch(img)
+                fetch(img, { signal })
                 .then(response => {
                     if (!response.ok) {
                         image_container.classList.add('cover404');
@@ -393,7 +401,9 @@
                         }]
                     });
                     }
-                });
+                }).catch(err => {
+                    if (err.name === 'AbortError') return; // ignorato
+                });;
 
                 // Trova l'indice della canzone nella playlist attuale
                 let idx;
