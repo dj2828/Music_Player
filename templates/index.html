@@ -744,7 +744,7 @@
                     position: absolute;
                     right: 40px;
                     bottom: 40px;
-                " class="circle" onclick="
+                " class="circle" id="fullscreen" onclick="
                     const lyricsModal = document.getElementById('lyricsModal').querySelector('.modal');
                     const lyricsIframe = document.getElementById('iframe-lirics');
                     if (!document.fullscreenElement) {
@@ -900,6 +900,11 @@
                 let lyrics = document.getElementById("iframe-lirics");
 
                 lyrics.src = "lyrics?path=" + encodeURIComponent(getCurrentSongPath());
+
+                // cambia il colore del pulsane di fullscreen
+                let button = document.getElementById('fullscreen');
+                button.style.color = "#bdbdbd";
+                button.style.borderColor = "#bdbdbd";
             }
             function openChordsModal() {
                 document.getElementById("ellipse-container").classList.remove("attivo");
@@ -908,6 +913,11 @@
                 let lyrics = document.getElementById("iframe-lirics");
 
                 lyrics.src = "chords?song=" + encodeURIComponent(getCurrentSongPath(true));
+
+                // cambia il colore del pulsane di fullscreen
+                let button = document.getElementById('fullscreen');
+                button.style.color = "black";
+                button.style.borderColor = "black";
             }
             function openSettingsModal() {
                 document.getElementById("settingsModal").style.display = "flex";
