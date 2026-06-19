@@ -85,10 +85,12 @@
 
     <button class="button" onclick="document.getElementById('new-chord').style.display = document.getElementById('new-chord').style.display === 'flex' ? 'none' : 'flex';" style="margin-top: 20px; margin-bottom: 10px;">Aggiungi Accordi</button>
     <div id="new-chord" style="display: none;">
-        <div id="new-chords-container"></div>
+        <div id="new-chords-container">
+            <input type="number" placeholder="Capo" id="capo" min="0" value="0" style="text-align: center;">
+        </div>
         
         <button class="button" onclick="addChord()">Aggiungi accordo</button>
-        <button class="button" onclick="saveChord()" style="margin-top: 20px;">Salva Accordo</button>
+        <button class="button" onclick="saveChord()" style="margin-top: 20px;">Salva Accordi</button>
     </div>
 
     <div id="test-chord" style="display: none; margin-top: 20px;"></div>
@@ -101,7 +103,7 @@
         console.log("URL del testo:", song);
 
         async function fetchChords() {
-            const response = await fetch("get_chords/" + song);
+            const response = await fetch("get_chords/" + song, { cache: "no-store" });
 
             if (!response.ok) {
                 if (response.status === 404) {
@@ -124,23 +126,30 @@
             });
 
             document.getElementById("container").innerHTML =
+                // gli if sono per il div del capo
                 data.map(chord => `
-                    <div class="chord">
-                        ${chord}
+                    <div class="chord" ${chord.startsWith('capo') ? "style='margin-bottom: 20px'" : ""}> 
+                        ${chord.startsWith('capo') ? 'Capo: ' + chord.replace("capo", "") : chord}
                     </div>
                 `).join('');
-
             const tuttiGliSvg = document.querySelectorAll(".chord");
             tuttiGliSvg.forEach(element => {
-                const testo = element.querySelector(".text").textContent;
+                const testo = element.querySelector(".text")?.textContent || element.textContent.trim(); // il element.textContent è per il capo
+
+                if (testo.startsWith("Capo: ")) { // se è il capo
+                    const numero = testo.replace("Capo: ", "") || "0";
+                    document.getElementById('capo').value = numero;
+                    return;
+                }
+
                 const regex = /^([A-G])([b#]?)([a-zA-Z0-9]*)\s*\(?(\d*)\)?/;
                 const match = testo.match(regex);
                 if (match) {
                     const data = {
-                        base: match[1],   // D
-                        tono: match[2],   // b
-                        suffix: match[3], // 7
-                        grado: match[4]   // 2
+                        base: match[1],
+                        tono: match[2],
+                        suffix: match[3],
+                        grado: match[4]
                     };
                     addChord(data);
                 }
@@ -204,6 +213,9 @@
             const accordiDaSalvare = [];
             // Seleziona tutte le righe di accordi aggiunte
             const righe = document.querySelectorAll(".new-chor-container");
+
+            const capo = document.getElementById('capo').value;
+            accordiDaSalvare.push("capo" + capo);
 
             righe.forEach(riga => {
                 const base = riga.querySelector(".chord-base").value;

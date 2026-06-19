@@ -475,6 +475,9 @@ def get_accordi(file_path):
 
     accordi_svg = []
     for chord in chords:
+        if "capo" in chord:
+            accordi_svg.append(chord)
+            continue
         variazzione = 0
         if not chord.startswith(('A', 'B', 'C', 'D', 'E', 'F', 'G')):
             variazzione = int(chord[:1])
