@@ -126,12 +126,20 @@
             });
 
             document.getElementById("container").innerHTML =
-                // gli if sono per il div del capo
-                data.map(chord => `
-                    <div class="chord" ${chord.startsWith('capo') ? "style='margin-bottom: 20px'" : ""}> 
-                        ${chord.startsWith('capo') ? 'Capo: ' + chord.replace("capo", "") : chord}
-                    </div>
-                `).join('');
+                data.map(chord => {
+                        if (chord.startsWith('capo')) {
+                            return `
+                                <div class="chord" style="margin-bottom: 20px">
+                                    <h2>Capo: ${chord.replace("capo", "")}</h2>
+                                </div>
+                            `;
+                        } else {
+                            return `
+                                <div class="chord">
+                                    ${chord}
+                                </div>
+                            `;
+                }}).join('');
             const tuttiGliSvg = document.querySelectorAll(".chord");
             tuttiGliSvg.forEach(element => {
                 const testo = element.querySelector(".text")?.textContent || element.textContent.trim(); // il element.textContent è per il capo
@@ -215,7 +223,7 @@
             const righe = document.querySelectorAll(".new-chor-container");
 
             const capo = document.getElementById('capo').value;
-            accordiDaSalvare.push("capo" + capo);
+            if (capo != 0) accordiDaSalvare.push("capo" + capo);
 
             righe.forEach(riga => {
                 const base = riga.querySelector(".chord-base").value;
