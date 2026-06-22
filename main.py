@@ -128,7 +128,7 @@ def music(folder, filename):
     if folder_path := MUSIC_FOLDERS.get(folder):
         print("Richiesta file:", folder, filename,  "da", request.remote_addr)
         lowData = request.cookies.get("low-data", False)
-        if not filename.endswith('.mp3') and lowData:
+        if lowData == "true":
             filename = lib.get_cached_mp3(os.path.join(folder_path, filename))
             return send_from_directory(os.path.dirname(filename), os.path.basename(filename))
         return send_from_directory(folder_path, filename)
