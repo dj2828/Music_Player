@@ -1,4 +1,4 @@
-from flask import Flask, render_template, send_from_directory, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, send_from_directory, request, redirect, url_for, jsonify, make_response
 from flask_compress import Compress
 import os, json
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
@@ -106,7 +106,11 @@ os.makedirs(os.path.join(COVER_FOLDER, "album"), exist_ok=True)
 
 @app.route('/', methods=['GET'])
 def index():
-    return render_template('index.html', songs_by_folder=get_music(), pref=load_pref())
+    risposta = make_response(render_template('index.html', songs_by_folder=get_music(), pref=load_pref()))
+    if request.cookies.get("low-data") == None: # se non cè il cookie
+        if (not (request.remote_addr.startswith('192.168.') or request.remote_addr == '127.0.0.1')) or DOCKER:
+            risposta.set_cookie('low-data', True, max_age=365 * 24 * 60 * 60 * 1000)
+    return risposta
 
 @app.route('/errore', methods=['GET'])
 def errore():
@@ -122,10 +126,9 @@ def download():
 @app.route('/<folder>/<filename>')
 def music(folder, filename):
     if folder_path := MUSIC_FOLDERS.get(folder):
-        mp3 = True if request.args.get('mp3') == '1' else False
         print("Richiesta file:", folder, filename,  "da", request.remote_addr)
-        # chiedi a gpt pk non lo capisco neanche io cosa fa sto if
-        if (not filename.endswith('.mp3') and not (request.remote_addr.startswith('192.168.') or request.remote_addr == '127.0.0.1') and not DOCKER) or mp3:
+        lowData = request.cookies.get("low-data", False)
+        if not filename.endswith('.mp3') and lowData:
             filename = lib.get_cached_mp3(os.path.join(folder_path, filename))
             return send_from_directory(os.path.dirname(filename), os.path.basename(filename))
         return send_from_directory(folder_path, filename)
@@ -302,7 +305,6 @@ def delete_song(folder, filename):
             return f"ERROR file_path ({file_path})", 500
     else:
         return f"ERROR folder_path ({folder_path})", 500
-    return redirect(url_for('index'))
 
 PLAYS_FILE = 'plays.json'
 def load_plays():

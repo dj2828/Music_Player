@@ -652,6 +652,16 @@
                     ellipseContainer.classList.remove("attivo");
                 }
             });
+
+            function getCookie(nome) {
+                const match = document.cookie.match(new RegExp('(^| )' + nome + '=([^;]+)'));
+                return match ? decodeURIComponent(match[2]) : null;
+            }
+            function setCookie(nome, valore, giorni = 365) {
+                const scadenza = new Date();
+                scadenza.setTime(scadenza.getTime() + giorni * 24 * 60 * 60 * 1000);
+                document.cookie = `${nome}=${encodeURIComponent(valore)}; expires=${scadenza.toUTCString()}; path=/`;
+            }
         </script>
 
         <div
@@ -788,13 +798,28 @@
                                         ? "true"
                                         : localStorage.getItem("shuffle-" + element),
                                 );
-                                shuffleAllDiv.innerHTML += `<div class="shuffle-div">
+                                shuffleAllDiv.innerHTML += `<div class="setting-div">
                                 <label class="custom-label" for="shuffle-${element}">${element}
                                 <input type="checkbox" class="form-check-input" id="shuffle-${element}" ${localStorage.getItem("shuffle-" + element) === "true" ? "checked" : ""} onchange="localStorage.setItem('shuffle-${element}', this.checked);">
                                 <span class="checkmark"></span>
                                 </label>
                                 </div>`;
                             });
+                        </script>
+                    </div>
+                    <div id="low-data-mode" style="margin-top: 10px">
+                        
+                        <script>
+                            const data = `
+                            <div class="setting-div">
+                                <label class="custom-label">Low Data Mode
+                                <input type="checkbox" class="form-check-input" id="low-data-mode" ${getCookie("low-data") === "true" ? "checked" : ""} onchange="setCookie('low-data', this.checked);">
+                                <span class="checkmark"></span>
+                                </label>
+                                </div>
+                            `;
+                            let lowDataModeDiv = document.getElementById("low-data-mode");
+                            lowDataModeDiv.innerHTML = data;
                         </script>
                     </div>
                 </div>
@@ -1074,9 +1099,11 @@
                 // Mostriamo un indicatore di caricamento
                 document.body.style.cursor = "wait";
 
+                setCookie("low-data", true);
+
                 for (const item of folderSongs) {
                     const songUrl = new URL(
-                        "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1"
+                        "{{ url_for('music', folder='FOLDER', filename='SONG') }}"
                             .replace("FOLDER", encodeURIComponent(item.folder))
                             .replace("SONG", encodeURIComponent(item.song)),
                         baseUrl,
@@ -1109,7 +1136,7 @@
                 // Otteniamo l'indirizzo base del server (es. http://192.168.1.5:5000)
                 const baseUrl = window.location.origin;
 
-                const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}?mp3=1")
+                const songUrl = (baseUrl + "{{ url_for('music', folder='FOLDER', filename='SONG') }}")
                     .replace("FOLDER", encodeURIComponent(folder))
                     .replace("SONG", encodeURIComponent(song));
 
