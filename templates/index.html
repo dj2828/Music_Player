@@ -1211,6 +1211,9 @@
                             response => {
                                 if (response.ok) {
                                     alert("Canzone eliminata con successo: " + songName);
+
+                                    localStorage.removeItem("last");
+
                                     // Ricarica la pagina per aggiornare la lista delle canzoni
                                     window.location.reload();
                                 } else {
