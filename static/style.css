@@ -67,16 +67,16 @@ nav {
     transform: scale(var(--button-scale));
 }
 #cover-container {
-    margin-top: 20px;
-    margin-bottom: 10px;
+    padding-top: 20px;
+    padding-bottom: 10px;
     height: 255px;
     clip-path: inset(0 -10px -15px -10px);
     opacity: 1;
     transition: all 0.2s var(--curva-animazione);
 }
 #cover-container.cover404 {
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
     height: 0 !important;
     opacity: 0;
     clip-path: inset(50% 0 50% 0);
@@ -87,7 +87,10 @@ nav {
     object-fit: cover;
     border-radius: 25px;
     box-shadow: rgba(0, 0, 0, 0.69) 0px 5px 10px;
+    filter: blur(0px);
+    transition: filter 0.2s var(--curva-animazione);
 }
+#cover-container img.blur { filter: blur(3px); }
 #progress {
     -webkit-appearance: none;
     width: 100%;
@@ -580,8 +583,8 @@ nav {
         margin-top: 0px;
     }
     #cover-container {
-        margin-top: 5px;
-        margin-bottom: 0px;
+        padding-top: 5px;
+        padding-bottom: 0px;
         height: 150px;
     }
     #cover-container img {

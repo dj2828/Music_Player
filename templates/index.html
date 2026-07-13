@@ -354,6 +354,9 @@
                 const immagine = document.getElementById('cover');
                 const image_container = document.getElementById('cover-container');
                 let img = `/img/${encodeURIComponent(folder)}/${encodeURIComponent(song)}`;
+                
+                immagine.classList.add('blur');
+
                 fetch(img, { signal })
                 .then(response => {
                     if (!response.ok) {
@@ -375,6 +378,7 @@
                         objectUrl = URL.createObjectURL(blob);
                         immagine.src = objectUrl;
                         artworkSrc = objectUrl;
+                        immagine.classList.remove('blur');
                     } else {
                         artworkSrc = "";
                     }
