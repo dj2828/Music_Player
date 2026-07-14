@@ -10,6 +10,33 @@ self.addEventListener("activate", e => {
     e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))));
 });
 
+const IMAGE_CACHE = "image-cache-v1";
+self.addEventListener("fetch", e => {
+    const req = e.request;
+    // Cache-first solo per le immagini
+    if (req.destination === "image") {
+        e.respondWith(
+            caches.open(IMAGE_CACHE).then(async cache => {
+                const cached = await cache.match(req);
+                if (cached) return cached;
+
+                try {
+                    const networkResponse = await fetch(req);
+                    if (networkResponse.ok) {
+                        cache.put(req, networkResponse.clone());
+                    }
+                    return networkResponse;
+                } catch (err) {
+                    // fallback opzionale: return cache.match('./static/placeholder.png');
+                    throw err;
+                }
+            })
+        );
+        return;
+    }
+});
+
+
 // Aggiunta della gestione a runtime (opzionale ma consigliata per le risorse esterne)
 // self.addEventListener("fetch", e => {
 //     e.respondWith(
