@@ -171,6 +171,14 @@
             let progress = document.getElementById('progress');
             let audioPlayer = document.getElementById('audioPlayer');
             let ctrlIcon = document.getElementById('ctrlIcon');
+
+            // AudioContext + source node creati UNA SOLA VOLTA:
+            // createMediaElementSource può essere chiamato solo una volta per elemento audio,
+            // e l'iframe lyrics viene ricreato ogni volta che si apre la modale.
+            window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            window.audioSourceNode = window.audioCtx.createMediaElementSource(audioPlayer);
+            window.audioSourceNode.connect(window.audioCtx.destination); // altrimenti l'audio diventa muto
+            
             let titoloObj = document.getElementById('titolo');
             let cartellaObj = document.getElementById('cartella');
             let googleHome = false;
@@ -200,6 +208,9 @@
                         googleHomeF('play');
                         play(true);
                         return;
+                    }
+                    if (window.audioCtx && window.audioCtx.state === 'suspended') {
+                        window.audioCtx.resume();
                     }
                     audioPlayer.play();
                     play(true);
