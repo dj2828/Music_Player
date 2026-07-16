@@ -951,10 +951,32 @@
                 if (soloSong) return song; // per chords
                 return folder + "/" + song;
             }
+            // Blocca lo scroll del body finché una modale è aperta: su iPad il touch
+            // scroll dentro l'iframe può propagarsi al documento sottostante (scroll
+            // chaining), overscroll-behavior da solo a volte non basta.
+            let savedScrollY = 0;
+            let bodyScrollLocked = false;
+            function lockBodyScroll() {
+                savedScrollY = window.scrollY;
+                document.body.style.position = 'fixed';
+                document.body.style.top = `-${savedScrollY}px`;
+                document.body.style.width = '100dvw';
+                bodyScrollLocked = true;
+            }
+            function unlockBodyScroll() {
+                if (!bodyScrollLocked) return;
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                window.scrollTo(0, savedScrollY);
+                bodyScrollLocked = false;
+            }
+
             function openlyricsModal() {
                 document.getElementById("ellipse-container").classList.remove("attivo");
                 document.getElementById("lyricsModal").classList.remove("chords");
                 document.getElementById("lyricsModal").style.display = "flex";
+                lockBodyScroll();
                 let lyrics = document.getElementById("iframe-lirics");
 
                 lyrics.src = "lyrics?path=" + encodeURIComponent(getCurrentSongPath());
@@ -968,6 +990,7 @@
                 document.getElementById("ellipse-container").classList.remove("attivo");
                 document.getElementById("lyricsModal").classList.add("chords");
                 document.getElementById("lyricsModal").style.display = "flex";
+                lockBodyScroll();
                 let lyrics = document.getElementById("iframe-lirics");
 
                 lyrics.src = "chords?song=" + encodeURIComponent(getCurrentSongPath(true));
@@ -985,6 +1008,7 @@
                 document.getElementById("lyricsModal").style.display = "none";
                 document.getElementById("iframe-lirics").src = ""; // reset iframe
                 document.getElementById("settingsModal").style.display = "none";
+                unlockBodyScroll();
             }
             // Chiudi modale con ESC o clic fuori
             window.addEventListener("keydown", function (e) {
