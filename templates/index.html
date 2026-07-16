@@ -172,12 +172,30 @@
             let audioPlayer = document.getElementById('audioPlayer');
             let ctrlIcon = document.getElementById('ctrlIcon');
 
+            // (waveform lyrics)
             // AudioContext + source node creati UNA SOLA VOLTA:
             // createMediaElementSource può essere chiamato solo una volta per elemento audio,
             // e l'iframe lyrics viene ricreato ogni volta che si apre la modale.
             window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
             window.audioSourceNode = window.audioCtx.createMediaElementSource(audioPlayer);
             window.audioSourceNode.connect(window.audioCtx.destination); // altrimenti l'audio diventa muto
+            // Su mobile (soprattutto iOS) l'AudioContext viene sospeso automaticamente
+            // senza gesto utente diretto (autoplay al cambio traccia, ripresa da background,
+            // controlli lockscreen/bluetooth). Centralizziamo il resume qui e lo richiamiamo
+            // PRIMA di ogni audioPlayer.play(), da qualunque punto del codice sia invocato.
+            function ensureAudioCtxRunning() {
+                if (window.audioCtx && window.audioCtx.state === 'suspended') {
+                    window.audioCtx.resume();
+                }
+            }
+            // Rete di sicurezza extra: riprende il context al primo tocco/click ovunque
+            // sulla pagina, e ogni volta che l'app torna in foreground dopo essere stata
+            // in background (mobile OS spesso sospende il context quando l'app va in bg).
+            document.addEventListener('touchend', ensureAudioCtxRunning, { once: false, passive: true });
+            document.addEventListener('click', ensureAudioCtxRunning, { passive: true });
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible') ensureAudioCtxRunning();
+            });
             
             let titoloObj = document.getElementById('titolo');
             let cartellaObj = document.getElementById('cartella');
@@ -209,9 +227,7 @@
                         play(true);
                         return;
                     }
-                    if (window.audioCtx && window.audioCtx.state === 'suspended') {
-                        window.audioCtx.resume();
-                    }
+                    ensureAudioCtxRunning();
                     audioPlayer.play();
                     play(true);
                 } else {
@@ -236,6 +252,7 @@
 
             progress.oninput = function() {
                 if(ctrlIcon.classList.contains('fa-pause')){
+                    ensureAudioCtxRunning();
                     audioPlayer.play();
                     play(true);
                 }
@@ -341,11 +358,12 @@
                 if (googleHome) {
                     play(true);
                     googleHomeF(url);
-                }else{
+                } else {
                     audioPlayer.src = url;
                     audioPlayer.load();
                     console.log('Playing song:', url);
                     if (playImmediately) {
+                        ensureAudioCtxRunning();
                         // Usiamo una Promise per evitare errori se l'utente clicca velocissimo
                         var playPromise = audioPlayer.play();
 
