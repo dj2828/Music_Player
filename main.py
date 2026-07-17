@@ -341,7 +341,7 @@ def get_stats():
             for folder, album in database.items():
                 # album è un dizionario dove le chiavi sono i titoli e i valori sono liste di canzoni
                 for titolo_album, canzoni in album.items():
-                    print(f"Controllo se '{canzone}' in {canzoni}")
+                    # print(f"Controllo se '{canzone}' in {canzoni}")
                     if canzone in canzoni:
                         return folder
             return None
