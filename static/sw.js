@@ -1,4 +1,4 @@
-const CACHE_NAME = "offline-cache-v1";
+const CACHE_NAME = "offline-cache-v1-2";
 const URLS_TO_CACHE = ["./", "./static/style.css"];
 
 self.addEventListener("install", e => {

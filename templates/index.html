@@ -69,6 +69,7 @@
                 <div id="cover-container" class="cover404"><img src="" id="cover" /></div>
 
                 <audio id="audioPlayer" fetchpriority="high"></audio>
+                <audio id="analyserAudioEl" muted playsinline preload="none" style="display:none"></audio> <!-- quello per la waveform -->
                 <input type="range" value="0" id="progress" />
 
                 <div class="controls">
@@ -173,29 +174,61 @@
             let ctrlIcon = document.getElementById('ctrlIcon');
 
             // (waveform lyrics)
-            // AudioContext + source node creati UNA SOLA VOLTA:
-            // createMediaElementSource può essere chiamato solo una volta per elemento audio,
-            // e l'iframe lyrics viene ricreato ogni volta che si apre la modale.
-            window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            window.audioSourceNode = window.audioCtx.createMediaElementSource(audioPlayer);
-            window.audioSourceNode.connect(window.audioCtx.destination); // altrimenti l'audio diventa muto
-            // Su mobile (soprattutto iOS) l'AudioContext viene sospeso automaticamente
-            // senza gesto utente diretto (autoplay al cambio traccia, ripresa da background,
-            // controlli lockscreen/bluetooth). Centralizziamo il resume qui e lo richiamiamo
-            // PRIMA di ogni audioPlayer.play(), da qualunque punto del codice sia invocato.
+            // NOTA IMPORTANTE: NON instradiamo audioPlayer (quello reale) attraverso
+            // createMediaElementSource. Su iOS, un <audio> il cui output passa da
+            // Web Audio perde il permesso nativo di continuare a suonare quando lo
+            // schermo si spegne/l'app va in background — l'AudioContext viene sempre
+            // sospeso dal sistema in quel caso, indipendentemente da resume()/Media
+            // Session. Per la waveform usiamo un secondo <audio> invisibile e muto,
+            // sincronizzato con quello principale, così audioPlayer resta 100%
+            // nativo e continua a suonare col telefono bloccato.
+            let analyserAudio = document.getElementById('analyserAudioEl');
+            let analyserSyncInterval = null;
+
+            function initAnalyserAudioCtx() {
+                if (window.audioCtx) return; // già creato
+                window.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                window.audioSourceNode = window.audioCtx.createMediaElementSource(analyserAudio);
+                // NON colleghiamo alla destination: analyserAudio è muted, e comunque
+                // non deve produrre un secondo output audio udibile.
+            }
+
             function ensureAudioCtxRunning() {
                 if (window.audioCtx && window.audioCtx.state === 'suspended') {
                     window.audioCtx.resume();
                 }
             }
-            // Rete di sicurezza extra: riprende il context al primo tocco/click ovunque
-            // sulla pagina, e ogni volta che l'app torna in foreground dopo essere stata
-            // in background (mobile OS spesso sospende il context quando l'app va in bg).
-            document.addEventListener('touchend', ensureAudioCtxRunning, { once: false, passive: true });
-            document.addEventListener('click', ensureAudioCtxRunning, { passive: true });
-            document.addEventListener('visibilitychange', () => {
-                if (document.visibilityState === 'visible') ensureAudioCtxRunning();
-            });
+
+            // Tiene analyserAudio agganciato a audioPlayer (sorgente, posizione,
+            // play/pause) solo mentre la modale lyrics è aperta.
+            function startAnalyserSync() {
+                if (analyserSyncInterval) return;
+                initAnalyserAudioCtx();
+                ensureAudioCtxRunning();
+                analyserSyncInterval = setInterval(() => {
+                    if (!audioPlayer.currentSrc) return;
+                    if (analyserAudio.src !== audioPlayer.currentSrc) {
+                        analyserAudio.src = audioPlayer.currentSrc;
+                        analyserAudio.currentTime = audioPlayer.currentTime;
+                    }
+                    if (Math.abs(analyserAudio.currentTime - audioPlayer.currentTime) > 0.3) {
+                        analyserAudio.currentTime = audioPlayer.currentTime;
+                    }
+                    if (audioPlayer.paused && !analyserAudio.paused) {
+                        analyserAudio.pause();
+                    } else if (!audioPlayer.paused && analyserAudio.paused) {
+                        ensureAudioCtxRunning();
+                        analyserAudio.play().catch(() => {});
+                    }
+                }, 400);
+            }
+            function stopAnalyserSync() {
+                if (analyserSyncInterval) {
+                    clearInterval(analyserSyncInterval);
+                    analyserSyncInterval = null;
+                }
+                analyserAudio.pause();
+            }
             
             let titoloObj = document.getElementById('titolo');
             let cartellaObj = document.getElementById('cartella');
@@ -977,6 +1010,7 @@
                 document.getElementById("lyricsModal").classList.remove("chords");
                 document.getElementById("lyricsModal").style.display = "flex";
                 lockBodyScroll();
+                startAnalyserSync();
                 let lyrics = document.getElementById("iframe-lirics");
 
                 lyrics.src = "lyrics?path=" + encodeURIComponent(getCurrentSongPath());
@@ -1009,6 +1043,7 @@
                 document.getElementById("iframe-lirics").src = ""; // reset iframe
                 document.getElementById("settingsModal").style.display = "none";
                 unlockBodyScroll();
+                stopAnalyserSync();
             }
             // Chiudi modale con ESC o clic fuori
             window.addEventListener("keydown", function (e) {
