@@ -211,7 +211,7 @@
                         analyserAudio.src = audioPlayer.currentSrc;
                         analyserAudio.currentTime = audioPlayer.currentTime;
                     }
-                    if (Math.abs(analyserAudio.currentTime - audioPlayer.currentTime) > 1) {
+                    if (Math.abs(analyserAudio.currentTime - audioPlayer.currentTime) > 0.3) {
                         analyserAudio.currentTime = audioPlayer.currentTime;
                     }
                     if (audioPlayer.paused && !analyserAudio.paused) {
@@ -1025,7 +1025,6 @@
                 document.getElementById("lyricsModal").style.display = "flex";
                 lockBodyScroll();
                 startAnalyserSync();
-                analyserAudio.currentTime = audioPlayer.currentTime;
 
                 let lyrics = document.getElementById("iframe-lirics");
                 lyrics.src = "lyrics?path=" + encodeURIComponent(getCurrentSongPath());
