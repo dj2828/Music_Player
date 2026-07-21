@@ -51,6 +51,7 @@
                 font-size: 18px;
                 line-height: 3;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                cursor: pointer;
             }
             .lyric-line:first-of-type {
                 margin-top: 50vh;
@@ -135,7 +136,6 @@
 
             let lyricsArray = null;
             let audioPlayer = window.parent.document.getElementById("audioPlayer");
-            let ultimoIndice = -1;
 
             const updateProgress = setInterval(() => {
                 centraTesto();
@@ -145,26 +145,27 @@
                 if (audioPlayer && audioPlayer.currentTime && lyricsArray) {
                     const index = getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime);
 
-                    if (index !== -1 && index !== ultimoIndice || force) {
-                        ultimoIndice = index;
+                    ingrandisciTesto(index);
 
-                        ingrandisciTesto(index);
-
-                        const rigaAttiva = document.querySelector(".si");
-                        if (rigaAttiva) {
-                            rigaAttiva.scrollIntoView({
-                                behavior: "smooth",
-                                block: "center",
-                            });
-                        }
+                    const rigaAttiva = document.querySelector(".si");
+                    if (rigaAttiva && (Date.now() - timeLastScroll > 3000 || force)) { // Il delay dello scroll manuale
+                        isProgrammaScroll = true;
+                        clearTimeout(programmaScrollTimeout); // annulla eventuali reset "vecchi" ancora in sospeso
+                        rigaAttiva.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center",
+                        });
+                        programmaScrollTimeout = setTimeout(() => { isProgrammaScroll = false; }, 100); // attendi la fine della animazione
                     }
                 }
             }
+            window.centraTesto = centraTesto; // Pk type="module"
 
-            function ingrandisciTesto(a) {
+            function ingrandisciTesto(index) {
                 let testoDiv = document.getElementById("testo-output");
-                testoDiv.children[a].classList.add("si");
-                if (a !== 0) testoDiv.children[a - 1].classList.remove("si");
+                if (index < 0 || index >= testoDiv.children.length) return; // Se fuori testo non applicare niente
+                testoDiv.children[index].classList.add("si");
+                if (index !== 0) testoDiv.children[index - 1].classList.remove("si");
             }
 
             function getCurrentLrcIndex(lrcArray, currentTime) {
@@ -269,6 +270,9 @@
                     const textSpan = document.createElement("span");
                     textSpan.className = "text";
                     textSpan.textContent = line.text;
+                    textSpan.onclick = function() {
+                        gotoTime(line.originalTime);
+                    };
 
                     // p.appendChild(timeSpan);
                     p.appendChild(textSpan);
@@ -276,6 +280,38 @@
                     outputDiv.appendChild(p);
                 });
             }
+
+            // Funzione per saltare al tempo quando si clicca sul testo
+            function gotoTime(originalTime) {
+                if (!originalTime) return; // Se non c'è timestamp, non facciamo nulla
+
+                const match = originalTime.match(/\[(\d{2}):(\d{2}\.\d{2})\]/);
+                if (!match) return;
+
+                const index = getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime);
+                if (index !== -1) { // Se c'è una riga attiva, rimuoviamo la classe "si"
+                    let testoDiv = document.getElementById("testo-output");
+                    testoDiv.children[index].classList.remove("si");
+                }
+
+                const minutes = parseInt(match[1], 10);
+                const seconds = parseFloat(match[2]);
+                const timeInSeconds = minutes * 60 + seconds;
+
+                if (audioPlayer) {
+                    audioPlayer.currentTime = timeInSeconds;
+                    centraTesto(true); // Forziamo l'aggiornamento del testo centrato subito dopo il click
+                }
+            }
+
+            // Gestione il delay scroll manuale da parte dell'utente
+            let timeLastScroll = 0;
+            let isProgrammaScroll = false;
+            let programmaScrollTimeout = null;
+            document.addEventListener("scroll", () => {
+                if (isProgrammaScroll) return;
+                timeLastScroll = Date.now();
+            });
 
             // Avviamo il processo
             if (window.parent.document.getElementById('cover-container').classList.contains('cover404'))
