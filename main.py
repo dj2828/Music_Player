@@ -94,7 +94,7 @@ YT_FOLDER = os.getenv("YT_FOLDER", os.path.join("music"))
 MUSIC_FOLDER = os.getenv("MUSIC_FOLDER", '')
 COVER_FOLDER = os.getenv("COVER_FOLDER", os.path.join("cover"))
 
-MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP, PORT = lib.load_config(MUSIC_FOLDER, YT_FOLDER, DOCKER)
+MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP, PORT, YT_FOLDER = lib.load_config(MUSIC_FOLDER, YT_FOLDER, DOCKER)
 
 # variabili globali
 googleHome = False

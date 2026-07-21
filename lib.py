@@ -274,12 +274,21 @@ def load_config(MUSIC_FOLDER, YT_FOLDER, DOCKER=False):
         with open('config.yaml', 'r', encoding='utf-8') as config_file:
             config = yaml.safe_load(config_file)
 
-    MUSIC_FOLDERS = {name: (path if path != "YT_FOLDER" else YT_FOLDER) for name, path in config.get("Cartelle", {}).items()}
+    MUSIC_FOLDERS = {}
+    for name, path in config.get("Cartelle", {}).items():
+        if name == "YouTube":
+            if path == "YT_FOLDER":
+                MUSIC_FOLDERS[name] = YT_FOLDER
+            else:
+                MUSIC_FOLDERS[name] = path
+                YT_FOLDER = path  # Aggiorna YT_FOLDER se specificato diversamente
+        else:
+            MUSIC_FOLDERS[name] = path
     ALBUM_ORDER = config.get("ALBUM_ORDER", [])
     ALBUM_FINTI = config.get("ALBUM_FINTI", [])
     IP_per_google_home = config.get("IP_per_google_home", "")
     PORT = config.get("PORT", 80)
-    return MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP_per_google_home, PORT
+    return MUSIC_FOLDERS, ALBUM_ORDER, ALBUM_FINTI, IP_per_google_home, PORT, YT_FOLDER
 
 def get_accordi(file_path):
     def prendi_accordi(file_path):

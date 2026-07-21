@@ -8,7 +8,7 @@
 Es: `Cartelle:
   "Tha Supreme": "X:\\cartelllla\\canz\\fr\\thasup"`
 
-**NON CANCELLATE `"YouTube": "YT_FOLDER"`**
+**NON CANCELLATE `"YouTube": "YT_FOLDER"`** (YT_FOLDER e' modificabile come path ma non cambiare "YouTube")
 
 `ALBUM_ORDER: {Ordine album}"`
   Es: 
