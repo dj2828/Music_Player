@@ -69,7 +69,7 @@
                 <div id="cover-container" class="cover404"><img src="" id="cover" /></div>
 
                 <audio id="audioPlayer" fetchpriority="high"></audio>
-                <audio id="analyserAudioEl" muted playsinline preload="none" style="display:none"></audio> <!-- quello per la waveform -->
+                <audio id="analyserAudioEl" crossorigin="anonymous" playsinline preload="none" style="display:none"></audio> <!-- quello per la waveform -->
                 <input type="range" value="0" id="progress" />
 
                 <div class="controls">
@@ -220,7 +220,7 @@
                         ensureAudioCtxRunning();
                         analyserAudio.play().catch(() => {});
                     }
-                }, 400);
+                }, 200);
             }
             function stopAnalyserSync() {
                 if (analyserSyncInterval) {
