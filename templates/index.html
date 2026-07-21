@@ -211,7 +211,7 @@
                         analyserAudio.src = audioPlayer.currentSrc;
                         analyserAudio.currentTime = audioPlayer.currentTime;
                     }
-                    if (Math.abs(analyserAudio.currentTime - audioPlayer.currentTime) > 0.3) {
+                    if (Math.abs(analyserAudio.currentTime - audioPlayer.currentTime) > 1) {
                         analyserAudio.currentTime = audioPlayer.currentTime;
                     }
                     if (audioPlayer.paused && !analyserAudio.paused) {
@@ -220,7 +220,7 @@
                         ensureAudioCtxRunning();
                         analyserAudio.play().catch(() => {});
                     }
-                }, 200);
+                }, 100);
             }
             function stopAnalyserSync() {
                 if (analyserSyncInterval) {
@@ -853,6 +853,7 @@
                 <div style="text-align: center">
                     <h3>Impostazioni</h3>
                     <p>Qui puoi modificare le impostazioni dell'app.</p>
+                    
                     <div id="ShuffleAllSetting" style="margin-top: 10px">
                         <p style="margin-bottom: 5px">Shuffle</p>
                         <script>
@@ -873,10 +874,10 @@
                             });
                         </script>
                     </div>
-                    <div id="low-data-mode" style="margin-top: 10px">
-                        
+
+                    <div id="low-data-mode-container" style="margin-top: 10px">
                         <script>
-                            const data = `
+                            let lowDataHtml = `
                             <div class="setting-div">
                                 <label class="custom-label">Low Data Mode
                                 <input type="checkbox" class="form-check-input" id="low-data-mode" ${getCookie("low-data") === "true" ? "checked" : ""} onchange="setCookie('low-data', this.checked);">
@@ -884,8 +885,21 @@
                                 </label>
                                 </div>
                             `;
-                            let lowDataModeDiv = document.getElementById("low-data-mode");
-                            lowDataModeDiv.innerHTML = data;
+                            document.getElementById("low-data-mode-container").innerHTML = lowDataHtml;
+                        </script>
+                    </div>
+                    <div id="waveform-container" style="margin-top: 10px">
+                        <script>
+                            if (localStorage.getItem("waveform") === null) localStorage.setItem('waveform', true);
+                            let waveformHtml = `
+                            <div class="setting-div">
+                                <label class="custom-label">Waveform
+                                <input type="checkbox" class="form-check-input" id="waveform" ${localStorage.getItem("waveform") === "true" ? "checked" : ""} onchange="localStorage.setItem('waveform', this.checked);">
+                                <span class="checkmark"></span>
+                                </label>
+                                </div>
+                            `;
+                            document.getElementById("waveform-container").innerHTML = waveformHtml;
                         </script>
                     </div>
                 </div>
@@ -1011,8 +1025,9 @@
                 document.getElementById("lyricsModal").style.display = "flex";
                 lockBodyScroll();
                 startAnalyserSync();
-                let lyrics = document.getElementById("iframe-lirics");
+                analyserAudio.currentTime = audioPlayer.currentTime;
 
+                let lyrics = document.getElementById("iframe-lirics");
                 lyrics.src = "lyrics?path=" + encodeURIComponent(getCurrentSongPath());
 
                 // cambia il colore del pulsane di fullscreen

@@ -300,6 +300,7 @@
 
                 if (audioPlayer) {
                     audioPlayer.currentTime = timeInSeconds;
+                    analyserAudio.currentTime = timeInSeconds;
                     centraTesto(true); // Forziamo l'aggiornamento del testo centrato subito dopo il click
                 }
             }
@@ -326,7 +327,8 @@
             // elemento audio in tutta la sua vita: lo creiamo quindi nel parent
             // (index.html) una volta sola e qui lo riusiamo tramite window.parent.
             let audioMotion = null;
-            if (window.parent.audioSourceNode && window.parent.audioCtx) {
+            if (localStorage.getItem("waveform") === null) localStorage.setItem('waveform', true); // se non ha ancora aperto settings
+            if (window.parent.audioSourceNode && window.parent.audioCtx && localStorage.getItem("waveform") === 'true') {
                 audioMotion = new AudioMotionAnalyzer(
                     document.getElementById('audioviz'),
                     {
@@ -350,8 +352,6 @@
                 audioMotion.gradient = 'grigio';
 
                 applyCoverPalette(audioMotion);
-            } else {
-                console.warn('audioSourceNode/audioCtx non disponibili sul parent: waveform non inizializzata');
             }
 
             function lightenColor([r, g, b], amount = 0.25) {
