@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from flask import Flask, render_template, send_from_directory, request, redirect, url_for, jsonify, make_response
 from flask_compress import Compress
 import os, json
