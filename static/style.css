@@ -45,7 +45,7 @@ h1 {
 nav {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 .circle {
     width: 40px;
@@ -93,7 +93,7 @@ nav {
 #cover-container img.blur { filter: blur(3px); }
 #progress {
     -webkit-appearance: none;
-    width: 100%;
+    width: 95%;
     height: 8px;
     background: #d6d6d6;
     border-radius: 10px;
@@ -629,4 +629,5 @@ nav {
     .img-songs{
         width: 25px;
     }
+    #cover-container img.blur { filter: blur(1.5px); }
 }
