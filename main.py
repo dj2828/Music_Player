@@ -81,7 +81,7 @@ def get_music():
                         tutti_album_singoli.append(nome_alb)
 
             if brani_singoli:
-                final_structure["Brani Singoli"] = brani_singoli
+                final_structure["Brani Singoli"] = sorted(brani_singoli, key=lambda x: x.lower())
             
             songs_by_folder[folder_name] = final_structure
         else:
