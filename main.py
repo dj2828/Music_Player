@@ -15,47 +15,82 @@ Compress(app) # per comprimere le risposte e velocizzare il caricamento, (html, 
 
 def get_music():
     def album(folder, filename):
+        # Recupera il percorso della cartella a partire dal nome logico
         folder_path = MUSIC_FOLDERS.get(folder)
         mp3_path = os.path.join(folder_path, filename)
+        
+        # Gestione separata per FLAC e MP3, dato che usano tag diversi
         if mp3_path.endswith('.flac'):
             audio = FLAC(mp3_path)
             album = audio.get("ALBUM")
             album_name = album[0] if album else None
         else:
             audio = MP3(mp3_path, ID3=ID3)
-            album = audio.get("TALB")
+            album = audio.get("TALB")  # tag ID3 per il nome album
             album_name = album.text[0] if album else None
 
         if album_name:
+            # Sanifica il nome album da caratteri non validi per i percorsi/filesystem
             album_name = album_name.strip().replace('/', '_').replace('\\', '_').replace('?', 'p')
-            
         else:
             album_name = None
 
         return album_name
+
+    def track_number(folder, filename):
+        # Legge il numero di traccia dal tag, se presente.
+        # Ritorna un int oppure None se assente/non valido.
+        folder_path = MUSIC_FOLDERS.get(folder)
+        mp3_path = os.path.join(folder_path, filename)
+
+        try:
+            if mp3_path.endswith('.flac'):
+                audio = FLAC(mp3_path)
+                raw = audio.get("tracknumber")
+                raw_value = raw[0] if raw else None
+            else:
+                audio = MP3(mp3_path, ID3=ID3)
+                raw = audio.get("TRCK")
+                raw_value = raw.text[0] if raw else None
+
+            if not raw_value:
+                return None
+
+            # Alcuni tag hanno formato "3/12" (traccia/totale): prendo solo la parte prima dello slash
+            raw_value = str(raw_value).split('/')[0].strip()
+            return int(raw_value)
+        except (ValueError, TypeError):
+            # Tag mancante, vuoto o non numerico: nessun numero disponibile
+            return None
+
     songs_by_folder = {}
+    
+    # Cicla su ogni cartella musicale configurata
     for folder_name, folder_path in MUSIC_FOLDERS.items():
         if os.path.exists(folder_path):
             temp_albums = {}
+            
+            # Filtra solo i file audio supportati (mp3/flac)
             songs = [f for f in os.listdir(folder_path) if f.lower().endswith(('.mp3', '.flac'))]
             songs = sorted(songs, key=lambda x: x.lower())
             
+            # Raggruppa i brani per album leggendo i metadati ID3/FLAC
             for filename in songs:
-                nome_album = album(folder_name, filename) # Usa la tua funzione ID3
+                nome_album = album(folder_name, filename)  # Usa la tua funzione ID3
                 if not nome_album:
-                    nome_album = "_SCONOSCIUTO_"
+                    nome_album = "_SCONOSCIUTO_"  # placeholder per brani senza tag album
                 
                 if nome_album not in temp_albums:
                     temp_albums[nome_album] = []
                 temp_albums[nome_album].append(filename)
 
-            # --- LOGICA DI ORDINAMENTO ---
+            # --- LOGICA DI ORDINAMENTO ALBUM ---
             # Prendiamo tutti i nomi degli album trovati
             album_trovati = list(temp_albums.keys())
             
             # Funzione di ordinamento: 
             # 1. Se l'album è in ALBUM_ORDER, usa la sua posizione nella lista.
-            # 2. Se non c'è, mettilo dopo (indice alto).
+            # 2. Se non c'è, mettilo dopo (indice alto), mantenendo l'ordine di scoperta.
             # 3. "_SCONOSCIUTO_" va sempre per ultimo.
             def sort_logic(name):
                 if name == "_SCONOSCIUTO_":
@@ -63,6 +98,8 @@ def get_music():
                 try:
                     return ALBUM_ORDER.index(name)
                 except ValueError:
+                    # Album non presente in ALBUM_ORDER: lo mette dopo quelli ordinati,
+                    # rispettando l'ordine in cui è stato trovato
                     return 8888 + album_trovati.index(name)
 
             album_ordinati = sorted(album_trovati, key=sort_logic)
@@ -70,21 +107,36 @@ def get_music():
             final_structure = {}
             brani_singoli = []
 
+            # Divide gli album "veri" (più tracce) dai brani singoli
             for nome_alb in album_ordinati:
                 tracce = temp_albums[nome_alb]
-                # Se è un album reale (>1 traccia) e non è lo sconosciuto
+                # Se è un album reale (>1 traccia) e non è lo sconosciuto, lo tiene come album
                 if nome_alb != "_SCONOSCIUTO_" and len(tracce) > 1:
+                    # --- ORDINAMENTO INTERNO ALL'ALBUM ---
+                    # Ordina per numero di traccia (#) se presente; altrimenti va in fondo
+                    # e viene ordinato alfabeticamente come fallback.
+                    def track_sort_key(fname, _folder=folder_name):
+                        num = track_number(_folder, fname)
+                        # (0, numero) se il numero c'è -> viene prima; (1, nome) come fallback alfabetico in coda
+                        if num is not None:
+                            return (0, num, fname.lower())
+                        return (1, 0, fname.lower())
+
+                    tracce = sorted(tracce, key=track_sort_key)
                     final_structure[nome_alb] = tracce
                 else:
+                    # Altrimenti (traccia singola o sconosciuto) finisce tra i brani singoli
                     brani_singoli.extend(tracce)
                     if nome_alb != "_SCONOSCIUTO_":
-                        tutti_album_singoli.append(nome_alb)
+                        tutti_album_singoli.append(nome_alb)  # traccia gli album "singoli" a parte
 
+            # Brani Singoli: sempre ordinati alfabeticamente
             if brani_singoli:
                 final_structure["Brani Singoli"] = sorted(brani_singoli, key=lambda x: x.lower())
             
             songs_by_folder[folder_name] = final_structure
         else:
+            # Cartella non esistente: nessun brano da mostrare
             songs_by_folder[folder_name] = {}
             
     return songs_by_folder
