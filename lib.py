@@ -501,13 +501,16 @@ def get_info(song):
         audio = FLAC(song)
         # FLAC restituisce sempre liste di stringhe
         title = audio.get('title', [song.split('/')[-1][:-5]])[0]
-        artist = audio.get('artist', ['Unknown Artist'])[0]
         album = audio.get('album', ['Unknown Album'])[0]
+        
+        # Prende la lista di artisti e li unisce separandoli con una virgola
+        artist_list = audio.get('artist', ['Unknown Artist'])
+        artist = ", ".join(artist_list)
     elif song.endswith('.mp3'):
         audio = MP3(song)
         # Gli MP3 usano i frame ID3. Usiamo .text[0] per prendere il contenuto pulito
         title = str(audio.get('TIT2', song.split('/')[-1][:-4]))
-        artist = str(audio.get('TPE1', 'Unknown Artist'))
+        artist = ", ".join(audio.get('TPE1').text) if audio.get('TPE1') else 'Unknown Artist'
         album = str(audio.get('TALB', 'Unknown Album'))
     else:
         return {"error": "Formato non supportato"}
