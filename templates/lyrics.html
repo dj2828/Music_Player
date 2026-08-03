@@ -136,6 +136,7 @@
 
             let lyricsArray = null;
             let audioPlayer = window.parent.document.getElementById("audioPlayer");
+            let ultimoIndice = -1;
 
             const updateProgress = setInterval(() => {
                 centraTesto();
@@ -145,17 +146,18 @@
                 if (audioPlayer && audioPlayer.currentTime && lyricsArray) {
                     const index = getCurrentLrcIndex(lyricsArray, audioPlayer.currentTime);
 
-                    ingrandisciTesto(index);
+                    if (index !== -1 && index !== ultimoIndice || force) {
+                        ultimoIndice = index;
 
-                    const rigaAttiva = document.querySelector(".si");
-                    if (rigaAttiva && (Date.now() - timeLastScroll > 3000 || force)) { // Il delay dello scroll manuale
-                        isProgrammaScroll = true;
-                        clearTimeout(programmaScrollTimeout); // annulla eventuali reset "vecchi" ancora in sospeso
-                        rigaAttiva.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center",
-                        });
-                        programmaScrollTimeout = setTimeout(() => { isProgrammaScroll = false; }, 100); // attendi la fine della animazione
+                        ingrandisciTesto(index);
+
+                        const rigaAttiva = document.querySelector(".si");
+                        if (rigaAttiva) {
+                            rigaAttiva.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center",
+                            });
+                        }
                     }
                 }
             }
@@ -300,19 +302,9 @@
 
                 if (audioPlayer) {
                     audioPlayer.currentTime = timeInSeconds;
-                    analyserAudio.currentTime = timeInSeconds;
                     centraTesto(true); // Forziamo l'aggiornamento del testo centrato subito dopo il click
                 }
             }
-
-            // Gestione il delay scroll manuale da parte dell'utente
-            let timeLastScroll = 0;
-            let isProgrammaScroll = false;
-            let programmaScrollTimeout = null;
-            document.addEventListener("scroll", () => {
-                if (isProgrammaScroll) return;
-                timeLastScroll = Date.now();
-            });
 
             // Avviamo il processo
             if (window.parent.document.getElementById('cover-container').classList.contains('cover404'))
