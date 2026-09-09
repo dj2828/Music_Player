@@ -820,7 +820,7 @@
                     position: absolute;
                     right: 40px;
                     bottom: 40px;
-                " class="circle" id="fullscreen" onclick="
+                " class="circle" id="fullscreenBtn" onclick="
                     const lyricsModal = document.getElementById('lyricsModal').querySelector('.modal');
                     const lyricsIframe = document.getElementById('iframe-lirics');
                     if (!document.fullscreenElement) {
@@ -828,12 +828,7 @@
                         lyricsModal.style.borderRadius = 0;
                         lyricsIframe.contentDocument.getElementById('container').classList.add('fullscreen');
                         lyricsIframe.contentWindow.centraTesto(true);
-                    } else {
-                        document.exitFullscreen();
-                        lyricsModal.style.borderRadius = getComputedStyle(document.documentElement).getPropertyValue('--border-radius');
-                        lyricsIframe.contentDocument.getElementById('container').classList.remove('fullscreen');
-                        lyricsIframe.contentWindow.centraTesto(true);
-                    }
+                    } else document.exitFullscreen(); // cè anche un event listener
                 "><i class="fa-solid fa-expand"></i></div>
                 <iframe
                     src=""
@@ -1048,6 +1043,16 @@
                 button.style.color = "black";
                 button.style.borderColor = "black";
             }
+            document.getElementById('lyricsModal').addEventListener('fullscreenchange', (event) => {
+                // Se non c'è alcun elemento in full screen, significa che è uscito
+                if (!document.fullscreenElement) {
+                    const lyricsModal = document.getElementById('lyricsModal').querySelector('.modal');
+                    const lyricsIframe = document.getElementById('iframe-lirics');
+                    lyricsModal.style.borderRadius = getComputedStyle(document.documentElement).getPropertyValue('--border-radius');
+                    lyricsIframe.contentDocument.getElementById('container').classList.remove('fullscreen');
+                    lyricsIframe.contentWindow.centraTesto(true);
+                }
+            });
             function openSettingsModal() {
                 document.getElementById("settingsModal").style.display = "flex";
             }
