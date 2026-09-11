@@ -127,6 +127,9 @@ nav {
 .controls div:nth-child(2):hover {
     transform: scale(1.7);
 }
+.fa-play {
+    transform: translateX(1px);
+}
 
 .cartella {
     margin: 10px;
