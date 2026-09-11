@@ -440,7 +440,13 @@
                         objectUrl = URL.createObjectURL(blob);
                         immagine.src = objectUrl;
                         artworkSrc = objectUrl;
-                        immagine.classList.remove('blur');
+                        if (immagine.complete) { // tipo cache che si carica subito
+                            immagine.classList.remove('blur');
+                        } else {
+                            immagine.addEventListener('load', () => { 
+                                immagine.classList.remove('blur'); 
+                            }, { once: true });
+                        }
                     } else {
                         artworkSrc = "";
                     }

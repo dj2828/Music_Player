@@ -240,7 +240,7 @@ def img(folder, filename):
         print("Immagine già presente")
     bad_quality = request.args.get("bad", None)
     if album_name and album_name not in ALBUM_FINTI and album_name not in tutti_album_singoli:
-        return redirect("/img/album/" + album_name + ("?bad=true" if bad_quality else ""))
+        return redirect("/img/album/" + album_name + ("?bad=true" if bad_quality else ""), code=301) # 301 = permanent ridirect
     else:
         if bad_quality:
             link_bad_quality = lib.imgBadQuality(dir_img, nome_img)
