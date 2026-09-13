@@ -162,7 +162,7 @@ def index():
     risposta = make_response(render_template('index.html', songs_by_folder=get_music(), pref=load_pref()))
     if request.cookies.get("low-data") == None: # se non cè il cookie
         if (not (request.remote_addr.startswith('192.168.') or request.remote_addr == '127.0.0.1')) or DOCKER:
-            risposta.set_cookie('low-data', True, max_age=365 * 24 * 60 * 60 * 1000)
+            risposta.set_cookie('low-data', 'true', max_age=365 * 24 * 60 * 60)
     return risposta
 
 @app.route('/errore', methods=['GET'])
