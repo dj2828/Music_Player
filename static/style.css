@@ -55,7 +55,7 @@ nav {
     color: #000000;
     background-color: #ff5500;
     border: 2px solid #000000;
-    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.69);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.69);
     cursor: pointer;
 
     display: flex;
@@ -186,7 +186,7 @@ nav {
     pointer-events: none;
 }
 .button.pref {
-    box-shadow: 0 5px 10px rgb(255 198 0);
+    box-shadow: 0 2px 10px rgb(255 198 0);
 }
 .button.song {
     display: flex;
@@ -615,7 +615,7 @@ nav {
         font-size: 20px; /* ≈ 16px */
     }
     nav {
-        margin-bottom: 10px;
+        margin-bottom: 5px;
     }
     #progress {
         margin: 5px -5px;
