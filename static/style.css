@@ -48,6 +48,14 @@ nav {
     justify-content: space-between;
     margin-bottom: 5px;
 }
+nav #long_skip_notifier {
+    opacity: 1;
+    transition: opacity 0.2s var(--curva-animazione), transform 0.3s var(--curva-animazione);
+}
+nav #long_skip_notifier.none {
+    opacity: 0;
+    transform: translateY(-30px);
+}
 .circle {
     width: 40px;
     height: 40px;

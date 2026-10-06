@@ -24,6 +24,7 @@
                     <div onclick="openMenu()" class="circle">
                         <i class="fa-solid fa-bars"></i>
                     </div>
+                    <div onclick="alert('long skip è attivo, per disattivarlo vai nelle impostazioni e metti i valori su null')" class="circle none" id="long_skip_notifier"><i class="fa-solid fa-exclamation"></i></div>
                     <div id="ellipse-container">
                         <div
                             id="ellipse-button"
@@ -508,6 +509,42 @@
                 if (document.getElementById('lyricsModal').style.display === 'flex' && !document.getElementById('lyricsModal').classList.contains('chords')) openlyricsModal();
                 // idem per gli accordi
                 if (document.getElementById('lyricsModal').style.display === 'flex' && document.getElementById('lyricsModal').classList.contains('chords')) openChordsModal();
+            
+                // long_skip
+                document.getElementById('long_skip_notifier').classList.add('none');
+                audioPlayer.addEventListener('loadedmetadata', () => {
+                    const skipFromMin = parseFloat(localStorage.getItem("long_skip_from"));
+                    const skipToMin = parseFloat(localStorage.getItem("long_skip_to"));
+                    
+                    if (isNaN(skipFromMin) || isNaN(skipToMin)) return;
+                    
+                    // Converte i minuti salvati in secondi
+                    const skipFromSec = skipFromMin * 60;
+                    const skipToSec = skipToMin * 60;
+
+                    if (audioPlayer.duration >= skipFromSec) {
+
+                        document.getElementById('long_skip_notifier').classList.remove('none');
+
+                        // Rimuove eventuali listener precedenti per evitare esecuzioni doppie
+                        if (audioPlayer._skipHandler) {
+                            audioPlayer.removeEventListener("timeupdate", audioPlayer._skipHandler);
+                        }
+
+                        // Crea il nuovo gestore dell'evento
+                        audioPlayer._skipHandler = () => {
+                            if (audioPlayer.currentTime >= skipToSec) {
+                                // Rimuove il listener prima di passare al prossimo brano
+                                audioPlayer.removeEventListener("timeupdate", audioPlayer._skipHandler);
+                                audioPlayer._skipHandler = null;
+                                nextSong();
+                            }
+                        };
+
+                        // Aggiunge il listener per controllare la riproduzione
+                        audioPlayer.addEventListener("timeupdate", audioPlayer._skipHandler);
+                    }
+                });
             }
 
             function playFolderRandom(folder) {
@@ -901,6 +938,26 @@
                                 </div>
                             `;
                             document.getElementById("waveform-container").innerHTML = waveformHtml;
+                        </script>
+                    </div>
+                    <div id="long-skip-container" style="margin-top: 10px">
+                        Taglia +<input type="number" placeholder="30" id="long_skip_from">m a <input type="number" placeholder="3" id="long_skip_to">m
+                        <style>
+                            #long-skip-container input {max-width: 35px; text-align: center;}
+                        </style>
+                        <script>
+                            const long_skip_from = document.getElementById('long_skip_from');
+                            const long_skip_to = document.getElementById('long_skip_to');
+
+                            long_skip_from.value = localStorage.getItem("long_skip_from") || "";
+                            long_skip_to.value = localStorage.getItem("long_skip_to") || "";
+
+                            long_skip_from.addEventListener("change", e => {
+                                localStorage.setItem("long_skip_from", long_skip_from.value);
+                            });
+                            long_skip_to.addEventListener("change", e => {
+                                localStorage.setItem("long_skip_to", long_skip_to.value);
+                            });
                         </script>
                     </div>
                 </div>
