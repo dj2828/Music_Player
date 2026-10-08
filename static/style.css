@@ -55,6 +55,7 @@ nav #long_skip_notifier {
 nav #long_skip_notifier.none {
     opacity: 0;
     transform: translateY(-30px);
+    pointer-events: none;
 }
 .circle {
     width: 40px;
