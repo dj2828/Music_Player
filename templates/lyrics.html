@@ -52,6 +52,7 @@
                 line-height: 3;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 cursor: pointer;
+                filter: blur(2px);
             }
             .lyric-line:first-of-type {
                 margin-top: 50vh;
@@ -59,6 +60,9 @@
             .lyric-line:last-of-type {
                 margin-bottom: 50vh;
             }
+            .lyric-line.prev-1 { filter: blur(0.67px); }
+            .lyric-line.prev-2 { filter: blur(1px); }
+            .lyric-line.prev-3 { filter: blur(1.5px); }
 
             #container{
                 text-align: center;
@@ -72,6 +76,7 @@
 
             .si {
                 transform: scale(1.5);
+                filter: blur(0);
             }
             .si span {
                 color: #fff;
@@ -168,6 +173,18 @@
                 if (index < 0 || index >= testoDiv.children.length) return; // Se fuori testo non applicare niente
                 testoDiv.children[index].classList.add("si");
                 if (index !== 0) testoDiv.children[index - 1].classList.remove("si");
+
+                // Rimuoviamo le classi prev-* da tutte le righe
+                for (let i = 0; i < testoDiv.children.length; i++) {
+                    testoDiv.children[i].classList.remove("prev-1", "prev-2", "prev-3");
+                }
+                // Aggiungiamo le classi prev-* alle righe precedenti e le righe successive
+                if (index - 1 >= 0) testoDiv.children[index - 1].classList.add("prev-1");
+                if (index - 2 >= 0) testoDiv.children[index - 2].classList.add("prev-2");
+                if (index - 3 >= 0) testoDiv.children[index - 3].classList.add("prev-3");
+                if (index + 1 < testoDiv.children.length) testoDiv.children[index + 1].classList.add("prev-1");
+                if (index + 2 < testoDiv.children.length) testoDiv.children[index + 2].classList.add("prev-2");
+                if (index + 3 < testoDiv.children.length) testoDiv.children[index + 3].classList.add("prev-3");
             }
 
             function getCurrentLrcIndex(lrcArray, currentTime) {
@@ -388,6 +405,11 @@
             // fermiamo il rendering per evitare leak di animation frame (idk chiedi a claude).
             window.addEventListener('pagehide', () => {
                 if (audioMotion) audioMotion.destroy();
+            });
+
+            window.addEventListener('scroll', () => {
+                // Aggiorna la variabile CSS con i pixel di scroll attuali
+                document.documentElement.style.setProperty('--scroll', window.scrollY);
             });
 
             fetchLyrics();
