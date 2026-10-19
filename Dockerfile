@@ -1,8 +1,10 @@
 FROM python:3-alpine
 
-# Alpine usa 'apk' come package manager
+# Install system dependencies, including build tools for packages like brotli
 RUN apk update && \
-    apk add --no-cache ffmpeg
+    apk add --no-cache \
+    ffmpeg \
+    build-base
 
 # Warning: A port below 1024 has been exposed. This requires the image to run as a root user which is not a best practice.
 # For more information, please refer to https://aka.ms/vscode-docker-python-user-rights
@@ -14,12 +16,14 @@ ENV PYTHONDONTWRITEBYTECODE=1
 # Turns off buffering for easier container logging
 ENV PYTHONUNBUFFERED=1
 
-# Install pip requirements
-COPY requirements.txt .
-RUN python -m pip install --no-cache-dir -r requirements.txt
-RUN pip install --no-cache-dir gunicorn
-
 WORKDIR /app
+
+# Install pip requirements first (leveraging Docker cache layers)
+COPY requirements.txt .
+RUN python -m pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir gunicorn
+
+# Copy the rest of the application code
 COPY . /app
 
 # During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
