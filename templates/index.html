@@ -16,6 +16,8 @@
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Music Player" />
         <link rel="apple-touch-icon" href="/static/IO_apple.png" />
+
+        <script src="/static/keybinds.js"></script>
     </head>
     <body>
         <div class="container">
@@ -324,16 +326,6 @@
                 }
                 localStorage.setItem('lastVolume', slider.value);
             }
-
-            window.addEventListener('keydown', function(e) {
-                if (
-                    (e.key === " " || e.code === "Space" || e.key === "Spacebar") &&
-                    !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)
-                ) {
-                    e.preventDefault();
-                    togglePlay();
-                }
-            });
 
             let currentIndex = -1;
             let randomFolderPlaylist = null;
@@ -863,16 +855,7 @@
                     position: absolute;
                     right: 40px;
                     bottom: 40px;
-                " class="circle" id="fullscreenBtn" onclick="
-                    const lyricsModal = document.getElementById('lyricsModal').querySelector('.modal');
-                    const lyricsIframe = document.getElementById('iframe-lirics');
-                    if (!document.fullscreenElement) {
-                        lyricsModal.requestFullscreen();
-                        lyricsModal.style.borderRadius = 0;
-                        lyricsIframe.contentDocument.getElementById('container').classList.add('fullscreen');
-                        lyricsIframe.contentWindow.centraTesto(true);
-                    } else document.exitFullscreen(); // cè anche un event listener
-                "><i class="fa-solid fa-expand"></i></div>
+                " class="circle" id="fullscreenBtn" onclick="fullscreenLyrics()"><i class="fa-solid fa-expand"></i></div>
                 <iframe
                     src=""
                     frameborder="0"
@@ -1088,7 +1071,7 @@
                 lyrics.src = "lyrics?path=" + encodeURIComponent(getCurrentSongPath());
 
                 // cambia il colore del pulsane di fullscreen
-                let button = document.getElementById('fullscreen');
+                let button = document.getElementById('fullscreenBtn');
                 button.style.color = "#bdbdbd";
                 button.style.borderColor = "#bdbdbd";
             }
@@ -1102,9 +1085,19 @@
                 lyrics.src = "chords?song=" + encodeURIComponent(getCurrentSongPath(true));
 
                 // cambia il colore del pulsane di fullscreen
-                let button = document.getElementById('fullscreen');
+                let button = document.getElementById('fullscreenBtn');
                 button.style.color = "black";
                 button.style.borderColor = "black";
+            }
+            function fullscreenLyrics() {
+                const lyricsModal = document.getElementById('lyricsModal').querySelector('.modal');
+                const lyricsIframe = document.getElementById('iframe-lirics');
+                if (!document.fullscreenElement) {
+                    lyricsModal.requestFullscreen();
+                    lyricsModal.style.borderRadius = 0;
+                    lyricsIframe.contentDocument.getElementById('container').classList.add('fullscreen');
+                    lyricsIframe.contentWindow.centraTesto(true);
+                } else document.exitFullscreen(); // cè anche un event listener
             }
             document.getElementById('lyricsModal').addEventListener('fullscreenchange', (event) => {
                 // Se non c'è alcun elemento in full screen, significa che è uscito
