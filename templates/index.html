@@ -1095,11 +1095,16 @@
                 if (!document.fullscreenElement) {
                     lyricsModal.requestFullscreen();
                     lyricsModal.style.borderRadius = 0;
-                    lyricsIframe.contentDocument.getElementById('container').classList.add('fullscreen');
-                    lyricsIframe.contentWindow.centraTesto(true);
+                    // per il pulsante fullscreen, per KeyF e al cambio canzone cè in lyrics.html
+                    // (è in un try perchè altrimenti da errore quando fai con KeyF non essendo ancora caricato l'iframe)
+                    // (ho fatto cosi perchè sono meno righe di codice da cambiare ed è piu reattivo il KeyF)
+                    try {
+                        lyricsIframe.contentDocument.getElementById('container').classList.add('fullscreen');
+                        lyricsIframe.contentWindow.centraTesto(true);
+                    } catch(e){}
                 } else document.exitFullscreen(); // cè anche un event listener
             }
-            document.getElementById('lyricsModal').addEventListener('fullscreenchange', (event) => {
+            document.getElementById('lyricsModal').addEventListener('fullscreenchange', () => {
                 // Se non c'è alcun elemento in full screen, significa che è uscito
                 if (!document.fullscreenElement) {
                     const lyricsModal = document.getElementById('lyricsModal').querySelector('.modal');

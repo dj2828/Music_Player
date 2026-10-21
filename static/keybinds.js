@@ -27,15 +27,12 @@ function keybinds(e) {
             e.preventDefault();
             if (document.getElementById('lyricsModal').style.display === "none" || document.getElementById('lyricsModal').style.display === "") {
                 openlyricsModal();
-                document.getElementById('iframe-lirics').addEventListener('load', () => {
-                    fullscreenLyrics();
-                }, { once: true });
+            }
+            
+            if (!document.fullscreenElement) {
+                fullscreenLyrics();
             } else {
-                if (!document.fullscreenElement) {
-                    fullscreenLyrics();
-                } else {
-                    document.exitFullscreen();
-                }
+                document.exitFullscreen();
             }
             break;
     }

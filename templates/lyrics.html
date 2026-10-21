@@ -426,6 +426,13 @@
             window.addEventListener('keydown', function(e) {
                 window.parent.keybinds(e);
             });
+
+            // aggiunge .fullscreen se è in fullscreen
+            // è qua perchè quando cambia canzone ed è in fullscreen, l'iframe viene ricaricato e perde la classe .fullscreen
+            // e anche per il keybinds worka cosi
+            if (window.parent.document.fullscreenElement) {
+                document.getElementById('container').classList.add('fullscreen');
+            }
         </script>
     </body>
 </html>
