@@ -170,6 +170,9 @@
 
             function ingrandisciTesto(index) {
                 let testoDiv = document.getElementById("testo-output");
+
+                if (index === 0) { testoDiv.firstChild.style.filter = ""; } // La prima riga resetta il blur a none
+
                 if (index < 0 || index >= testoDiv.children.length) return; // Se fuori testo non applicare niente
                 testoDiv.children[index].classList.add("si");
                 if (index !== 0) testoDiv.children[index - 1].classList.remove("si");
