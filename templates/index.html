@@ -1100,7 +1100,7 @@
                     // (ho fatto cosi perchè sono meno righe di codice da cambiare ed è piu reattivo il KeyF)
                     try {
                         lyricsIframe.contentDocument.getElementById('container').classList.add('fullscreen');
-                        lyricsIframe.contentWindow.centraTesto(true);
+                        lyricsIframe.contentWindow.centraTesto(true); // anche questo da errore
                     } catch(e){}
                 } else document.exitFullscreen(); // cè anche un event listener
             }

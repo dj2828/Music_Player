@@ -52,7 +52,7 @@
                 line-height: 3;
                 transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                 cursor: pointer;
-                filter: blur(2px);
+                filter: blur(1.25px);
             }
             .lyric-line:first-of-type {
                 margin-top: 50vh;
@@ -60,9 +60,13 @@
             .lyric-line:last-of-type {
                 margin-bottom: 50vh;
             }
-            .lyric-line.prev-1 { filter: blur(0.67px); }
-            .lyric-line.prev-2 { filter: blur(1px); }
-            .lyric-line.prev-3 { filter: blur(1.5px); }
+            .lyric-line.prev-1 { filter: blur(0.5px); }
+            .lyric-line.prev-2 { filter: blur(0.75px); }
+            .lyric-line.prev-3 { filter: blur(1px); }
+            #container.fullscreen .lyric-line.prev-1 { filter: blur(0.6px); }
+            #container.fullscreen .lyric-line.prev-2 { filter: blur(1px); }
+            #container.fullscreen .lyric-line.prev-3 { filter: blur(1.5px); }
+            #container.fullscreen .lyric-line {filter: blur(2px);}
 
             #container{
                 text-align: center;
@@ -76,7 +80,7 @@
 
             .si {
                 transform: scale(1.5);
-                filter: blur(0);
+                filter: blur(0) !important;
             }
             .si span {
                 color: #fff;
@@ -414,11 +418,6 @@
             // fermiamo il rendering per evitare leak di animation frame (idk chiedi a claude).
             window.addEventListener('pagehide', () => {
                 if (audioMotion) audioMotion.destroy();
-            });
-
-            window.addEventListener('scroll', () => {
-                // Aggiorna la variabile CSS con i pixel di scroll attuali
-                document.documentElement.style.setProperty('--scroll', window.scrollY);
             });
 
             fetchLyrics();
