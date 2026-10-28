@@ -66,7 +66,8 @@
             #container.fullscreen .lyric-line.prev-1 { filter: blur(0.6px); }
             #container.fullscreen .lyric-line.prev-2 { filter: blur(1px); }
             #container.fullscreen .lyric-line.prev-3 { filter: blur(1.5px); }
-            #container.fullscreen .lyric-line {filter: blur(2px);}
+            #container.fullscreen .lyric-line { filter: blur(2px); }
+            #testo-output.no-blur .lyric-line { filter: blur(0px) !important; }
 
             #container{
                 text-align: center;
@@ -194,19 +195,18 @@
                 if (index + 3 < testoDiv.children.length) testoDiv.children[index + 3].classList.add("prev-3");
             }
 
+            function parseTime(tag) {
+                if (typeof tag !== "string") return null;
+
+                const match = tag.match(/\[(\d{2}):(\d{2}\.\d{2})\]/);
+                if (!match) return null;
+
+                const minutes = parseInt(match[1], 10);
+                const seconds = parseFloat(match[2]);
+
+                return minutes * 60 + seconds;
+            }
             function getCurrentLrcIndex(lrcArray, currentTime) {
-                function parseTime(tag) {
-                    if (typeof tag !== "string") return null;
-
-                    const match = tag.match(/\[(\d{2}):(\d{2}\.\d{2})\]/);
-                    if (!match) return null;
-
-                    const minutes = parseInt(match[1], 10);
-                    const seconds = parseFloat(match[2]);
-
-                    return minutes * 60 + seconds;
-                }
-
                 let index = -1;
 
                 for (let i = 0; i < lrcArray.length; i++) {
@@ -288,7 +288,11 @@
 
                 lyricsArray = parseLRC(rawText);
 
+                let tempoTrovato = false;
+
                 lyricsArray.forEach(line => {
+                    if (line.originalTime) tempoTrovato = true;
+
                     const p = document.createElement("p");
                     p.className = "lyric-line";
 
@@ -306,11 +310,16 @@
                     outputDiv.appendChild(p);
                 });
 
-                // sistema la sfocatura prima ancora di chiamare ingrandisciTesto, così la prima riga non è sfocata e quelle dopo sono giuste
-                outputDiv.firstElementChild.style.filter = "blur(0)";
-                outputDiv.children[1].classList.add("prev-1");
-                outputDiv.children[2].classList.add("prev-2");
-                outputDiv.children[3].classList.add("prev-3");
+                // solo se ha il tempo
+                if (tempoTrovato) {
+                    // sistema la sfocatura prima ancora di chiamare ingrandisciTesto, così la prima riga non è sfocata e quelle dopo sono giuste
+                    outputDiv.firstElementChild.style.filter = "blur(0)";
+                    outputDiv.children[1].classList.add("prev-1");
+                    outputDiv.children[2].classList.add("prev-2");
+                    outputDiv.children[3].classList.add("prev-3");
+                } else {
+                    document.getElementById('testo-output').classList.add("no-blur");
+                }
             }
 
             // Funzione per saltare al tempo quando si clicca sul testo
