@@ -68,6 +68,7 @@
             #container.fullscreen .lyric-line.prev-3 { filter: blur(1.5px); }
             #container.fullscreen .lyric-line { filter: blur(2px); }
             #testo-output.no-blur .lyric-line { filter: blur(0px) !important; }
+            .lyric-line.no-blur { filter: blur(0px) !important } /* per la prima riga */
 
             #container{
                 text-align: center;
@@ -176,7 +177,7 @@
             function ingrandisciTesto(index) {
                 let testoDiv = document.getElementById("testo-output");
 
-                if (index === 0) { testoDiv.firstChild.style.filter = ""; } // La prima riga resetta il blur a none
+                if (index > 0) { testoDiv.firstChild.classList.remove("no-blur") } // La prima riga toglie no-blur
 
                 if (index < 0 || index >= testoDiv.children.length) return; // Se fuori testo non applicare niente
                 testoDiv.children[index].classList.add("si");
@@ -313,6 +314,7 @@
                 // solo se ha il tempo
                 if (tempoTrovato) {
                     // sistema la sfocatura prima ancora di chiamare ingrandisciTesto, così la prima riga non è sfocata e quelle dopo sono giuste
+                    outputDiv.children[0].classList.add("no-blur"); // La prima riga resetta il blur a none
                     outputDiv.children[1].classList.add("prev-1");
                     outputDiv.children[2].classList.add("prev-2");
                     outputDiv.children[3].classList.add("prev-3");
