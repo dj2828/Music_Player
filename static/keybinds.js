@@ -23,7 +23,7 @@ function keybinds(e) {
             audioPlayer.currentTime = 0;
             break;
             
-        case "KeyF":
+        case "KeyC":
             e.preventDefault();
             if (document.getElementById('lyricsModal').style.display === "none" || document.getElementById('lyricsModal').style.display === "") {
                 openlyricsModal();
