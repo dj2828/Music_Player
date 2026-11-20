@@ -130,10 +130,10 @@ nav #long_skip_notifier.none {
     margin-top: 15px;
     margin-bottom: 5px;
 }
-.controls div:nth-child(2) {
+.circle.grande {
     transform: scale(1.5);
 }
-.controls div:nth-child(2):hover {
+.circle.grande:hover {
     transform: scale(1.7);
 }
 .fa-play {
@@ -491,6 +491,23 @@ nav #long_skip_notifier.none {
     margin-right: 10px;
 }
 
+#wrappedContainer {
+    position: fixed;
+    left: 20px;
+    bottom: 20px;
+    z-index: 1676;
+    display: none;
+    animation: wrappedBtnAnimation 0.67s ease 2s both;
+}
+@keyframes wrappedBtnAnimation {
+    from {
+        translate: -100px 0;
+    }
+    to {
+        translate: 0 0;
+    }
+}
+
 @media (max-width: 1400px) {
     .container {
         flex-direction: column;
@@ -512,10 +529,10 @@ nav #long_skip_notifier.none {
     .circle:active {
         transform: scale(var(--button-scale));
     }
-    .controls div:nth-child(2):hover {
+    .circle.grande:hover {
         transform: scale(1.5);
     }
-    .controls div:nth-child(2):active {
+    .circle.grande:active {
         transform: scale(1.7);
     }
     .button:hover {
@@ -641,4 +658,8 @@ nav #long_skip_notifier.none {
         width: 25px;
     }
     #cover-container img.blur { filter: blur(1.5px); }
+    #wrappedContainer {
+        left: 15px;
+        bottom: 15px;
+    }
 }

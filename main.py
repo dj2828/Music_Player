@@ -511,6 +511,68 @@ def get_chord():
         return lib.get_accordi(f"singolo{chord}")
     return "Not found", 404
 
+@app.route('/wrapped', methods=['GET'])
+def wrapped():
+    bd = get_music()
+    plays = load_plays()
+    dove = {f: folder for folder, albums in bd.items() for tracce in albums.values() for f in tracce}
+
+    brani, artisti, albums_d = [], {}, {}
+    artisti_best, artisti_cover = {}, {}  # copertina (folder, file) del brano piu ascoltato per artista
+    secondi = 0.0
+
+    for filename, count in plays.items():
+        folder = dove.get(filename)
+        if not folder:
+            continue
+        path = os.path.join(MUSIC_FOLDERS[folder], filename)
+        try:
+            info = lib.get_info(path)
+            if "error" in info:
+                continue
+            durata = (FLAC(path) if path.endswith('.flac') else MP3(path)).info.length
+        except Exception:
+            continue
+
+        secondi += durata * count
+        brani.append({"folder": folder, "file": filename, "title": info["title"],
+                      "artist": info["artist"], "plays": count})
+
+        # Conta solo l'artista principale (il primo), ignorando gli artisti secondari
+        nome = info["artist"].split(", ")[0].strip()
+        if nome == "thasup": nome = "tha Supreme"  # correzione per l'artista tha Supreme
+        if nome and nome != "Unknown Artist":
+            artisti[nome] = artisti.get(nome, 0) + count
+            # Aggiorna la copertina se questo brano e' il piu ascoltato per l'artista
+            if count > artisti_best.get(nome, 0):
+                artisti_best[nome] = count
+                artisti_cover[nome] = (folder, filename)
+
+        if info["album"] != "Unknown Album":
+            a = albums_d.setdefault(info["album"], {"name": info["album"], "plays": 0, "tracks": 0,
+                                                    "folder": folder, "file": filename, "best": 0})
+            a["plays"] += count
+            a["tracks"] += 1
+            if count > a["best"]:  # la copertina è quella del brano più ascoltato dell'album
+                a["best"], a["folder"], a["file"] = count, folder, filename
+
+    brani.sort(key=lambda s: s["plays"], reverse=True)
+    top_artisti = sorted(artisti.items(), key=lambda x: x[1], reverse=True)[:5]
+    top_album = sorted((a for a in albums_d.values() if a["tracks"] > 1),  # esclude i singoli
+                       key=lambda a: a["plays"], reverse=True)[:3]
+
+    data = {
+        "total_songs": len(brani),
+        "total_plays": sum(s["plays"] for s in brani),
+        "seconds": int(secondi),
+        "top_songs": brani[:5],
+        "artists": [{"name": n, "plays": p, "folder": artisti_cover.get(n, (None, None))[0], "file": artisti_cover.get(n, (None, None))[1]} for n, p in top_artisti],
+        "albums": top_album,
+        "loyal": sum(1 for s in brani if s["plays"] >= 50),
+        "rare": sum(1 for s in brani if s["plays"] <= 2),
+    }
+    return render_template('wrapped.html', wrapped=data)
+
 @app.after_request
 def add_header(response):
     if request.path.endswith(('.mp3', '.flac')):

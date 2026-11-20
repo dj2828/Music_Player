@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="it">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <title>Wrapped</title>
+        <link rel="icon" type="image/png" href="/static/IO.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&display=swap" rel="stylesheet"/>
+        <script src="https://kit.fontawesome.com/b4ceb7d98e.js" crossorigin="anonymous" defer></script>
+        <style>
+            :root {
+                --ink: #1a1030;
+                --cream: #fff4e6;
+                --red: #ff3b1f;
+                --blue: #2a2bd6;
+                --yellow: #ffe45e;
+                --pink: #ff7ac8;
+                --violet: #7b5cff;
+                --green: #12b886;
+            }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            html,
+            body {
+                height: 100%;
+            }
+            body {
+                background: #0c0816;
+                display: grid;
+                place-items: center;
+                overflow: hidden;
+                font-family: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
+                font-weight: 500;
+            }
+
+            /* --- BASE MOBILE / VERTICALE (9:16) --- */
+            .stage {
+                position: relative;
+                container-type: size;
+                height: min(100dvh, 960px);
+                aspect-ratio: 9/16;
+                max-width: 100vw;
+                overflow: hidden;
+                background: var(--ink);
+                user-select: none;
+                -webkit-user-select: none;
+                cursor: pointer;
+            }
+            .bars {
+                position: absolute;
+                z-index: 5;
+                left: 4cqw;
+                right: 4cqw;
+                top: calc(env(safe-area-inset-top, 0px) + 3cqw);
+                display: flex;
+                gap: 1.2cqw;
+            }
+            .bars i {
+                flex: 1;
+                height: 1cqw;
+                min-height: 3px;
+                border-radius: 9px;
+                background: currentColor;
+                opacity: 0.9;
+                overflow: hidden;
+                position: relative;
+            }
+            .bars i::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                background: var(--ink);
+                opacity: 0.28;
+            }
+            .bars b {
+                position: absolute;
+                inset: 0 auto 0 0;
+                width: 0;
+                background: currentColor;
+            }
+            .bars .done b {
+                width: 100%;
+            }
+            .bars .cur b {
+                animation: fill var(--dur, 9s) linear forwards;
+            }
+            .paused .bars .cur b {
+                animation-play-state: paused;
+            }
+            @keyframes fill {
+                to {
+                    width: 100%;
+                }
+            }
+            .slide {
+                position: absolute;
+                inset: 0;
+                padding: calc(env(safe-area-inset-top, 0px) + 14cqw) 7cqw 9cqw;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 4cqw;
+                background: var(--bg);
+                color: var(--fg);
+                opacity: 0;
+                visibility: hidden;
+                transition:
+                    opacity 0.35s,
+                    visibility 0.35s;
+                isolation: isolate;
+                overflow: hidden;
+                text-shadow: 0 1px 14px rgba(0, 0, 0, 0.25);
+            }
+            .slide.on {
+                opacity: 1;
+                visibility: visible;
+            }
+            .col {
+                display: flex;
+                flex-direction: column;
+                gap: 4cqw;
+            }
+            .bgimg {
+                position: absolute;
+                z-index: -2;
+                left: -25%;
+                top: -25%;
+                width: 150%;
+                height: 150%;
+                object-fit: cover;
+                filter: blur(46px) saturate(1.6);
+                pointer-events: none;
+            }
+            .slide::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                z-index: -1;
+                background: linear-gradient(rgba(10, 6, 20, 0.2), rgba(10, 6, 20, 0.55));
+            }
+            .mesh {
+                position: absolute;
+                inset: 0;
+                z-index: -2;
+                overflow: hidden;
+                pointer-events: none;
+            }
+            .mesh i {
+                position: absolute;
+                width: 95%;
+                aspect-ratio: 1;
+                border-radius: 50%;
+                background: radial-gradient(circle, var(--c) 0, transparent 66%);
+            }
+            .mesh i:nth-child(1) {
+                left: -25%;
+                top: -10%;
+                animation: b1 17s ease-in-out infinite alternate;
+            }
+            .mesh i:nth-child(2) {
+                right: -35%;
+                top: 25%;
+                animation: b2 21s ease-in-out infinite alternate;
+            }
+            .mesh i:nth-child(3) {
+                left: -10%;
+                bottom: -25%;
+                animation: b3 25s ease-in-out infinite alternate;
+            }
+            .slide:not(.on) .mesh i {
+                animation-play-state: paused;
+            }
+            .slide.m::before {
+                background: rgba(10, 6, 20, 0.22);
+            }
+            @keyframes b1 {
+                to {
+                    transform: translate(55%, 40%) scale(1.25);
+                }
+            }
+            @keyframes b2 {
+                to {
+                    transform: translate(-60%, -30%) scale(0.8);
+                }
+            }
+            @keyframes b3 {
+                to {
+                    transform: translate(50%, -45%) scale(1.2);
+                }
+            }
+            .glass,
+            .row,
+            .stat {
+                background: rgba(255, 255, 255, 0.14);
+                backdrop-filter: blur(18px) saturate(1.3);
+                -webkit-backdrop-filter: blur(18px) saturate(1.3);
+                border: 1px solid rgb(93 93 93 / 24%);
+                border-radius: 4cqw;
+            }
+            h2 {
+                font-weight: 800;
+                font-size: 10.5cqw;
+                line-height: 0.95;
+                letter-spacing: -0.03em;
+            }
+            h2.hero-artist {
+                font-size: 14cqw;
+            }
+            .big {
+                font-weight: 800;
+                font-size: 40cqw;
+                line-height: 0.82;
+                letter-spacing: -0.06em;
+                font-variant-numeric: tabular-nums;
+            }
+            .num {
+                font-weight: 800;
+                font-size: 14cqw;
+                line-height: 0.9;
+                letter-spacing: -0.04em;
+                font-variant-numeric: tabular-nums;
+            }
+            .sub {
+                font-size: 5.4cqw;
+                line-height: 1.25;
+                max-width: 32ch;
+            }
+            .row {
+                padding: 2.2cqw 3cqw;
+                display: grid;
+                grid-template-columns: 8cqw 15cqw 1fr;
+                align-items: center;
+                gap: 3cqw;
+            }
+            .row .n {
+                font-weight: 800;
+                font-size: 9cqw;
+                letter-spacing: -0.04em;
+            }
+            .row.noimg {
+                grid-template-columns: 8cqw 1fr;
+            }
+            .cv {
+                width: 15cqw;
+                height: 15cqw;
+                border-radius: 2cqw;
+                background: rgba(255, 255, 255, 0.12);
+                overflow: hidden;
+            }
+            .cv img {
+                display: block;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+            .cv.lg {
+                width: 62cqw;
+                height: 62cqw;
+                border-radius: 3cqw;
+                box-shadow: 0 2cqw 24px rgba(0, 0, 0, 0.35);
+            }
+            .t {
+                font-weight: 700;
+                font-size: 5cqw;
+                line-height: 1.1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .m {
+                font-size: 3.8cqw;
+                opacity: 0.8;
+                margin-top: 0.6cqw;
+            }
+            .list {
+                display: flex;
+                flex-direction: column;
+                gap: 3.4cqw;
+            }
+            .stat {
+                display: flex;
+                flex-direction: column;
+                gap: 1cqw;
+                padding: 3cqw 4.5cqw;
+            }
+            .stat .sub {
+                font-size: 4.6cqw;
+            }
+            .btns {
+                display: flex;
+                gap: 3cqw;
+                margin-top: 2cqw;
+            }
+            button,
+            .btn {
+                font: inherit;
+                font-weight: 800;
+                font-size: 4.2cqw;
+                color: #fff;
+                background: rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(14px);
+                -webkit-backdrop-filter: blur(14px);
+                border: 1px solid rgb(93 93 93 / 24%);
+                border-radius: 3cqw;
+                padding: 3cqw 4.5cqw;
+                text-decoration: none;
+                cursor: pointer;
+                transition: background 0.2s, transform 0.15s;
+            }
+            button:hover,
+            .btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+            }
+            button:focus-visible,
+            .btn:focus-visible {
+                outline: 0.8cqw solid var(--fg);
+                outline-offset: 0.6cqw;
+            }
+            .slide.on .row,
+            .slide.on .stat {
+                animation: up 0.5s both;
+                animation-delay: calc(var(--i, 0) * 0.1s);
+            }
+            @keyframes up {
+                from {
+                    opacity: 0;
+                    transform: translateY(20px);
+                }
+            }
+
+            /* Frecce navigazione (visibili su desktop) */
+            .nav-arrow {
+                display: none;
+            }
+
+            /* --- ADATTAMENTO DESKTOP ORIZZONTALE (WIDESCREEN) --- */
+            @media (min-aspect-ratio: 11/10) and (min-width: 768px) {
+                .stage {
+                    width: 100vw;
+                    height: 100dvh;
+                    aspect-ratio: auto;
+                    cursor: default;
+                }
+
+                /* Barre di progresso centrate come navigazione top discreta */
+                .bars {
+                    left: 50%;
+                    right: auto;
+                    transform: translateX(-50%);
+                    width: min(520px, 50vw);
+                    top: 28px;
+                    gap: 8px;
+                }
+                .bars i {
+                    height: 4px;
+                    cursor: pointer;
+                }
+
+                /* Frecce laterali di navigazione */
+                .nav-arrow {
+                    display: grid;
+                    place-items: center;
+                    position: absolute;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    z-index: 10;
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 50%;
+                    padding: 0;
+                    font-size: 20px;
+                    background: rgba(255, 255, 255, 0.12);
+                    border: 1px solid rgb(93 93 93 / 24%);
+                    opacity: 0.65;
+                }
+                .nav-arrow:hover {
+                    opacity: 1;
+                    transform: translateY(-50%) scale(1.06);
+                }
+                .nav-arrow.prev {
+                    left: 2.5vw;
+                }
+                .nav-arrow.next {
+                    right: 2.5vw;
+                }
+
+                /* Layout slide a 2 colonne bilanciate */
+                .slide {
+                    padding: 80px max(7vw, 96px) 56px;
+                    display: grid;
+                    grid-template-columns: 1fr 1fr;
+                    align-items: center;
+                    gap: clamp(32px, 5vw, 80px);
+                }
+
+                /* Slide introduttive / singole centrate a tutta larghezza */
+                .slide.single {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    text-align: center;
+                }
+                .slide.single .sub {
+                    max-width: 44ch;
+                }
+
+                .col {
+                    gap: clamp(14px, 2vh, 24px);
+                }
+                .col.center {
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                /* Scala tipografica fluida basata su viewport orizzontale */
+                h2 {
+                    font-size: clamp(2.4rem, 4.4vw, 4.6rem);
+                    line-height: 0.98;
+                }
+                h2.hero-artist {
+                    font-size: clamp(3rem, 5.5vw, 5.6rem);
+                }
+                .big {
+                    font-size: clamp(7rem, 16vw, 15rem);
+                    line-height: 0.85;
+                    text-align: center;
+                }
+                .num {
+                    font-size: clamp(2.4rem, 4.2vw, 4.2rem);
+                }
+                .sub {
+                    font-size: clamp(1.05rem, 1.5vw, 1.45rem);
+                    line-height: 1.35;
+                }
+
+                /* Card, Liste e Copertine */
+                .glass,
+                .row,
+                .stat {
+                    border-radius: 18px;
+                }
+                .list {
+                    gap: clamp(10px, 1.5vh, 16px);
+                }
+                .row {
+                    padding: clamp(10px, 1.4vh, 16px) 20px;
+                    grid-template-columns: 36px 56px 1fr;
+                    gap: 16px;
+                }
+                .row.noimg {
+                    grid-template-columns: 36px 1fr;
+                }
+                .row .n {
+                    font-size: clamp(1.3rem, 2vw, 1.9rem);
+                }
+                .cv {
+                    width: 56px;
+                    height: 56px;
+                    border-radius: 10px;
+                }
+                .cv.lg {
+                    width: min(34vw, 52vh, 420px);
+                    height: min(34vw, 52vh, 420px);
+                    border-radius: 24px;
+                    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+                }
+                .t {
+                    font-size: clamp(1rem, 1.35vw, 1.3rem);
+                }
+                .m {
+                    font-size: clamp(0.85rem, 1vw, 1rem);
+                    margin-top: 3px;
+                }
+                .stat {
+                    padding: clamp(16px, 2.2vh, 24px) 28px;
+                    gap: 6px;
+                }
+                .stat .sub {
+                    font-size: clamp(0.95rem, 1.25vw, 1.2rem);
+                }
+                .btns {
+                    gap: 14px;
+                    margin-top: 12px;
+                }
+                button,
+                .btn {
+                    font-size: 1rem;
+                    border-radius: 14px;
+                    padding: 14px 24px;
+                }
+                .mesh i {
+                    width: 65%;
+                }
+            }
+
+            @media (prefers-reduced-motion: reduce) {
+                .mesh i {
+                    animation: none;
+                }
+                .slide.on .row,
+                .slide.on .stat {
+                    animation: none;
+                }
+                .slide {
+                    transition: none;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="stage" id="stage" tabindex="0" aria-label="Wrapped">
+            <div class="bars" id="bars"></div>
+            <button class="nav-arrow prev" id="prevBtn" aria-label="Slide precedente"><i class="fa-solid fa-arrow-left"></i></button>
+            <button class="nav-arrow next" id="nextBtn" aria-label="Slide successiva"><i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+
+        <script>
+            const W = {{ wrapped|tojson }};
+            const enc = encodeURIComponent;
+            const fmt = (n) => Number(n).toLocaleString("it-IT");
+            const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+            const clean = (s) => esc(String(s).replace(/\.(mp3|flac)$/i, ""));
+            const cover = (s, cls = "") => `<div class="cv ${cls}"><img src="/img/${enc(s.folder)}/${enc(s.file)}" alt="" onerror="this.remove()"></div>`;
+            const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+            const isDesktop = () => matchMedia("(min-aspect-ratio: 11/10) and (min-width: 768px)").matches;
+
+            const hours = Math.floor(W.seconds / 3600);
+            const mins = Math.floor((W.seconds % 3600) / 60);
+            const days = (W.seconds / 86400).toLocaleString("it-IT", { maximumFractionDigits: 1 });
+            const brani = W.top_songs || [];
+            const share = (n) => (W.total_plays ? Math.round((n / W.total_plays) * 100) : 0);
+            const top5 = brani.reduce((a, s) => a + s.plays, 0);
+
+            const slides = [];
+            const add = (bg, fg, html, song, pal, extraClass = "") => slides.push({ bg, fg, html, song, pal, extraClass });
+            const src = (x) => `/img/${enc(x.folder)}/${enc(x.file)}`;
+
+            if (!brani.length) {
+                add("var(--red)", "#fff", `<h2>Ancora niente da mostrare</h2><p class="sub">Ascolta qualche brano dal player: il tuo Wrapped si crea da solo.</p><div class="btns"><a class="btn" href="/">Torna alla Home</a></div>`, null, ["#3a0a14", "#ff3b1f", "#ff9d2e", "#d6246e"], "single");
+            } else {
+                // 1. Intro (centrata su desktop)
+                add("var(--red)", "#fff", `<h2>Il tuo Wrapped</h2><p class="sub">Tutto quello che hai ascoltato sul tuo player, brano per brano.</p><p class="sub" id="hintText">Tocca a destra o usa le frecce per andare avanti.</p>`, null, ["#3a0a14", "#ff3b1f", "#ff9d2e", "#d6246e"], "single");
+
+                // 2. Ore di ascolto (Numero gigante a sx, testo a dx)
+                add("var(--blue)", "#fff", `
+                    <div class="col center"><div class="big" data-count="${hours}">0</div></div>
+                    <div class="col">
+                        <p class="sub">Hai passato</p>
+                        <h2>ore e ${mins} minuti con la tua musica</h2>
+                        <p class="sub">${hours >= 24 ? `Sono ${days} giorni interi, senza dormire.` : `${fmt(W.total_plays)} ascolti in totale.`}</p>
+                    </div>`, null, ["#0e1060", "#2a2bd6", "#7b5cff", "#18b6ff"]);
+
+                // 3. Top 5 brani (Titolo a sx, classifica a dx)
+                add("var(--yellow)", "#fff", `
+                    <div class="col">
+                        <h2>I tuoi 5 brani del cuore</h2>
+                        <p class="sub">Le tracce che hanno definito la tua rotazione quest'anno.</p>
+                    </div>
+                    <div class="list">${brani.map((s, i) => `<div class="row" style="--i:${i}"><span class="n">${i + 1}</span>${cover(s)}<div style="min-width:0"><div class="t">${clean(s.title)}</div><div class="m">${esc(s.artist)} · ${fmt(s.plays)} ascolti</div></div></div>`).join("")}</div>`, null, ["#3b0f3a", "#ff9d2e", "#ff3d81", "#7b5cff"]);
+
+                // 4. Brano #1 (Copertina grande a sx, dettagli a dx)
+                add("var(--pink)", "#fff", `
+                    <div class="col center">${cover(brani[0], "lg")}</div>
+                    <div class="col">
+                        <p class="sub">Il numero uno è stato</p>
+                        <h2>${clean(brani[0].title)}</h2>
+                        <p class="sub">${esc(brani[0].artist)} — ${fmt(brani[0].plays)} ascolti, il ${share(brani[0].plays)}% di tutti quelli che hai fatto.</p>
+                    </div>`, brani[0]);
+
+                // 5. Artista #1 (Hero a sx, podio a dx)
+                if (W.artists && W.artists.length) {
+                    const [a1, ...rest] = W.artists;
+                    add("var(--violet)", "#fff", `
+                        <div class="col center">
+                            <div class="cv lg"><img src="${a1.folder && a1.file ? `/img/${enc(a1.folder)}/${enc(a1.file)}` : ""}" alt="" onerror="this.remove()"></div>
+                            <p class="sub" style="margin-top:2cqw">L'artista che hai ascoltato di più</p>
+                            <h2 class="hero-artist">${esc(a1.name)}</h2>
+                            <p class="sub">${fmt(a1.plays)} ascolti sommando tutti i suoi brani.</p>
+                        </div>
+                        <div class="list">${rest.map((a, i) => `<div class="row" style="--i:${i}"><span class="n">${i + 2}</span><div class="cv"><img src="${a.folder && a.file ? `/img/${enc(a.folder)}/${enc(a.file)}` : ""}" alt="" onerror="this.remove()"></div><div style="min-width:0"><div class="t">${esc(a.name)}</div><div class="m">${fmt(a.plays)} ascolti</div></div></div>`).join("")}</div>`, null, ["#24104f", "#7b5cff", "#ff7ac8", "#2a2bd6"]);
+                }
+
+                // 6. Album #1 (Copertina grande a sx, dettagli a dx)
+                if (W.albums && W.albums.length) {
+                    const al = W.albums[0];
+                    add("var(--green)", "#fff", `
+                        <div class="col center">${cover(al, "lg")}</div>
+                        <div class="col">
+                            <p class="sub">L'album che hai consumato</p>
+                            <h2>${esc(al.name)}</h2>
+                            <p class="sub">${fmt(al.plays)} ascolti in ${al.tracks} tracce.</p>
+                        </div>`, al);
+                }
+
+                // 7. Che ascoltatore sei (Titolo a sx, 3 card a dx)
+                add("var(--ink)", "#fff", `
+                    <div class="col">
+                        <h2>Che ascoltatore sei</h2>
+                        <p class="sub">Le tue abitudini tra fedeltà ai classici e nuove scoperte.</p>
+                    </div>
+                    <div class="list">
+                        <div class="stat" style="--i:0"><div class="num" data-count="${W.loyal}">0</div><p class="sub">brani che hanno superato i 50 ascolti</p></div>
+                        <div class="stat" style="--i:1"><div class="num" data-count="${share(top5)}" data-suffix="%">0</div><p class="sub">dei tuoi ascolti sono solo i primi 5 brani</p></div>
+                        <div class="stat" style="--i:2"><div class="num" data-count="${W.rare}">0</div><p class="sub">brani quasi dimenticati, con 2 ascolti o meno</p></div>
+                    </div>`, null, ["#06302a", "#12b886", "#18b6ff", "#2a2bd6"]);
+
+                // 8. Riepilogo finale (Titolo + bottoni a sx, card numeri a dx)
+                add("var(--red)", "#fff", `
+                    <div class="col">
+                        <h2>Il tuo anno in breve</h2>
+                        <p class="sub">Primo posto: <strong>${clean(brani[0].title)}</strong></p>
+                        <div class="btns"><button id="replay">Rivedi</button><a class="btn" href="/">Torna alla Home</a></div>
+                    </div>
+                    <div class="list">
+                        <div class="stat" style="--i:0"><div class="num">${fmt(W.total_songs)}</div><p class="sub">brani diversi</p></div>
+                        <div class="stat" style="--i:1"><div class="num">${fmt(W.total_plays)}</div><p class="sub">ascolti, per ${hours} ore e ${mins} minuti</p></div>
+                    </div>`, null, ["#3a0a14", "#ff3b1f", "#ffb02e", "#ff3d81"]);
+            }
+
+            const stage = document.getElementById("stage");
+            const bars = document.getElementById("bars");
+            const prevBtn = document.getElementById("prevBtn");
+            const nextBtn = document.getElementById("nextBtn");
+            const AUTO = reduce ? 0 : 9;
+            let cur = -1;
+
+            slides.forEach((s, i) => {
+                const el = document.createElement("section");
+                el.className = `slide ${s.extraClass}`.trim();
+                el.style.setProperty("--bg", s.pal ? s.pal[0] : s.bg);
+                if (s.pal) el.classList.add("m");
+                el.style.setProperty("--fg", s.fg);
+                el.innerHTML = (s.pal ? `<div class="mesh">${s.pal.slice(1).map((c) => `<i style="--c:${c}"></i>`).join("")}</div>` : "") + (s.song ? `<img class="bgimg" src="${src(s.song)}" alt="" onerror="this.remove()">` : "") + s.html;
+                stage.appendChild(el);
+                s.el = el;
+
+                const barItem = document.createElement("i");
+                barItem.appendChild(document.createElement("b"));
+                barItem.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    go(i);
+                });
+                bars.appendChild(barItem);
+            });
+
+            function countUp(el) {
+                const end = Number(el.dataset.count), suf = el.dataset.suffix || "";
+                if (reduce) { el.textContent = fmt(end) + suf; return; }
+                const t0 = performance.now();
+                (function tick(t) {
+                    const p = Math.min((t - t0) / 1300, 1);
+                    el.textContent = fmt(Math.round(end * (1 - Math.pow(1 - p, 3)))) + suf;
+                    if (p < 1) requestAnimationFrame(tick);
+                })(t0);
+            }
+
+            function go(i) {
+                if (i < 0 || i >= slides.length || i === cur) return;
+                cur = i;
+                slides.forEach((s, k) => s.el.classList.toggle("on", k === i));
+                bars.style.color = slides[i].fg;
+                bars.style.setProperty("--dur", AUTO + "s");
+                [...bars.children].forEach((b, k) => {
+                    b.className = k < i ? "done" : k === i && AUTO && i < slides.length - 1 ? "cur" : k === i ? "done" : "";
+                });
+                prevBtn.style.visibility = i === 0 ? "hidden" : "visible";
+                nextBtn.style.visibility = i === slides.length - 1 ? "hidden" : "visible";
+                slides[i].el.querySelectorAll("[data-count]").forEach(countUp);
+            }
+
+            bars.addEventListener("animationend", () => go(cur + 1));
+
+            // Su mobile resta il tap sinistra/destra sullo stage; su desktop si usano frecce, tastiera o i segmenti in alto
+            stage.addEventListener("click", (e) => {
+                if (isDesktop() || e.target.closest("button,a")) return;
+                const r = stage.getBoundingClientRect();
+                go(e.clientX - r.left < r.width * 0.3 ? cur - 1 : cur + 1);
+            });
+
+            prevBtn.addEventListener("click", (e) => { e.stopPropagation(); go(cur - 1); });
+            nextBtn.addEventListener("click", (e) => { e.stopPropagation(); go(cur + 1); });
+
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "ArrowRight") go(cur + 1);
+                else if (e.key === "ArrowLeft") go(cur - 1);
+                else if (e.key === " ") { e.preventDefault(); stage.classList.toggle("paused"); }
+            });
+
+            const replay = document.getElementById("replay");
+            if (replay) replay.addEventListener("click", () => { cur = -1; go(0); });
+
+            go(0);
+        </script>
+    </body>
+</html>

@@ -72,12 +72,12 @@
                 <div id="cover-container" class="cover404"><img src="" id="cover" /></div>
 
                 <audio id="audioPlayer" fetchpriority="high"></audio>
-                <audio id="analyserAudioEl" crossorigin="anonymous" playsinline preload="none" style="display:none"></audio> <!-- quello per la waveform -->
+                <audio id="analyserAudioEl" crossorigin="anonymous" playsinline preload="none" style="display: none"></audio> <!-- quello per la waveform -->
                 <input type="range" value="0" id="progress" />
 
                 <div class="controls">
                     <div onclick="prevSong()" class="circle"><i class="fa-solid fa-backward"></i></div>
-                    <div onclick="togglePlay()" class="circle"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
+                    <div onclick="togglePlay()" class="circle grande"><i class="fa-solid fa-play" id="ctrlIcon"></i></div>
                     <div onclick="nextSong()" class="circle"><i class="fa-solid fa-forward"></i></div>
                 </div>
             </div>
@@ -160,6 +160,7 @@
             </div>
             {% endfor %}
         </div>
+        <div id="wrappedContainer"><div onclick="window.location='/wrapped'" class="circle grande" style="scale: 0.8"><i class="fa-solid fa-fire-flame-curved"></i></div></div>>
         <script>
             // Crea la playlist con tutte le canzoni (cartella e nome)
             const playlist = [];
@@ -1229,6 +1230,11 @@
                     .register("/sw")
                     .then(() => console.log("Service worker registrato"))
                     .catch(err => console.error("Errore registrazione service worker:", err));
+            }
+
+            // mostra wrapped
+            if (new Date().getMonth() === 11) { // dicembre
+                document.getElementById("wrappedContainer").style.display = "flex";
             }
 
             // download per ios
