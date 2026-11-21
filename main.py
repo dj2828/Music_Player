@@ -349,40 +349,47 @@ def delete_song(folder, filename):
                 pref.remove(f"{filename}")
                 with open('pref.json', 'w') as f:
                     json.dump(pref, f, indent=2)
-            if f"{filename}" in plays:
-                del plays[f"{filename}"]
-                with open('plays.json', 'w') as f:
-                    json.dump(plays, f, indent=2)
+            # if f"{filename}" in plays:
+            #     del plays[f"{filename}"]
+            #     with open(PLAYS_FILE, 'w') as f:
+            #         json.dump(plays, f, indent=2)
             return "OK", 200
         else:
             return f"ERROR file_path ({file_path})", 500
     else:
         return f"ERROR folder_path ({folder_path})", 500
 
-PLAYS_FILE = 'plays.json'
+from datetime import datetime
+PLAYS_FILE = os.path.join(os.path.dirname(__file__), 'plays', f'{datetime.now().year}.json')
 def load_plays():
     if os.path.exists(PLAYS_FILE):
         with open(PLAYS_FILE, 'r') as f:
             return json.load(f)
     else:
-        with open("plays.json", "w", encoding="utf-8") as f:
+        os.makedirs(os.path.dirname(PLAYS_FILE), exist_ok=True)
+        with open(PLAYS_FILE, "w", encoding="utf-8") as f:
             f.write("{}")
     return {}
 @app.route('/increment_plays', methods=['POST'])
 def increment_plays():
     song = request.form.get('song')
     plays = load_plays()
-    plays[song] = plays.get(song, 0) + 1
+    if song not in plays:
+        plays[song] = [0] * 12  # Initialize a list with 12 elements (one for each month)
+    plays[song][datetime.now().month - 1] += 1  # Increment the play count for the current month
     with open(PLAYS_FILE, 'w') as f:
         json.dump(plays, f, indent=2)
-    print(f"Incrementato play count per {song}: {plays[song]} plays totali")
+    print(f"Incrementato play count per {song}: {plays[song][datetime.now().month - 1]} plays totali")
     return "OK", 200
 
 @app.route('/info', methods=['GET'])
 def get_info():
     folder, song = request.args.get('song').split('/')
     plays = load_plays()
-    play_count = plays.get(song, 0)
+    play_count = 0
+    for months in plays.values():
+        print(months)
+        play_count += sum(months)
     info = lib.get_info(MUSIC_FOLDERS[folder] + '/' + song)
     pref = load_pref()
     return jsonify({'plays': play_count, 'info': info, 'is_pref': song in pref})
@@ -401,13 +408,12 @@ def get_stats():
         bd = get_music()
         plays = load_plays()
         plays_con_folder = {}
-        for song, count in plays.items():
-            folder = trova_folder(bd, song)
-            if folder:
-                plays_con_folder[folder + '/' + song] = count
+        for song, months in plays.items():
+                folder = trova_folder(bd, song)
+                if folder:
+                    plays_con_folder[folder + '/' + song] = sum(months)
         return plays_con_folder
     def hours_played(plays):
-        remove_song = []
         total_seconds = 0.0
 
         for song, count in plays.items():
@@ -426,15 +432,7 @@ def get_stats():
                 total_seconds += duration * count
 
             except Exception:
-                remove_song.append(song)
                 continue
-
-        for song in set(remove_song):
-            print("Rimuovo canzone non trovata dalle statistiche:", song)
-            plays.pop(song, None)
-
-        with open(PLAYS_FILE, 'w') as f:
-            json.dump({a.split('/')[1]: count for a, count in plays.items()}, f, indent=2)
 
         # Conversione corretta
         total_seconds = int(total_seconds)
@@ -521,7 +519,7 @@ def wrapped():
     artisti_best, artisti_cover = {}, {}  # copertina (folder, file) del brano piu ascoltato per artista
     secondi = 0.0
 
-    for filename, count in plays.items():
+    for filename, months in plays.items():
         folder = dove.get(filename)
         if not folder:
             continue
@@ -534,27 +532,27 @@ def wrapped():
         except Exception:
             continue
 
-        secondi += durata * count
+        secondi += durata * sum(months)
         brani.append({"folder": folder, "file": filename, "title": info["title"],
-                      "artist": info["artist"], "plays": count})
+                      "artist": info["artist"], "plays": sum(months)})
 
         # Conta solo l'artista principale (il primo), ignorando gli artisti secondari
         nome = info["artist"].split(", ")[0].strip()
         if nome == "thasup": nome = "tha Supreme"  # correzione per l'artista tha Supreme
         if nome and nome != "Unknown Artist":
-            artisti[nome] = artisti.get(nome, 0) + count
+            artisti[nome] = artisti.get(nome, 0) + sum(months)
             # Aggiorna la copertina se questo brano e' il piu ascoltato per l'artista
-            if count > artisti_best.get(nome, 0):
-                artisti_best[nome] = count
+            if sum(months) > artisti_best.get(nome, 0):
+                artisti_best[nome] = sum(months)
                 artisti_cover[nome] = (folder, filename)
 
         if info["album"] != "Unknown Album":
             a = albums_d.setdefault(info["album"], {"name": info["album"], "plays": 0, "tracks": 0,
                                                     "folder": folder, "file": filename, "best": 0})
-            a["plays"] += count
+            a["plays"] += sum(months)
             a["tracks"] += 1
-            if count > a["best"]:  # la copertina è quella del brano più ascoltato dell'album
-                a["best"], a["folder"], a["file"] = count, folder, filename
+            if sum(months) > a["best"]:  # la copertina è quella del brano più ascoltato dell'album
+                a["best"], a["folder"], a["file"] = sum(months), folder, filename
 
     brani.sort(key=lambda s: s["plays"], reverse=True)
     top_artisti = sorted(artisti.items(), key=lambda x: x[1], reverse=True)[:5]
